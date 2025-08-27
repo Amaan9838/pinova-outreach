@@ -1,0 +1,36 @@
+{
+  "name": "pinova-mail-system",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.0.1",
+    "aws-sdk": "^2.1500.0",
+    "axios": "^1.6.0",
+    "bcryptjs": "^2.4.3",
+    "date-fns": "^2.30.0",
+    "imap": "^0.8.19",
+    "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.292.0",
+    "mailparser": "^3.7.4",
+    "mongoose": "^8.0.0",
+    "next": "14.0.4",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.7",
+    "postcss": "^8",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-hook-form": "^7.48.2",
+    "tailwindcss": "^3.3.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^8",
+    "eslint-config-next": "14.0.4"
+  }
+}
