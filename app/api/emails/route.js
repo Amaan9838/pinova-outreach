@@ -1,6 +1,8 @@
 import dbConnect from '../../../lib/mongodb.js';
 import Message from '../../../models/Message.js';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     await dbConnect();
@@ -15,6 +17,8 @@ export async function GET() {
     return Response.json({
       success: true,
       messages
+    }, {
+      headers: { 'Cache-Control': 'no-store' }
     });
 
   } catch (error) {

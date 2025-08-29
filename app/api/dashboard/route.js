@@ -4,6 +4,8 @@ import Prospect from '../../../models/Prospect.js';
 import Message from '../../../models/Message.js';
 import Mailbox from '../../../models/MailboxFixed.js';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     await dbConnect();
@@ -71,7 +73,7 @@ export async function GET() {
       success: true,
       stats,
       recentActivity
-    });
+    }, { headers: { 'Cache-Control': 'no-store' } });
 
   } catch (error) {
     console.error('Dashboard API error:', error);

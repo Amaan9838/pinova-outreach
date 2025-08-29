@@ -80,7 +80,7 @@ export async function POST(request) {
     });
 
     if (result.success) {
-      // Update message
+      // Update message as sent
       message.status = 'sent';
       message.sesMessageId = result.messageId;
       message.sentAt = new Date();
@@ -92,6 +92,14 @@ export async function POST(request) {
           recipient: toEmail
         }
       });
+
+      // If SMTP accepted the message, consider it delivered for UI purposes
+      if (result.accepted) {
+        message.status = 'delivered';
+        message.deliveredAt = new Date();
+        message.events.push({ type: 'delivered', timestamp: new Date() });
+      }
+      
       await message.save();
 
       // Update mailbox daily count
