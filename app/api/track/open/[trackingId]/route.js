@@ -2,11 +2,16 @@ import dbConnect from '../../../../../lib/mongodb.js';
 import Message from '../../../../../models/Message.js';
 import Campaign from '../../../../../models/Campaign.js';
 
+export const runtime = 'nodejs'; // Run in Node.js, not Edge
+export const dynamic = 'force-dynamic'; // Force dynamic execution
+
+// Initialize DB connection once
+await dbConnect();
+
 export async function GET(request, { params }) {
   try {
-    await dbConnect();
-    
-    const { trackingId } = params;
+    // Remove .gif extension if present for ID lookup
+    const trackingId = params.trackingId.replace(/\.gif$/, '');
     
     console.log(`Tracking open for ID: ${trackingId}`);
     

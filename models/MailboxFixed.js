@@ -14,6 +14,15 @@ const MailboxSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  
+  // DKIM Configuration for better deliverability
+  dkimPrivateKey: {
+    type: String, // Private key for DKIM signing
+  },
+  dkimSelector: {
+    type: String,
+    default: 'mail', // DKIM selector (mail, m1, etc)
+  },
   isp: {
     type: String,
     enum: ['gmail', 'outlook', 'yahoo', 'godaddy', 'other'],
