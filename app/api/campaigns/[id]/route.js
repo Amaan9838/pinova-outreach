@@ -1,6 +1,8 @@
 import dbConnect from '../../../../lib/mongodb.js';
 import Campaign from '../../../../models/Campaign.js';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request, { params }) {
   try {
     await dbConnect();
@@ -21,7 +23,7 @@ export async function GET(request, { params }) {
     return Response.json({
       success: true,
       campaign
-    });
+    }, { headers: { 'Cache-Control': 'no-store' } });
 
   } catch (error) {
     console.error('Get campaign error:', error);

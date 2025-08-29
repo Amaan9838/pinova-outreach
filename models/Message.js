@@ -92,12 +92,15 @@ const MessageSchema = new mongoose.Schema({
     default: false,
   },
   toEmail: {
-    type: String, // For individual emails without prospects
+  type: String, // For individual emails without prospects
+  },
+  headerMessageId: {
+  type: String, // The Message-ID header used for threading
   },
   createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+     type: Date,
+     default: Date.now,
+   },
   updatedAt: {
     type: Date,
     default: Date.now,

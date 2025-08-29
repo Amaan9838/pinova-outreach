@@ -4,6 +4,51 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+function ReplyForm({ originalMessage }) {
+  const [replyHtml, setReplyHtml] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const sendReply = async () => {
+    if (!replyHtml.trim()) return;
+    setSending(true);
+    try {
+      const res = await fetch(`/api/emails/${originalMessage._id}/reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bodyHtml: replyHtml, bodyText: replyHtml.replace(/<[^>]*>/g, '') })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Reply sent');
+        window.location.reload();
+      } else {
+        alert('Failed: ' + data.error);
+      }
+    } catch (e) {
+      alert('Failed: ' + e.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <textarea
+        className="input-field"
+        rows={6}
+        placeholder="Write your reply..."
+        value={replyHtml}
+        onChange={(e) => setReplyHtml(e.target.value)}
+      />
+      <div className="flex justify-end">
+        <button onClick={sendReply} disabled={sending} className="btn-primary">
+          {sending ? 'Sending...' : 'Send Reply'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function EmailDetailsPage({ params }) {
   const router = useRouter();
   const [message, setMessage] = useState(null);
@@ -123,17 +168,23 @@ export default function EmailDetailsPage({ params }) {
 
           {/* Email Content */}
           <div className="card">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Email Content</h3>
-            <div className="border rounded-lg p-4 bg-gray-50 text-gray-800">
-              <div className="mb-2">
-                <strong>Subject:</strong> {message.subject}
-              </div>
-              <hr className="my-2" />
-              <div className="whitespace-pre-wrap text-sm">
-                {message.content}
-              </div>
-            </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Email Content</h3>
+          <div className="border rounded-lg p-4 bg-gray-50 text-gray-800">
+          <div className="mb-2">
+          <strong>Subject:</strong> {message.subject}
           </div>
+          <hr className="my-2" />
+          <div className="whitespace-pre-wrap text-sm">
+          {message.content}
+          </div>
+          </div>
+          </div>
+
+           {/* Reply Composer */}
+           <div className="card">
+             <h3 className="text-lg font-semibold text-gray-900 mb-4">Reply</h3>
+             <ReplyForm originalMessage={message} />
+           </div>
 
           {/* Event Timeline */}
           <div className="card">
