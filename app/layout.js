@@ -23,6 +23,8 @@ export default function RootLayout({ children }) {
                     <a href="/prospects" className="nav-link">Prospects</a>
                     <a href="/emails" className="nav-link">Emails</a>
                     <a href="/mailboxes" className="nav-link">Mailboxes</a>
+                    <a href="/compose" className="nav-link">Compose</a>
+
                     <a href="/debug" className="nav-link text-red-600">Debug</a>
                   </div>
                 </div>
