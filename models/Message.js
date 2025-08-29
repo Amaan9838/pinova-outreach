@@ -38,7 +38,7 @@ const MessageSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['queued', 'sending', 'sent', 'delivered', 'bounced', 'failed'],
+    enum: ['queued', 'sending', 'sent', 'delivered', 'opened', 'replied', 'bounced', 'failed'],
     default: 'queued',
   },
   trackingId: {
@@ -110,7 +110,6 @@ MessageSchema.pre('save', function(next) {
 });
 
 MessageSchema.index({ campaignId: 1, prospectId: 1, stepNumber: 1 });
-MessageSchema.index({ trackingId: 1 });
-MessageSchema.index({ messageId: 1 });
+
 
 export default mongoose.models.Message || mongoose.model('Message', MessageSchema);

@@ -109,6 +109,17 @@ export default function DebugPage() {
           <button onClick={processSequences} className="btn-primary">
             Process Sequences Manually
           </button>
+          <button onClick={async () => {
+            try {
+              const res = await fetch('/api/cron/check-replies');
+              const data = await res.json();
+              alert(data.message || 'Reply check triggered');
+            } catch (e) {
+              alert('Failed to check replies');
+            }
+          }} className="btn-secondary">
+            Check Replies Now
+          </button>
           <button onClick={fetchData} className="btn-secondary">
             Refresh Data
           </button>
@@ -177,7 +188,7 @@ export default function DebugPage() {
                 <div key={mailbox._id} className="border rounded p-3">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-medium">{mailbox.fromName}</p>
+                      <p className="font-medium text-gray-700">{mailbox.fromName}</p>
                       <p className="text-sm text-gray-600">{mailbox.fromEmail}</p>
                       <p className="text-xs text-gray-500">
                         Status: {mailbox.status} | Daily: {mailbox.dailySent}/{mailbox.dailyCap}
@@ -216,7 +227,7 @@ export default function DebugPage() {
             <div className="space-y-3">
               {campaigns.map((campaign) => (
                 <div key={campaign._id} className="border rounded p-3">
-                  <p className="font-medium">{campaign.name}</p>
+                  <p className="font-medium text-gray-700">{campaign.name}</p>
                   <p className="text-sm text-gray-600">
                     Status: {campaign.status} | Prospects: {campaign.prospects?.length || 0}
                   </p>
@@ -242,7 +253,7 @@ export default function DebugPage() {
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {prospects.slice(0, 10).map((prospect) => (
                 <div key={prospect._id} className="border rounded p-2">
-                  <p className="text-sm font-medium">
+                  <p className="text-sm font-medium text-gray-700">
                     {prospect.firstName} {prospect.lastName}
                   </p>
                   <p className="text-xs text-gray-600">{prospect.email}</p>
@@ -261,23 +272,23 @@ export default function DebugPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">System Status</h2>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span>Database Connection</span>
+              <span className='text-gray-600'>Database Connection</span>
               <span className="text-green-600">✅ Connected</span>
             </div>
             <div className="flex justify-between">
-              <span>Mailboxes Configured</span>
+              <span className='text-gray-600'>Mailboxes Configured</span>
               <span className={mailboxes.length > 0 ? "text-green-600" : "text-red-600"}>
                 {mailboxes.length > 0 ? "✅" : "❌"} {mailboxes.length}
               </span>
             </div>
             <div className="flex justify-between">
-              <span>Active Campaigns</span>
+              <span className='text-gray-600'>Active Campaigns</span>
               <span className={campaigns.filter(c => c.status === 'active').length > 0 ? "text-green-600" : "text-yellow-600"}>
                 {campaigns.filter(c => c.status === 'active').length > 0 ? "✅" : "⚠️"} {campaigns.filter(c => c.status === 'active').length}
               </span>
             </div>
             <div className="flex justify-between">
-              <span>Total Prospects</span>
+              <span className='text-gray-600'>Total Prospects</span>
               <span className={prospects.length > 0 ? "text-green-600" : "text-yellow-600"}>
                 {prospects.length > 0 ? "✅" : "⚠️"} {prospects.length}
               </span>

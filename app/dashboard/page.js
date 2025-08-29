@@ -11,6 +11,7 @@ export default function Dashboard() {
   });
 
   const [recentActivity, setRecentActivity] = useState([]);
+  const [recentReplies, setRecentReplies] = useState([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -22,6 +23,7 @@ export default function Dashboard() {
       const data = await response.json();
       setStats(data.stats);
       setRecentActivity(data.recentActivity || []);
+      setRecentReplies(data.recentReplies || []);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
     }
@@ -83,25 +85,25 @@ export default function Dashboard() {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Delivery Rate</span>
-              <span className="font-semibold">
+              <span className="font-semibold text-black">
                 {stats.messages.sent > 0 ? `${((stats.messages.delivered / stats.messages.sent) * 100).toFixed(1)}%` : '0%'}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Open Rate</span>
-              <span className="font-semibold">
+              <span className="font-semibold text-black">
                 {stats.messages.sent > 0 ? `${((stats.messages.opened / stats.messages.sent) * 100).toFixed(1)}%` : '0%'}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Reply Rate</span>
-              <span className="font-semibold">
+              <span className="font-semibold text-black">
                 {stats.messages.sent > 0 ? `${((stats.messages.replied / stats.messages.sent) * 100).toFixed(1)}%` : '0%'}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Active Mailboxes</span>
-              <span className="font-semibold">{stats.mailboxes.active} / {stats.mailboxes.total}</span>
+              <span className="font-semibold text-black">{stats.mailboxes.active} / {stats.mailboxes.total}</span>
             </div>
           </div>
         </div>
@@ -129,6 +131,30 @@ export default function Dashboard() {
               <p className="text-sm text-gray-500">No recent activity</p>
             )}
           </div>
+        </div>
+
+        {/* Latest Replies */}
+        <div className="card lg:col-span-2">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Latest Replies</h2>
+          {recentReplies.length === 0 ? (
+            <p className="text-sm text-gray-500">No replies yet</p>
+          ) : (
+            <div className="divide-y">
+              {recentReplies.map((r, idx) => (
+                <div key={idx} className="py-3 flex justify-between items-start">
+                  <div className="flex-1 pr-4">
+                    <p className="text-sm font-medium text-gray-900">{r.prospect.name} <span className="text-gray-500">({r.prospect.email})</span></p>
+                    <p className="text-xs text-gray-600">Campaign: {r.campaign}</p>
+                    <p className="text-sm text-gray-800 mt-1 line-clamp-2">{r.snippet}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500">{r.repliedAt}</p>
+                    <a href={`/emails/${r.messageId}`} className="text-blue-600 hover:text-blue-800 text-xs underline inline-block mt-1">View</a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

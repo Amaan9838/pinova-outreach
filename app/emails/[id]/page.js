@@ -155,9 +155,24 @@ export default function EmailDetailsPage({ params }) {
                           </span>
                         </div>
                         {event.data && Object.keys(event.data).length > 0 && (
-                          <div className="mt-1 text-xs text-gray-600">
-                            {event.data.userAgent && <p>User Agent: {event.data.userAgent.substring(0, 100)}...</p>}
+                          <div className="mt-2 text-xs text-gray-600">
+                            {/* Open/Click details */}
+                            {event.data.userAgent && <p>User Agent: {event.data.userAgent.substring(0, 120)}...</p>}
                             {event.data.ip && <p>IP: {event.data.ip}</p>}
+
+                            {/* Reply details */}
+                            {event.type === 'replied' && (
+                              <div className="mt-2">
+                                {event.data.subject && (
+                                  <p className="text-sm font-medium text-gray-900">Subject: {event.data.subject}</p>
+                                )}
+                                {event.data.html ? (
+                                  <div className="mt-2 border rounded bg-white p-3 text-sm" dangerouslySetInnerHTML={{ __html: event.data.html }} />
+                                ) : (
+                                  <pre className="mt-2 border rounded bg-gray-50 p-3 text-sm whitespace-pre-wrap">{event.data.text || 'No content'}</pre>
+                                )}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
