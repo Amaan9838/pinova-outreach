@@ -17,6 +17,7 @@ export default function EmailsPage() {
     try {
       const response = await fetch('/api/emails');
       const data = await response.json();
+      console.log(data);
       if (data.success) {
         setMessages(data.messages);
       }
