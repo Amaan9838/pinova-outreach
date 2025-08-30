@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
   env: {
     MONGODB_URI: process.env.MONGODB_URI,
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,

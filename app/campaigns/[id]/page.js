@@ -8,7 +8,7 @@ export default function CampaignDetailsPage({ params }) {
   const [campaign, setCampaign] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-
+// console.log("this is the camapign", campaign)
   useEffect(() => {
     fetchCampaignDetails();
     fetchMessages();

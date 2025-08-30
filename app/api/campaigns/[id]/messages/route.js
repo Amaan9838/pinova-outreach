@@ -1,5 +1,8 @@
 import dbConnect from '../../../../../lib/mongodb.js';
 import Message from '../../../../../models/Message.js';
+// Ensure referenced models are registered before populate
+import '../../../../../models/Prospect.js';
+import '../../../../../models/MailboxFixed.js';
 
 export async function GET(request, { params }) {
   try {

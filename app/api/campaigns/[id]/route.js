@@ -1,5 +1,8 @@
 import dbConnect from '../../../../lib/mongodb.js';
 import Campaign from '../../../../models/Campaign.js';
+// Ensure referenced models are registered before populate
+import '../../../../models/Prospect.js';
+import '../../../../models/MailboxFixed.js';
 
 export const dynamic = 'force-dynamic';
 
