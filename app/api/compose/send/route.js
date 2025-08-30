@@ -95,9 +95,9 @@ export async function POST(request) {
 
       // If SMTP accepted the message, consider it delivered for UI purposes
       if (result.accepted) {
+        // Do not add a delivered event here; webhook will add the canonical delivered event
         message.status = 'delivered';
         message.deliveredAt = new Date();
-        message.events.push({ type: 'delivered', timestamp: new Date() });
       }
       
       await message.save();

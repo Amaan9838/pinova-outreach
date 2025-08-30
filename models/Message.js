@@ -78,6 +78,10 @@ const MessageSchema = new mongoose.Schema({
   repliedAt: {
     type: Date,
   },
+  // Idempotency keys for processed inbound replies
+  processedReplyKeys: [{
+    type: String,
+  }],
   // Email type flags
   isTest: {
     type: Boolean,

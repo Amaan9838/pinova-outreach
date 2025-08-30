@@ -177,6 +177,12 @@ export default function CampaignDetailsPage({ params }) {
     }
   };
 
+  // Derived stats from messages to avoid stale campaign.stats
+  const sentCount = messages.filter(m => ['sent','delivered','opened','replied'].includes(m.status)).length;
+  const openedCount = messages.filter(m => m.status === 'opened' || (m.events && m.events.some(e => e.type === 'opened'))).length;
+  const deliveredCount = messages.filter(m => m.status === 'delivered' || (m.events && m.events.some(e => e.type === 'delivered'))).length;
+  const repliedCount = messages.filter(m => m.status === 'replied' || (m.events && m.events.some(e => e.type === 'replied'))).length;
+
   if (loading) {
     return (
       <div className="px-4">
@@ -268,27 +274,27 @@ export default function CampaignDetailsPage({ params }) {
         </div>
         <div className="card">
           <p className="text-sm text-gray-600">Messages Sent</p>
-          <p className="text-2xl font-bold text-green-600">{campaign.stats?.sent || 0}</p>
+          <p className="text-2xl font-bold text-green-600">{sentCount}</p>
           <p className="text-xs text-gray-500">
-            {campaign.stats?.delivered || 0} delivered
+            {deliveredCount} delivered
           </p>
         </div>
         <div className="card">
           <p className="text-sm text-gray-600">Open Rate</p>
           <p className="text-2xl font-bold text-purple-600">
-            {campaign.stats?.sent > 0 ? `${((campaign.stats?.opened / campaign.stats?.sent) * 100).toFixed(1)}%` : '0%'}
+            {sentCount > 0 ? `${((openedCount / sentCount) * 100).toFixed(1)}%` : '0%'}
           </p>
           <p className="text-xs text-gray-500">
-            {campaign.stats?.opened || 0} opens
+            {openedCount} opens
           </p>
         </div>
         <div className="card">
           <p className="text-sm text-gray-600">Reply Rate</p>
           <p className="text-2xl font-bold text-indigo-600">
-            {campaign.stats?.sent > 0 ? `${((campaign.stats?.replied / campaign.stats?.sent) * 100).toFixed(1)}%` : '0%'}
+            {sentCount > 0 ? `${((repliedCount / sentCount) * 100).toFixed(1)}%` : '0%'}
           </p>
           <p className="text-xs text-gray-500">
-            {campaign.stats?.replied || 0} replies
+            {repliedCount} replies
           </p>
         </div>
       </div>

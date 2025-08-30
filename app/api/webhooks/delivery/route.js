@@ -39,19 +39,23 @@ async function handleDelivery(webhookData) {
     
     if (message) {
       console.log(`Marking message ${message._id} as delivered`);
-      
-      message.events.push({
-        type: 'delivered',
-        timestamp: new Date(),
-        data: webhookData
-      });
-      
+
+      const hadDelivered = message.events.some(e => e.type === 'delivered');
+
+      if (!hadDelivered) {
+        message.events.push({
+          type: 'delivered',
+          timestamp: new Date(),
+          data: webhookData
+        });
+      }
+
       message.status = 'delivered';
       message.deliveredAt = new Date();
       await message.save();
 
-      // Update campaign stats if applicable
-      if (message.campaignId) {
+      // Update campaign stats only on first delivery
+      if (!hadDelivered && message.campaignId) {
         const campaign = await Campaign.findById(message.campaignId);
         if (campaign) {
           campaign.stats.delivered += 1;
