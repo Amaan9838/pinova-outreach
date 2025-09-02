@@ -10,7 +10,7 @@ export async function GET() {
     
     const now = new Date();
     const currentHour = now.getHours();
-    const currentDay = now.toLocaleDateString('en-US', { weekday: 'lowercase' });
+    const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     
     // Find active campaigns with schedule settings
     const campaigns = await Campaign.find({
