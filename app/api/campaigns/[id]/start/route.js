@@ -23,7 +23,7 @@ export async function POST(request, { params }) {
       );
     }
 
-    if (!campaign.mailboxes || campaign.mailboxes.length === 0) {
+    if (!campaign.options?.selectedMailbox) {
       return Response.json(
         { success: false, error: 'Campaign must have at least one mailbox' },
         { status: 400 }

@@ -20,20 +20,20 @@ These are the core cron jobs required for the system to function properly:
 
 ```bash
 # Main sequence processor - Every 15 minutes
-https://yourdomain.com/api/cron/process-sequences
+https://pinova-outreach.vercel.app/api/cron/process-sequences
 
 # Reply checker - Every 30 minutes
-https://yourdomain.com/api/cron/check-replies
+https://pinova-outreach.vercel.app/api/cron/check-replies
 
 # Schedule processor - Every 15 minutes
-https://yourdomain.com/api/cron/process-schedules
+https://pinova-outreach.vercel.app/api/cron/process-schedules
 ```
 
 ### Follow-up Cron Jobs (If using follow-ups)
 
 ```bash
 # Follow-up processor - Every 2 hours
-https://yourdomain.com/api/cron/process-followups
+https://pinova-outreach.vercel.app/api/cron/process-followups
 ```
 
 ### Recommended Cron Schedule
@@ -42,10 +42,10 @@ For cPanel or server-based cron setup, use these exact commands:
 
 ```bash
 # cPanel/Server cron format:
-*/15 * * * * curl -s https://yourdomain.com/api/cron/process-sequences
-*/15 * * * * curl -s https://yourdomain.com/api/cron/process-schedules
-*/30 * * * * curl -s https://yourdomain.com/api/cron/check-replies
-0 */2 * * * curl -s https://yourdomain.com/api/cron/process-followups
+*/15 * * * * curl -s https://pinova-outreach.vercel.app/api/cron/process-sequences
+*/15 * * * * curl -s https://pinova-outreach.vercel.app/api/cron/process-schedules
+*/30 * * * * curl -s https://pinova-outreach.vercel.app/api/cron/check-replies
+0 */2 * * * curl -s https://pinova-outreach.vercel.app/api/cron/process-followups
 ```
 
 **Schedule Explanation:**
@@ -91,7 +91,7 @@ Use Windows Task Scheduler:
 #### External Cron Services:
 1. **cron-job.org** (Free):
    - Sign up at cron-job.org
-   - Add job: `https://yourdomain.com/api/cron/process-sequences`
+   - Add job: `https://pinova-outreach.vercel.app/api/cron/process-sequences`
    - Schedule: Every 10 minutes (`*/10 * * * *`)
 
 2. **EasyCron** (Free tier available):
@@ -111,7 +111,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger sequence processing
-        run: curl -X GET https://yourdomain.com/api/cron/process-sequences
+        run: curl -X GET https://pinova-outreach.vercel.app/api/cron/process-sequences
 ```
 
 ## Current Status
