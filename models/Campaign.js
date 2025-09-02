@@ -48,6 +48,42 @@ const CampaignSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  mailbox: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Mailbox',
+    required: false
+  },
+  options: {
+    selectedMailbox: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Mailbox',
+      default: null
+    },
+    trackOpens: {
+      type: Boolean,
+      default: true
+    },
+    trackClicks: {
+      type: Boolean,
+      default: true
+    },
+    unsubscribeLink: {
+      type: Boolean,
+      default: true
+    },
+    dailyLimit: {
+      type: Number,
+      default: 50
+    },
+    timezone: {
+      type: String,
+      default: 'UTC'
+    },
+    notes: {
+      type: String,
+      default: ''
+    }
+  },
   goal: {
     type: String,
     required: true,
@@ -80,6 +116,161 @@ const CampaignSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Mailbox',
   }],
+  // Follow-up Settings
+  followUpSettings: {
+    enabled: {
+      type: Boolean,
+      default: false,
+    },
+    maxFollowUps: {
+      type: Number,
+      default: 3,
+    },
+    followUpDelay: {
+      type: Number,
+      default: 3,
+    },
+    followUpTemplates: [{
+      id: Number,
+      subject: String,
+      content: String,
+      delay: Number,
+    }],
+    conditions: {
+      noReply: {
+        type: Boolean,
+        default: true,
+      },
+      noOpen: {
+        type: Boolean,
+        default: false,
+      },
+      bounced: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    stopOnReply: {
+      type: Boolean,
+      default: true,
+    },
+    stopOnOpen: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  // Schedule Settings
+  schedule: {
+    name: {
+      type: String,
+      default: 'New schedule',
+    },
+    startDate: {
+      type: String,
+      default: 'now',
+    },
+    endDate: {
+      type: String,
+      default: 'no-end',
+    },
+    timing: {
+      from: {
+        type: String,
+        default: '9:00 AM',
+      },
+      to: {
+        type: String,
+        default: '6:00 PM',
+      },
+      timezone: {
+        type: String,
+        default: 'Eastern Time (US & Canada) (UTC-04:00)',
+      },
+    },
+    days: {
+      monday: {
+        type: Boolean,
+        default: true,
+      },
+      tuesday: {
+        type: Boolean,
+        default: true,
+      },
+      wednesday: {
+        type: Boolean,
+        default: true,
+      },
+      thursday: {
+        type: Boolean,
+        default: true,
+      },
+      friday: {
+        type: Boolean,
+        default: true,
+      },
+      saturday: {
+        type: Boolean,
+        default: false,
+      },
+      sunday: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    settings: {
+      dailyLimit: {
+        type: Number,
+        default: 50,
+      },
+      delayBetweenEmails: {
+        type: Number,
+        default: 5,
+      },
+      respectHolidays: {
+        type: Boolean,
+        default: true,
+      },
+      autoPauseOnReplies: {
+        type: Boolean,
+        default: true,
+      },
+      trackOpens: {
+        type: Boolean,
+        default: true,
+      },
+    },
+  },
+  // Campaign Options/Settings
+  options: {
+    selectedMailbox: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Mailbox',
+    },
+    trackOpens: {
+      type: Boolean,
+      default: true,
+    },
+    trackClicks: {
+      type: Boolean,
+      default: true,
+    },
+    unsubscribeLink: {
+      type: Boolean,
+      default: true,
+    },
+    dailyLimit: {
+      type: Number,
+      default: 50,
+    },
+    timezone: {
+      type: String,
+      default: 'UTC',
+    },
+    notes: {
+      type: String,
+      default: '',
+    },
+  },
   settings: {
     sendTimeStart: {
       type: String,

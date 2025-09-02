@@ -1,7 +1,7 @@
 // Send a POST request to the cleanup-replies endpoint
 const runCleanupReplies = async () => {
   try {
-    const response = await fetch('http://localhost:3000/api/maintenance/cleanup-events', {
+    const response = await fetch('https://pinova-outreach.vercel.app/api/maintenance/cleanup-replies', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,20 +1,36 @@
 import { SequencerService } from '../../../../lib/sequencer.js';
+import { processAllCampaigns } from '../../../../lib/campaignExecutor.js';
 
 export async function POST(request) {
   try {
-    // Skip auth check for now during testing
-    console.log('Processing sequences...');
+    console.log('Processing campaigns with integrated settings...');
+    
+    // Use new integrated campaign executor
+    const results = await processAllCampaigns();
+    
+    // Also run legacy sequencer for backward compatibility
     await SequencerService.processSequences();
+
+    const totalSent = results.reduce((sum, r) => sum + (r.sent || 0), 0);
+    const totalFollowUps = results.reduce((sum, r) => sum + (r.followUpsSent || 0), 0);
+    const errors = results.filter(r => r.error || (r.errors && r.errors.length > 0));
 
     return Response.json({
       success: true,
-      message: 'Sequences processed successfully'
+      message: `Campaigns processed successfully`,
+      stats: {
+        campaignsProcessed: results.length,
+        emailsSent: totalSent,
+        followUpsSent: totalFollowUps,
+        errors: errors.length
+      },
+      results
     });
 
   } catch (error) {
-    console.error('Process sequences cron error:', error);
+    console.error('Process campaigns error:', error);
     return Response.json(
-      { success: false, error: 'Failed to process sequences' },
+      { success: false, error: 'Failed to process campaigns' },
       { status: 500 }
     );
   }
@@ -23,18 +39,20 @@ export async function POST(request) {
 // Allow GET for testing
 export async function GET() {
   try {
-    console.log('Processing sequences (GET test)...');
-    await SequencerService.processSequences();
-
+    console.log('Processing campaigns (GET test)...');
+    
+    const results = await processAllCampaigns();
+    
     return Response.json({
       success: true,
-      message: 'Sequences processed successfully (test run)'
+      message: 'Campaigns processed successfully (test run)',
+      results
     });
 
   } catch (error) {
-    console.error('Process sequences test error:', error);
+    console.error('Process campaigns test error:', error);
     return Response.json(
-      { success: false, error: 'Failed to process sequences' },
+      { success: false, error: 'Failed to process campaigns' },
       { status: 500 }
     );
   }

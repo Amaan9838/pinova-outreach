@@ -32,20 +32,23 @@ export async function POST(request) {
     
     const data = await request.json();
     
-    // Validate required fields
-    if (!data.name || !data.persona || !data.goal) {
+    // Validate required fields (allow name-first creation; fill sensible defaults)
+    if (!data.name) {
       return Response.json(
-        { success: false, error: 'Name, persona, and goal are required' },
+        { success: false, error: 'Name is required' },
         { status: 400 }
       );
     }
+
+    const persona = data.persona || 'general';
+    const goal = data.goal || 'outreach';
 
     // Create campaign
     const campaign = new Campaign({
       name: data.name,
       description: data.description,
-      persona: data.persona,
-      goal: data.goal,
+      persona,
+      goal,
       sequence: data.sequence || [],
       mailboxes: data.mailboxes || [],
       settings: {

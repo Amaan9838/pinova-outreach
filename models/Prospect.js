@@ -12,42 +12,58 @@ const ProspectSchema = new mongoose.Schema({
   },
   lastName: {
     type: String,
+    default: '',
   },
   company: {
     type: String,
+    default: '',
   },
-  city: {
+  phone: {
     type: String,
+    default: '',
   },
-  neighborhood: {
+  website: {
     type: String,
+    default: '',
   },
-  listingPrice: {
+  industry: {
     type: String,
+    default: '',
   },
-  instagramUrl: {
+  position: {
     type: String,
+    default: '',
   },
-  linkedinUrl: {
+  notes: {
     type: String,
+    default: '',
   },
-  websiteUrl: {
+  instagram: {
     type: String,
+    default: '',
   },
-  sourceUrl: {
+  linkedin: {
     type: String,
+    default: '',
   },
-  lawfulBasis: {
+  personalizationNote: {
     type: String,
-    default: 'legitimate_interest',
+    default: '',
   },
-  score: {
-    type: Number,
-    default: 0,
-  },
+  customFields: [{
+    name: {
+      type: String,
+      required: true,
+    },
+    value: {
+      type: mongoose.Schema.Types.Mixed,
+      required: true,
+    }
+  }],
   status: {
     type: String,
-    enum: ['active', 'suppressed', 'bounced', 'unsubscribed'],
+    enum: ['active', 'suppressed', 'bounced', 'unsubscribed', 'pending'],
+    default: 'active',
     default: 'active',
   },
   tags: [{

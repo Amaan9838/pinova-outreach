@@ -1,5 +1,10 @@
 import './globals.css'
-
+import { AppSidebar } from "../components/app-sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "../components/ui/sidebar";
+import { Separator } from "../components/ui/separator";
+import { Toaster } from "../components/ui/sonner";
+import {League_Spartan} from "next/font/google";
+const leagueSpartan = League_Spartan({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-league-spartan' })
 export const metadata = {
   title: 'Pinova Mail System',
   description: 'Elite cold outreach at scale with personalization and deliverability',
@@ -8,33 +13,21 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
-        <div className="min-h-screen bg-gray-50">
-          <nav className="bg-white shadow-sm border-b">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between h-16">
-                <div className="flex">
-                  <div className="flex-shrink-0 flex items-center">
-                    <h1 className="text-xl font-bold text-gray-900">Pinova Mail</h1>
-                  </div>
-                  <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                    <a href="/dashboard" className="nav-link">Dashboard</a>
-                    <a href="/campaigns" className="nav-link">Campaigns</a>
-                    <a href="/prospects" className="nav-link">Prospects</a>
-                    <a href="/emails" className="nav-link">Emails</a>
-                    <a href="/mailboxes" className="nav-link">Mailboxes</a>
-                    <a href="/compose" className="nav-link">Compose</a>
-
-                    <a href="/debug" className="nav-link text-red-600">Debug</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </nav>
-          <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            {children}
-          </main>
-        </div>
+      <body className={`${leagueSpartan.variable} font-sans`}>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            <header className="flex h-12 items-center gap-2 px-4 border-b bg-white">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="h-4" />
+              <h1 className="text-2xl font-semibold text-gray-800 font-league-spartan">Pinova.</h1>
+            </header>
+            <main className="min-h-screen bg-gray-50 p-4">
+              {children}
+            </main>
+          </SidebarInset>
+        </SidebarProvider>
+        <Toaster />
       </body>
     </html>
   )

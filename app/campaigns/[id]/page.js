@@ -2,13 +2,64 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from 'sonner';
+import Header from './components/Header';
+import AnalyticsTab from './components/AnalyticsTab';
+import EnhancedLeadsTab from './components/EnhancedLeadsTab';
+import SequencesTab from './components/SequencesTab';
+import ScheduleTab from './components/ScheduleTab';
+import OptionsTab from './components/OptionsTab';
+import TemplateModal from './components/TemplateModal';
+import { Skeleton } from '@/components/ui/skeleton';
+// Import utilities
+import { getStatusColor, getMessageStatusColor, computeDailySeries, computeMessageStats } from './utils/campaignUtils';
 
 export default function CampaignDetailsPage({ params }) {
   const router = useRouter();
   const [campaign, setCampaign] = useState(null);
-  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-// console.log("this is the camapign", campaign)
+  const [activeTab, setActiveTab] = useState('overview');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedCampaign, setEditedCampaign] = useState({});
+  const [deleteCampaignDialog, setDeleteCampaignDialog] = useState(false);
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [sequenceSaving, setSequenceSaving] = useState(false);
+  const [scheduleSaving, setScheduleSaving] = useState(false);
+  const [templatesModalOpen, setTemplatesModalOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [steps, setSteps] = useState([]);
+  const [sentCount, setSentCount] = useState(0);
+  const [openedCount, setOpenedCount] = useState(0);
+  const [deliveredCount, setDeliveredCount] = useState(0);
+  const [repliedCount, setRepliedCount] = useState(0);
+  const [scheduleSettings, setScheduleSettings] = useState({
+    name: 'New schedule',
+    startDate: 'now',
+    endDate: 'no-end',
+    timing: {
+      from: '9:00 AM',
+      to: '6:00 PM',
+      timezone: 'Eastern Time (US & Canada) (UTC-04:00)'
+    },
+    days: {
+      monday: true,
+      tuesday: true,
+      wednesday: true,
+      thursday: true,
+      friday: true,
+      saturday: false,
+      sunday: false
+    }
+  });
+
   useEffect(() => {
     fetchCampaignDetails();
     fetchMessages();
@@ -20,6 +71,7 @@ export default function CampaignDetailsPage({ params }) {
       const data = await response.json();
       if (data.success) {
         setCampaign(data.campaign);
+        setSteps(data.campaign.sequence || []);
       }
     } catch (error) {
       console.error('Failed to fetch campaign:', error);
@@ -32,6 +84,17 @@ export default function CampaignDetailsPage({ params }) {
       const data = await response.json();
       if (data.success) {
         setMessages(data.messages);
+        
+        // Calculate message counts
+        const sent = data.messages.filter(m => m.status === 'sent' || m.status === 'delivered' || m.status === 'opened' || m.status === 'replied').length;
+        const delivered = data.messages.filter(m => m.status === 'delivered' || m.status === 'opened' || m.status === 'replied').length;
+        const opened = data.messages.filter(m => m.status === 'opened' || m.status === 'replied').length;
+        const replied = data.messages.filter(m => m.status === 'replied').length;
+        
+        setSentCount(sent);
+        setDeliveredCount(delivered);
+        setOpenedCount(opened);
+        setRepliedCount(replied);
       }
     } catch (error) {
       console.error('Failed to fetch messages:', error);
@@ -81,10 +144,6 @@ export default function CampaignDetailsPage({ params }) {
   };
 
   const deleteCampaign = async () => {
-    if (!confirm(`Are you sure you want to delete the campaign "${campaign.name}"? This will also delete all associated messages and cannot be undone.`)) {
-      return;
-    }
-
     try {
       const response = await fetch(`/api/campaigns/${params.id}/delete`, {
         method: 'DELETE'
@@ -93,13 +152,14 @@ export default function CampaignDetailsPage({ params }) {
       const result = await response.json();
       
       if (result.success) {
-        alert('✅ Campaign deleted successfully!');
+        toast.success("Campaign deleted successfully");
         router.push('/campaigns');
       } else {
-        alert('❌ Delete failed: ' + result.error);
+        toast.error(result.error || "Failed to delete campaign");
       }
     } catch (error) {
-      alert('❌ Error: ' + error.message);
+      console.error('Error deleting campaign:', error);
+      toast.error("Failed to delete campaign");
     }
   };
 
@@ -156,39 +216,54 @@ export default function CampaignDetailsPage({ params }) {
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'active': return 'text-green-600 bg-green-100';
-      case 'paused': return 'text-yellow-600 bg-yellow-100';
-      case 'completed': return 'text-blue-600 bg-blue-100';
-      default: return 'text-gray-600 bg-gray-100';
+  const saveSequence = async (updatedSteps) => {
+    setSequenceSaving(true);
+    try {
+      const res = await fetch(`/api/campaigns/${params.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sequence: updatedSteps })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      setCampaign(data.campaign);
+      setSteps(data.campaign.sequence || []);
+      setEditingIndex(null);
+    } catch (err) {
+      alert(err.message || 'Failed to save sequence');
+    } finally {
+      setSequenceSaving(false);
     }
   };
 
-  const getMessageStatusColor = (status) => {
-    switch (status) {
-      case 'sent': return 'text-green-600 bg-green-100';
-      case 'delivered': return 'text-blue-600 bg-blue-100';
-      case 'opened': return 'text-purple-600 bg-purple-100';
-      case 'replied': return 'text-indigo-600 bg-indigo-100';
-      case 'bounced': return 'text-red-600 bg-red-100';
-      case 'failed': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+  const saveScheduleSettings = async () => {
+    setScheduleSaving(true);
+    try {
+      const res = await fetch(`/api/campaigns/${params.id}/schedule`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(scheduleSettings)
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      toast.success('Schedule settings saved successfully!');
+    } catch (err) {
+      toast.error(err.message || 'Failed to save schedule settings');
+    } finally {
+      setScheduleSaving(false);
     }
   };
-
-  // Derived stats from messages to avoid stale campaign.stats
-  const sentCount = messages.filter(m => ['sent','delivered','opened','replied'].includes(m.status)).length;
-  const openedCount = messages.filter(m => m.status === 'opened' || (m.events && m.events.some(e => e.type === 'opened'))).length;
-  const deliveredCount = messages.filter(m => m.status === 'delivered' || (m.events && m.events.some(e => e.type === 'delivered'))).length;
-  const repliedCount = messages.filter(m => m.status === 'replied' || (m.events && m.events.some(e => e.type === 'replied'))).length;
 
   if (loading) {
     return (
-      <div className="px-4">
-        <div className="flex justify-center items-center h-64">
-          <div className="text-gray-500">Loading campaign details...</div>
+      <div className="px-4 space-y-4">
+        <div className="flex gap-4">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
         </div>
+        <Skeleton className="h-64 w-full" />
       </div>
     );
   }
@@ -208,233 +283,121 @@ export default function CampaignDetailsPage({ params }) {
 
   return (
     <div className="px-4">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => router.push('/campaigns')}
-              className="text-gray-500 hover:text-gray-700"
+      {/* Header Component */}
+      <Header
+        campaign={campaign}
+        getStatusColor={getStatusColor}
+        sendTestEmail={sendTestEmail}
+        rescheduleNow={rescheduleNow}
+        processSequencesManually={processSequencesManually}
+        pauseCampaign={pauseCampaign}
+        resumeCampaign={resumeCampaign}
+        deleteCampaign={() => setDeleteCampaignDialog(true)}
+      />
+
+      {/* Delete Campaign Confirmation Dialog */}
+      <Dialog open={deleteCampaignDialog} onOpenChange={setDeleteCampaignDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Campaign</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the campaign "{campaign?.name}"? This will also delete all associated messages and cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteCampaignDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => {
+                deleteCampaign();
+                setDeleteCampaignDialog(false);
+              }}
             >
-              ← Back
-            </button>
-            <h1 className="text-2xl font-bold text-gray-900">{campaign.name}</h1>
-            <span className={`px-2 py-1 rounded-full text-sm font-medium ${getStatusColor(campaign.status)}`}>
-              {campaign.status}
-            </span>
-          </div>
-          <p className="text-gray-600 mt-1">{campaign.description}</p>
-        </div>
-        <div className="flex space-x-3">
-          <button
-            onClick={sendTestEmail}
-            className="btn-primary"
-          >
-            Send Test Email
-          </button>
-          <button
-            onClick={rescheduleNow}
-            className="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700"
-          >
-            Reschedule Now
-          </button>
-          <button
-            onClick={processSequencesManually}
-            className="btn-secondary"
-          >
-            Process Sequences Now
-          </button>
-          {campaign.status === 'active' && (
-            <button onClick={pauseCampaign} className="btn-secondary">
-              Pause Campaign
-            </button>
-          )}
-          {campaign.status === 'paused' && (
-            <button onClick={resumeCampaign} className="btn-primary">
-              Resume Campaign
-            </button>
-          )}
-          <button
-            onClick={deleteCampaign}
-            className="text-red-600 border border-red-600 px-4 py-2 rounded hover:bg-red-50"
-          >
-            Delete Campaign
-          </button>
-        </div>
-      </div>
+              Delete Campaign
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="card">
-          <p className="text-sm text-gray-600">Prospects</p>
-          <p className="text-2xl font-bold text-blue-600">{campaign.prospects?.length || 0}</p>
-          <p className="text-xs text-gray-500">
-            {campaign.prospects?.filter(p => p.status === 'active').length || 0} active
-          </p>
-        </div>
-        <div className="card">
-          <p className="text-sm text-gray-600">Messages Sent</p>
-          <p className="text-2xl font-bold text-green-600">{sentCount}</p>
-          <p className="text-xs text-gray-500">
-            {deliveredCount} delivered
-          </p>
-        </div>
-        <div className="card">
-          <p className="text-sm text-gray-600">Open Rate</p>
-          <p className="text-2xl font-bold text-purple-600">
-            {sentCount > 0 ? `${((openedCount / sentCount) * 100).toFixed(1)}%` : '0%'}
-          </p>
-          <p className="text-xs text-gray-500">
-            {openedCount} opens
-          </p>
-        </div>
-        <div className="card">
-          <p className="text-sm text-gray-600">Reply Rate</p>
-          <p className="text-2xl font-bold text-indigo-600">
-            {sentCount > 0 ? `${((repliedCount / sentCount) * 100).toFixed(1)}%` : '0%'}
-          </p>
-          <p className="text-xs text-gray-500">
-            {repliedCount} replies
-          </p>
-        </div>
-      </div>
+      {/* Tabs */}
+      <Tabs defaultValue="analytics" className="w-full">
+        <TabsList className="mb-4 grid w-full grid-cols-5">
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="leads">Leads</TabsTrigger>
+          <TabsTrigger value="sequences">Sequences</TabsTrigger>
+          <TabsTrigger value="schedule">Schedule</TabsTrigger>
+          <TabsTrigger value="options">Options</TabsTrigger>
+        </TabsList>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Campaign Settings */}
-        <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Campaign Settings</h2>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Persona</span>
-              <span className="text-sm font-medium">{campaign.persona}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Goal</span>
-              <span className="text-sm font-medium">{campaign.goal}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Sequence Steps</span>
-              <span className="text-sm font-medium">{campaign.sequence?.length || 0}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Mailboxes</span>
-              <span className="text-sm font-medium">{campaign.mailboxes?.length || 0}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Daily Limit</span>
-              <span className="text-sm font-medium">{campaign.settings?.dailyLimit || 50}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Send Window</span>
-              <span className="text-sm font-medium">
-                {campaign.settings?.sendTimeStart || '09:00'} - {campaign.settings?.sendTimeEnd || '17:00'}
-              </span>
-            </div>
-          </div>
-        </div>
+        <TabsContent value="analytics">
+          <AnalyticsTab
+            campaign={campaign}
+            messages={messages}
+            sentCount={sentCount}
+            openedCount={openedCount}
+            deliveredCount={deliveredCount}
+            repliedCount={repliedCount}
+            computeDailySeries={computeDailySeries}
+            getMessageStatusColor={getMessageStatusColor}
+          />
+        </TabsContent>
 
-        {/* Email Sequence */}
-        <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Email Sequence</h2>
-          <div className="space-y-3">
-            {campaign.sequence?.map((step, index) => (
-              <div key={index} className="border-l-4 border-blue-500 pl-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-medium text-gray-900">Step {step.stepNumber}</h4>
-                    <p className="text-sm text-gray-600">{step.subject}</p>
-                    <p className="text-xs text-gray-500">Wait: {step.waitHours}h</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+        <TabsContent value="leads">
+          <EnhancedLeadsTab 
+            campaign={campaign}
+            getStatusColor={getStatusColor}
+            campaignId={params.id}
+          />
+        </TabsContent>
 
-      {/* Prospects Status */}
-      <div className="card mt-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Prospects Status</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Prospect
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Current Step
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Next Send
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {campaign.prospects?.map((prospectData, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {prospectData.prospectId?.firstName} {prospectData.prospectId?.lastName}
-                    <div className="text-xs text-gray-500">{prospectData.prospectId?.email}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {prospectData.currentStep}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(prospectData.status)}`}>
-                      {prospectData.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {prospectData.nextSendAt ? new Date(prospectData.nextSendAt).toLocaleString() : 'Not scheduled'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        <TabsContent value="sequences">
+          <SequencesTab
+            steps={steps}
+            editingIndex={editingIndex}
+            setEditingIndex={setEditingIndex}
+            saveSequence={saveSequence}
+            sequenceSaving={sequenceSaving}
+            setSteps={setSteps}
+            setTemplatesModalOpen={setTemplatesModalOpen}
+            campaign={campaign}
+            campaignId={params.id}
+          />
+        </TabsContent>
 
-      {/* Recent Messages */}
-      <div className="card mt-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Messages</h2>
-        {messages.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No messages sent yet</p>
-        ) : (
-          <div className="space-y-3">
-            {messages.map((message) => (
-              <div key={message._id} className="border rounded-lg p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h4 className="font-medium text-gray-900">{message.subject}</h4>
-                    <p className="text-sm text-gray-600">
-                      To: {message.prospectId?.firstName} {message.prospectId?.lastName} ({message.prospectId?.email})
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Step {message.stepNumber} • {message.createdAt ? new Date(message.createdAt).toLocaleString() : ''}
-                    </p>
-                  </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getMessageStatusColor(message.status)}`}>
-                    {message.status}
-                  </span>
-                </div>
-                {message.events && message.events.length > 0 && (
-                  <div className="flex space-x-4 text-xs text-gray-500">
-                    {message.events.map((event, idx) => (
-                      <span key={idx}>
-                        {event.type}: {new Date(event.timestamp).toLocaleString()}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+        <TabsContent value="schedule">
+          <ScheduleTab
+            campaign={campaign}
+            scheduleSettings={scheduleSettings}
+            setScheduleSettings={setScheduleSettings}
+            scheduleSaving={scheduleSaving}
+            saveScheduleSettings={saveScheduleSettings}
+          />
+        </TabsContent>
+
+        <TabsContent value="options">
+          <OptionsTab
+            campaign={campaign}
+            sendTestEmail={sendTestEmail}
+            rescheduleNow={rescheduleNow}
+            processSequencesManually={processSequencesManually}
+            pauseCampaign={pauseCampaign}
+            resumeCampaign={resumeCampaign}
+            deleteCampaign={() => setDeleteCampaignDialog(true)}
+          />
+        </TabsContent>
+      </Tabs>
+      
+      {/* Template Modal Component */}
+      <TemplateModal
+        templatesModalOpen={templatesModalOpen}
+        setTemplatesModalOpen={setTemplatesModalOpen}
+        editingIndex={editingIndex}
+        steps={steps}
+        setSteps={setSteps}
+      />
+
     </div>
   );
 }
