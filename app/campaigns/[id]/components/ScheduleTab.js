@@ -51,31 +51,44 @@ export default function ScheduleTab({
   const handleSaveSchedule = async () => {
     setSaving(true);
     try {
-      console.log('Saving schedule settings:', scheduleSettings);
+      // Validate schedule settings
+      const currentTime = new Date();
+      const fromTime = new Date(`1970-01-01T${scheduleSettings.timing.from}`);
+      const toTime = new Date(`1970-01-01T${scheduleSettings.timing.to}`);
       
+      // Ensure at least one day is selected
+      const hasSelectedDays = Object.values(scheduleSettings.days).some(day => day);
+      if (!hasSelectedDays) {
+        throw new Error('Please select at least one day for sending emails');
+      }
+
+      // Ensure "from" time is before "to" time
+      if (fromTime >= toTime) {
+        throw new Error('Start time must be before end time');
+      }
+
       const response = await fetch(`/api/campaigns/${campaign._id}/schedule`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(scheduleSettings)
+        body: JSON.stringify({
+          ...scheduleSettings,
+          initialStartTime: currentTime.toISOString(), // Track when schedule was set
+          nextScheduledTime: null, // Will be calculated by the scheduler
+          lastProcessedTime: null
+        })
       });
       
-      console.log('Schedule save response status:', response.status);
       const data = await response.json();
-      console.log('Schedule save response data:', data);
       
       if (data.success) {
-        console.log('Schedule settings saved successfully');
-        // Update local state with server response
-        if (data.schedule) {
-          setScheduleSettings(data.schedule);
-        }
-        toast.success('Schedule settings saved successfully!');
+        setScheduleSettings(data.schedule);
+        toast.success('Schedule settings saved. Campaign will start sending at the next available time slot.');
       } else {
-        toast.error('Failed to save schedule settings: ' + data.error);
+        throw new Error(data.error || 'Failed to save schedule settings');
       }
     } catch (error) {
       console.error('Error saving schedule settings:', error);
-      toast.error('Error saving schedule settings: ' + error.message);
+      toast.error(error.message);
     } finally {
       setSaving(false);
     }
