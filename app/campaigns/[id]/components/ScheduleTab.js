@@ -80,7 +80,7 @@ export default function ScheduleTab({
         let [hours, minutes] = time.split(':');
         if (hours === '12') hours = '00';
         if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
-        return `${hours.padStart(2, '0')}:${minutes}`;
+        return `${String(hours).padStart(2, '0')}:${minutes}`;
       };
 
       const fromTime24 = convertTo24Hour(scheduleSettings.timing.from);

@@ -38,11 +38,12 @@ export async function PUT(request, { params }) {
         saturday: scheduleData.days?.saturday ?? false,
         sunday: scheduleData.days?.sunday ?? false
       },
-      emailDelay: scheduleData.emailDelay || 5,
+      emailDelay: parseInt(scheduleData.emailDelay) || 5,
       respectHolidays: scheduleData.respectHolidays ?? true
     };
 
-    console.log('PUT /schedule - Saving schedule:', campaign.schedule);
+    console.log('PUT /schedule - Saving schedule:', JSON.stringify(campaign.schedule, null, 2));
+    console.log('PUT /schedule - emailDelay value:', scheduleData.emailDelay, 'parsed:', parseInt(scheduleData.emailDelay));
     await campaign.save();
     console.log('PUT /schedule - Schedule saved successfully');
 

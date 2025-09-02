@@ -11,7 +11,7 @@ import PreviewEmailModal from './PreviewEmailModal';
 import TemplateManagementModal from './TemplateManagementModal';
 import VariableManagementModal from './VariableManagementModal';
 import SmartTextarea from './SmartTextarea';
-import { useState } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 
 export default function SequencesTab({
@@ -29,6 +29,70 @@ export default function SequencesTab({
   const [templateManagementOpen, setTemplateManagementOpen] = useState(false);
   const [variableManagementOpen, setVariableManagementOpen] = useState(false);
   const [deleteStepDialog, setDeleteStepDialog] = useState({ open: false, stepIndex: null });
+  
+  // Use ref to store timeout IDs for debouncing
+  const saveTimeoutRef = useRef(null);
+  
+  // Debounced save function
+  const debouncedSave = useCallback(async (updatedSteps) => {
+    // Clear any existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    // Set a new timeout for saving
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        console.log('Saving steps with wait times:', updatedSteps.map(s => ({ 
+          step: s.stepNumber, 
+          waitHours: s.waitHours, 
+          waitMinutes: s.waitMinutes 
+        })));
+        
+        const response = await fetch(`/api/campaigns/${campaignId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sequence: updatedSteps })
+        });
+        
+        const data = await response.json();
+        console.log('Save response:', data);
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to save sequence');
+        }
+        
+        toast.success('Wait time saved');
+      } catch (error) {
+        console.error('Error saving sequence:', error);
+        toast.error('Failed to save wait time: ' + error.message);
+      }
+    }, 1000); // Wait 1 second after user stops typing
+  }, [campaignId]);
+
+  // Update wait hours handler
+  const handleWaitHoursChange = useCallback((stepIndex, value) => {
+    const parsedValue = parseInt(value) || 0;
+    const updatedSteps = [...steps];
+    updatedSteps[stepIndex] = { 
+      ...updatedSteps[stepIndex], 
+      waitHours: parsedValue 
+    };
+    setSteps(updatedSteps);
+    debouncedSave(updatedSteps);
+  }, [steps, setSteps, debouncedSave]);
+
+  // Update wait minutes handler  
+  const handleWaitMinutesChange = useCallback((stepIndex, value) => {
+    const parsedValue = parseInt(value) || 0;
+    const updatedSteps = [...steps];
+    updatedSteps[stepIndex] = { 
+      ...updatedSteps[stepIndex], 
+      waitMinutes: parsedValue 
+    };
+    setSteps(updatedSteps);
+    debouncedSave(updatedSteps);
+  }, [steps, setSteps, debouncedSave]);
   
   return (
     <div className="flex gap-6">
@@ -260,11 +324,7 @@ Best regards,
                     min="0"
                     max="168"
                     value={steps[editingIndex].waitHours || 0}
-                    onChange={(e) => {
-                      const copy = [...steps];
-                      copy[editingIndex] = { ...copy[editingIndex], waitHours: parseInt(e.target.value) || 0 };
-                      setSteps(copy);
-                    }}
+                    onChange={(e) => handleWaitHoursChange(editingIndex, e.target.value)}
                     className="w-20"
                   />
                   <span className="text-sm text-gray-500">hours</span>
@@ -276,11 +336,7 @@ Best regards,
                     min="0"
                     max="59"
                     value={steps[editingIndex].waitMinutes || 0}
-                    onChange={(e) => {
-                      const copy = [...steps];
-                      copy[editingIndex] = { ...copy[editingIndex], waitMinutes: parseInt(e.target.value) || 0 };
-                      setSteps(copy);
-                    }}
+                    onChange={(e) => handleWaitMinutesChange(editingIndex, e.target.value)}
                     className="w-20"
                   />
                   <span className="text-sm text-gray-500">minutes before sending</span>

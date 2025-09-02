@@ -310,6 +310,7 @@ export default function OptionsTab({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="Asia/Kolkata">India Standard Time (IST)</SelectItem>
                 <SelectItem value="UTC">UTC</SelectItem>
                 <SelectItem value="America/New_York">Eastern Time</SelectItem>
                 <SelectItem value="America/Chicago">Central Time</SelectItem>

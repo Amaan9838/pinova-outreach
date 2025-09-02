@@ -8,14 +8,20 @@ const SequenceStepSchema = new mongoose.Schema({
   template: {
     type: String,
     required: true,
+    default: ''
   },
   subject: {
     type: String,
     required: true,
+    default: ''
   },
   waitHours: {
     type: Number,
-    default: 24,
+    default: 24,  // Changed from conditional default
+  },
+  waitMinutes: {
+    type: Number,
+    default: 0,
   },
   conditions: {
     ifOpened: {
@@ -34,7 +40,8 @@ const SequenceStepSchema = new mongoose.Schema({
       default: 'stop',
     },
   },
-});
+}, { strict: false });
+
 
 const CampaignSchema = new mongoose.Schema({
   name: {
@@ -71,13 +78,13 @@ const CampaignSchema = new mongoose.Schema({
       type: Boolean,
       default: true
     },
-    dailyLimit: {
-      type: Number,
-      default: 50
-    },
     timezone: {
       type: String,
       default: 'UTC'
+    },
+    dailyLimit: {
+      type: Number,
+      default: 50
     },
     notes: {
       type: String,
@@ -239,36 +246,9 @@ const CampaignSchema = new mongoose.Schema({
         default: true,
       },
     },
-  },
-  // Campaign Options/Settings
-  options: {
-    selectedMailbox: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Mailbox',
-    },
-    trackOpens: {
-      type: Boolean,
-      default: true,
-    },
-    trackClicks: {
-      type: Boolean,
-      default: true,
-    },
-    unsubscribeLink: {
-      type: Boolean,
-      default: true,
-    },
-    dailyLimit: {
+    emailDelay: {
       type: Number,
-      default: 50,
-    },
-    timezone: {
-      type: String,
-      default: 'UTC',
-    },
-    notes: {
-      type: String,
-      default: '',
+      default: 5,
     },
   },
   settings: {
@@ -333,6 +313,7 @@ const CampaignSchema = new mongoose.Schema({
   }
 });
 
+// Pre-save middleware to ensure data consistency
 CampaignSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();

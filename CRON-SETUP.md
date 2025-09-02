@@ -12,6 +12,47 @@ The system has an endpoint `/api/cron/process-sequences` that:
 3. Sends emails according to sequence timing
 4. Updates campaign statistics
 
+## Complete Cron Job List
+
+### Primary Cron Jobs (Essential)
+
+These are the core cron jobs required for the system to function properly:
+
+```bash
+# Main sequence processor - Every 15 minutes
+https://yourdomain.com/api/cron/process-sequences
+
+# Reply checker - Every 30 minutes
+https://yourdomain.com/api/cron/check-replies
+
+# Schedule processor - Every 15 minutes
+https://yourdomain.com/api/cron/process-schedules
+```
+
+### Follow-up Cron Jobs (If using follow-ups)
+
+```bash
+# Follow-up processor - Every 2 hours
+https://yourdomain.com/api/cron/process-followups
+```
+
+### Recommended Cron Schedule
+
+For cPanel or server-based cron setup, use these exact commands:
+
+```bash
+# cPanel/Server cron format:
+*/15 * * * * curl -s https://yourdomain.com/api/cron/process-sequences
+*/15 * * * * curl -s https://yourdomain.com/api/cron/process-schedules
+*/30 * * * * curl -s https://yourdomain.com/api/cron/check-replies
+0 */2 * * * curl -s https://yourdomain.com/api/cron/process-followups
+```
+
+**Schedule Explanation:**
+- `*/15 * * * *` = Every 15 minutes
+- `*/30 * * * *` = Every 30 minutes
+- `0 */2 * * *` = Every 2 hours (at minute 0)
+
 ## Setup Options
 
 ### Option 1: Manual Triggering (For Testing)

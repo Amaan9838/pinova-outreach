@@ -44,6 +44,8 @@ export async function PATCH(request, { params }) {
     const { id } = params;
     const updates = await request.json();
     
+    // console.log('PATCH request received:', updates);
+    
     const campaign = await Campaign.findById(id);
     if (!campaign) {
       return Response.json(
@@ -52,39 +54,93 @@ export async function PATCH(request, { params }) {
       );
     }
 
-    // Update allowed fields
+    // Handle sequence updates with proper data validation
     if (updates.sequence) {
-      campaign.sequence = updates.sequence;
+      // console.log('Updating sequence with data:', updates.sequence);
+      
+     // Process and validate sequence data
+const processedSequence = updates.sequence.map((step, index) => {
+  const stepNumber = parseInt(step.stepNumber) || (index + 1);
+  return {
+    ...(step._id && { _id: step._id }), // Preserve existing _id if it exists
+    stepNumber: stepNumber,
+    template: step.template || '',
+    subject: step.subject || '',
+    waitHours: stepNumber === 1 ? 0 : (parseInt(step.waitHours) || 0),
+    waitMinutes: stepNumber === 1 ? 0 : (parseInt(step.waitMinutes) || 0),
+    conditions: {
+      ifOpened: step.conditions?.ifOpened || 'continue',
+      ifReplied: step.conditions?.ifReplied || 'stop',
+      ifBounced: step.conditions?.ifBounced || 'stop'
     }
+  };
+});
+
+// Instead of assigning the array, update each step individually
+campaign.sequence = processedSequence;
+campaign.markModified('sequence'); // Force Mongoose to save the array
+      
+// console.log('Processed sequence:', processedSequence);
+      // campaign.sequence = processedSequence;
+    }
+    
+    // Update other campaign fields
     if (updates.name) campaign.name = updates.name;
     if (updates.description !== undefined) campaign.description = updates.description;
     if (updates.persona) campaign.persona = updates.persona;
     if (updates.goal) campaign.goal = updates.goal;
+    
+    // Handle settings updates
     if (updates.settings) {
-      campaign.settings = { ...campaign.settings, ...updates.settings };
+      campaign.settings = { ...campaign.settings.toObject(), ...updates.settings };
     }
     
-    // Handle mailbox and other option settings
-    if (updates.selectedMailbox !== undefined) campaign.mailbox = updates.selectedMailbox;
-    if (updates.trackOpens !== undefined) campaign.trackOpens = updates.trackOpens;
-    if (updates.trackClicks !== undefined) campaign.trackClicks = updates.trackClicks;
-    if (updates.unsubscribeLink !== undefined) campaign.unsubscribeLink = updates.unsubscribeLink;
-    if (updates.dailyLimit !== undefined) campaign.dailyLimit = updates.dailyLimit;
-    if (updates.timezone !== undefined) campaign.timezone = updates.timezone;
-    if (updates.notes !== undefined) campaign.notes = updates.notes;
+    // Handle options updates - check if options object exists first
+    if (!campaign.options) {
+      campaign.options = {};
+    }
+    
+    if (updates.selectedMailbox !== undefined) {
+      campaign.options.selectedMailbox = updates.selectedMailbox;
+    }
+    if (updates.trackOpens !== undefined) {
+      campaign.options.trackOpens = updates.trackOpens;
+    }
+    if (updates.trackClicks !== undefined) {
+      campaign.options.trackClicks = updates.trackClicks;
+    }
+    if (updates.unsubscribeLink !== undefined) {
+      campaign.options.unsubscribeLink = updates.unsubscribeLink;
+    }
+    if (updates.dailyLimit !== undefined) {
+      campaign.options.dailyLimit = updates.dailyLimit;
+    }
+    if (updates.timezone !== undefined) {
+      campaign.options.timezone = updates.timezone;
+    }
+    if (updates.notes !== undefined) {
+      campaign.options.notes = updates.notes;
+    }
 
+    // Update timestamp
     campaign.updatedAt = new Date();
-    await campaign.save();
+    
+    // console.log('About to save campaign with sequence:', JSON.stringify(campaign.sequence, null, 2));
+
+    // Save with validation
+    const savedCampaign = await campaign.save();
+    // console.log('After save - checking database:', JSON.stringify(savedCampaign.sequence, null, 2));
 
     return Response.json({
       success: true,
-      campaign
+      campaign: savedCampaign
     });
 
   } catch (error) {
     console.error('Update campaign error:', error);
+    console.error('Error stack:', error.stack);
     return Response.json(
-      { success: false, error: 'Failed to update campaign' },
+      { success: false, error: 'Failed to update campaign: ' + error.message },
       { status: 500 }
     );
   }
