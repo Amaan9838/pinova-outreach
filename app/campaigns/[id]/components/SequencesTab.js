@@ -4,6 +4,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import RichTextEditor from './RichTextEditor';
+import SmartInput from './SmartInput';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import PreviewEmailModal from './PreviewEmailModal';
 import TemplateManagementModal from './TemplateManagementModal';
@@ -51,24 +53,45 @@ export default function SequencesTab({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation();
-                    setEditingIndex(index);
-                  }}>
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingIndex(index);
+                    }}
+                  >
                     Edit
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation();
-                    const copy = [...steps];
-                    const newStep = { 
-                      ...copy[index], 
-                      stepNumber: steps.length + 1 
-                    };
-                    copy.splice(index + 1, 0, newStep);
-                    const renum = copy.map((s, i) => ({ ...s, stepNumber: i + 1 }));
-                    setSteps(renum);
-                    saveSequence(renum);
-                  }}>
+                  <DropdownMenuItem
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      const copy = [...steps];
+                      const newStep = { 
+                        ...copy[index], 
+                        stepNumber: steps.length + 1 
+                      };
+                      copy.splice(index + 1, 0, newStep);
+                      const renum = copy.map((s, i) => ({ ...s, stepNumber: i + 1 }));
+                      setSteps(renum);
+                      
+                      // Save immediately to database
+                      try {
+                        const response = await fetch(`/api/campaigns/${campaignId}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ sequence: renum })
+                        });
+                        
+                        if (!response.ok) {
+                          throw new Error('Failed to save sequence');
+                        }
+                        
+                        toast.success('Step duplicated successfully');
+                      } catch (error) {
+                        console.error('Error saving sequence:', error);
+                        toast.error('Failed to save duplicated step');
+                      }
+                    }}
+                  >
                     Duplicate
                   </DropdownMenuItem>
                   <DropdownMenuItem 
@@ -115,7 +138,7 @@ export default function SequencesTab({
         
         {/* Add Step Button */}
         <button
-          onClick={() => {
+          onClick={async () => {
             const newStep = {
               stepNumber: steps.length + 1,
               subject: steps.length > 0 ? `Re: ${steps[0].subject || 'Follow-up'}` : '',
@@ -127,7 +150,24 @@ export default function SequencesTab({
             const copy = [...steps, newStep];
             setSteps(copy);
             setEditingIndex(steps.length);
-            saveSequence(copy);
+            
+            // Save immediately to database
+            try {
+              const response = await fetch(`/api/campaigns/${campaignId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sequence: copy })
+              });
+              
+              if (!response.ok) {
+                throw new Error('Failed to save sequence');
+              }
+              
+              toast.success('Step added successfully');
+            } catch (error) {
+              console.error('Error saving sequence:', error);
+              toast.error('Failed to save sequence step');
+            }
           }}
           className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors flex items-center justify-center gap-2"
         >
@@ -143,18 +183,36 @@ export default function SequencesTab({
             {/* Header */}
             <div className="border-b p-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-500">Subject</span>
-                  <Input
-                    value={steps[editingIndex].subject}
-                    onChange={(e) => {
-                      const copy = [...steps];
-                      copy[editingIndex] = { ...copy[editingIndex], subject: e.target.value };
-                      setSteps(copy);
-                    }}
-                    placeholder={editingIndex > 0 ? `Re: ${steps[0]?.subject || 'Follow-up'}` : "Enter your initial email subject line..."}
-                    className="max-w-md"
-                  />
+                <div className="flex-1">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Subject Line</label>
+                    <SmartInput
+                      value={steps[editingIndex].subject}
+                      onChange={(e) => {
+                        const copy = [...steps];
+                        copy[editingIndex] = { ...copy[editingIndex], subject: e.target.value };
+                        setSteps(copy);
+                      }}
+                      onBlur={async () => {
+                        // Auto-save on blur
+                        try {
+                          const response = await fetch(`/api/campaigns/${campaignId}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ sequence: steps })
+                          });
+                          
+                          if (!response.ok) {
+                            throw new Error('Failed to save sequence');
+                          }
+                        } catch (error) {
+                          console.error('Error auto-saving sequence:', error);
+                        }
+                      }}
+                      placeholder={editingIndex > 0 ? `Re: ${steps[0]?.subject || 'Follow-up'}` : "Enter your initial email subject line..."}
+                      className="text-base"
+                    />
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => setTestEmailModalOpen(true)}>
@@ -169,20 +227,27 @@ export default function SequencesTab({
 
             {/* Email Content Editor */}
             <div className="p-4">
-              <div className="bg-white border rounded-lg min-h-96">
-                <div className="p-4">
-                  <SmartTextarea
-                    className="w-full h-80"
-                    value={steps[editingIndex].template}
-                    onChange={(e) => {
-                      const copy = [...steps];
-                      copy[editingIndex] = { ...copy[editingIndex], template: e.target.value };
-                      setSteps(copy);
-                    }}
-                    placeholder="Write your email content here... Type { to see variable suggestions"
-                  />
-                </div>
+              <div className="space-y-2 mb-4">
+                <label className="text-sm font-medium text-gray-700">Email Content</label>
+                <p className="text-xs text-gray-500">Type {'{{variable}}'} to insert variables, select text and use toolbar for formatting</p>
               </div>
+              <RichTextEditor
+                className="w-full"
+                value={steps[editingIndex].template}
+                onChange={(value) => {
+                  const copy = [...steps];
+                  copy[editingIndex] = { ...copy[editingIndex], template: value };
+                  setSteps(copy);
+                }}
+                placeholder={`Write your email content here...
+
+Hi {{firstName}},
+
+I hope this email finds you well...
+
+Best regards,
+[Your name]`}
+              />
             </div>
 
             {/* Wait Time - Only show for follow-up steps */}
@@ -298,14 +363,30 @@ export default function SequencesTab({
             </Button>
             <Button 
               variant="destructive" 
-              onClick={() => {
+              onClick={async () => {
                 const index = deleteStepDialog.stepIndex;
                 if (index !== null) {
                   const copy = steps.filter((_, i) => i !== index).map((s, i) => ({ ...s, stepNumber: i + 1 }));
                   setSteps(copy);
                   if (editingIndex === index) setEditingIndex(null);
-                  saveSequence(copy);
-                  toast.success("Step deleted successfully");
+                  
+                  // Save immediately to database
+                  try {
+                    const response = await fetch(`/api/campaigns/${campaignId}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ sequence: copy })
+                    });
+                    
+                    if (!response.ok) {
+                      throw new Error('Failed to save sequence');
+                    }
+                    
+                    toast.success("Step deleted successfully");
+                  } catch (error) {
+                    console.error('Error saving sequence:', error);
+                    toast.error('Failed to delete step');
+                  }
                 }
                 setDeleteStepDialog({ open: false, stepIndex: null });
               }}

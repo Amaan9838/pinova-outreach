@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, Plus } from 'lucide-react';
+import { Calendar, Plus, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ScheduleTab({
@@ -16,45 +16,75 @@ export default function ScheduleTab({
   saveScheduleSettings,
 }) {
   const [saving, setSaving] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [timezone, setTimezone] = useState('Asia/Kolkata'); // Default IST
 
-  // Load schedule settings on component mount
+  // Load schedule settings and timezone on component mount
   useEffect(() => {
     const loadScheduleSettings = async () => {
       try {
-        console.log('Loading schedule settings for campaign:', campaign._id);
         const response = await fetch(`/api/campaigns/${campaign._id}/schedule`);
-        console.log('Schedule API response status:', response.status);
         
         if (response.ok) {
           const data = await response.json();
-          console.log('Schedule API response data:', data);
           
           if (data.success && data.schedule) {
-            console.log('Setting schedule settings:', data.schedule);
             setScheduleSettings(data.schedule);
-          } else {
-            console.log('No schedule settings found, using defaults');
           }
-        } else {
-          console.error('Schedule API response not ok:', response.statusText);
         }
       } catch (error) {
         console.error('Failed to load schedule settings:', error);
       }
     };
 
+    const loadTimezone = async () => {
+      try {
+        const response = await fetch(`/api/campaigns/${campaign._id}/options`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.options?.timezone) {
+            setTimezone(data.options.timezone);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load timezone:', error);
+      }
+    };
+
     if (campaign?._id) {
       loadScheduleSettings();
+      loadTimezone();
     }
   }, [campaign?._id, setScheduleSettings]);
+
+  // Update current time every minute
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const handleSaveSchedule = async () => {
     setSaving(true);
     try {
       // Validate schedule settings
-      const currentTime = new Date();
-      const fromTime = new Date(`1970-01-01T${scheduleSettings.timing.from}`);
-      const toTime = new Date(`1970-01-01T${scheduleSettings.timing.to}`);
+      if (!scheduleSettings.timing?.from || !scheduleSettings.timing?.to) {
+        throw new Error('Please set both start and end times');
+      }
+
+      // Convert 12-hour format to 24-hour for comparison
+      const convertTo24Hour = (time12h) => {
+        const [time, modifier] = time12h.split(' ');
+        let [hours, minutes] = time.split(':');
+        if (hours === '12') hours = '00';
+        if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+        return `${hours.padStart(2, '0')}:${minutes}`;
+      };
+
+      const fromTime24 = convertTo24Hour(scheduleSettings.timing.from);
+      const toTime24 = convertTo24Hour(scheduleSettings.timing.to);
       
       // Ensure at least one day is selected
       const hasSelectedDays = Object.values(scheduleSettings.days).some(day => day);
@@ -63,8 +93,13 @@ export default function ScheduleTab({
       }
 
       // Ensure "from" time is before "to" time
-      if (fromTime >= toTime) {
+      if (fromTime24 >= toTime24) {
         throw new Error('Start time must be before end time');
+      }
+
+      // Validate email delay
+      if (!scheduleSettings.emailDelay || scheduleSettings.emailDelay < 1 || scheduleSettings.emailDelay > 60) {
+        throw new Error('Email delay must be between 1 and 60 minutes');
       }
 
       const response = await fetch(`/api/campaigns/${campaign._id}/schedule`, {
@@ -72,8 +107,8 @@ export default function ScheduleTab({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...scheduleSettings,
-          initialStartTime: currentTime.toISOString(), // Track when schedule was set
-          nextScheduledTime: null, // Will be calculated by the scheduler
+          initialStartTime: new Date().toISOString(),
+          nextScheduledTime: null,
           lastProcessedTime: null
         })
       });
@@ -93,6 +128,30 @@ export default function ScheduleTab({
       setSaving(false);
     }
   };
+  // Format current time based on timezone
+  const formatCurrentTime = () => {
+    try {
+      return currentTime.toLocaleString('en-US', {
+        timeZone: timezone,
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return currentTime.toLocaleString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+  };
+
   const [schedules] = useState([
     { id: 1, name: 'New schedule', active: true }
   ]);
@@ -121,6 +180,20 @@ export default function ScheduleTab({
     <div className="flex gap-6">
       {/* Left Sidebar - Schedule List */}
       <div className="w-80 space-y-4">
+        {/* Current Time Display */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <Clock className="h-5 w-5 text-blue-600" />
+            <div className="flex-1">
+              <div className="text-sm font-medium text-gray-900">Current Time</div>
+              <div className="text-sm text-blue-600 font-medium">{formatCurrentTime()}</div>
+              <div className="text-xs text-gray-500 mt-1">
+                {timezone === 'Asia/Kolkata' ? 'IST (UTC+05:30)' : timezone}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Start/End Section */}
         <div className="space-y-4">
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
@@ -230,9 +303,17 @@ export default function ScheduleTab({
               </Select>
             </div>
 
-            {/* Note: Timezone moved to Options tab */}
+            {/* Timezone Info */}
             <div className="space-y-2">
-              <p className="text-sm text-gray-500 italic">Timezone settings are configured in the Options tab</p>
+              <label className="text-sm font-medium text-gray-600">Timezone</label>
+              <div className="p-2 bg-gray-50 rounded border">
+                <p className="text-sm text-gray-700">
+                  {timezone === 'Asia/Kolkata' ? 'India Standard Time (IST)' : timezone}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Configure timezone in the Options tab
+                </p>
+              </div>
             </div>
           </div>
         </div>
