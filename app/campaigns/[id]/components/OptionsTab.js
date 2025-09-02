@@ -32,9 +32,7 @@ export default function OptionsTab({
     // Follow-up settings
     followUpEnabled: false,
     stopOnReply: true,
-    stopOnOpen: false,
-    maxFollowUps: 3,
-    followUpDelay: 3
+    stopOnOpen: false
   });
   const [saving, setSaving] = useState(false);
 
@@ -57,9 +55,7 @@ export default function OptionsTab({
         // Follow-up settings from campaign
         followUpEnabled: campaign.followUpSettings?.enabled ?? false,
         stopOnReply: campaign.followUpSettings?.stopOnReply ?? true,
-        stopOnOpen: campaign.followUpSettings?.stopOnOpen ?? false,
-        maxFollowUps: campaign.followUpSettings?.maxFollowUps || 3,
-        followUpDelay: campaign.followUpSettings?.followUpDelay || 3
+        stopOnOpen: campaign.followUpSettings?.stopOnOpen ?? false
       });
     }
   }, [campaign?._id, campaign?.options, campaign?.mailbox]);
@@ -131,9 +127,7 @@ export default function OptionsTab({
           followUpSettings: {
             enabled: settings.followUpEnabled,
             stopOnReply: settings.stopOnReply,
-            stopOnOpen: settings.stopOnOpen,
-            maxFollowUps: parseInt(settings.maxFollowUps) || 3,
-            followUpDelay: parseInt(settings.followUpDelay) || 3
+            stopOnOpen: settings.stopOnOpen
           }
         })
       });
@@ -158,9 +152,7 @@ export default function OptionsTab({
             // Follow-up settings from response
             followUpEnabled: data.followUpSettings?.enabled ?? false,
             stopOnReply: data.followUpSettings?.stopOnReply ?? true,
-            stopOnOpen: data.followUpSettings?.stopOnOpen ?? false,
-            maxFollowUps: data.followUpSettings?.maxFollowUps || 3,
-            followUpDelay: data.followUpSettings?.followUpDelay || 3
+            stopOnOpen: data.followUpSettings?.stopOnOpen ?? false
           });
         }
         toast.success('Campaign options saved successfully!', {
@@ -389,34 +381,12 @@ export default function OptionsTab({
 
             {settings.followUpEnabled && (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="maxFollowUps">Max Follow-ups</Label>
-                    <Input
-                      id="maxFollowUps"
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={settings.maxFollowUps}
-                      onChange={(e) => setSettings(prev => ({ ...prev, maxFollowUps: parseInt(e.target.value) || 3 }))}
-                      className="w-24"
-                    />
-                    <p className="text-xs text-gray-500">Maximum number of follow-up emails</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="followUpDelay">Default Delay (days)</Label>
-                    <Input
-                      id="followUpDelay"
-                      type="number"
-                      min="1"
-                      max="30"
-                      value={settings.followUpDelay}
-                      onChange={(e) => setSettings(prev => ({ ...prev, followUpDelay: parseInt(e.target.value) || 3 }))}
-                      className="w-24"
-                    />
-                    <p className="text-xs text-gray-500">Days to wait before follow-up</p>
-                  </div>
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800 font-medium mb-1">Follow-up Configuration</p>
+                  <p className="text-xs text-blue-600">
+                    Follow-up timing and number of emails are controlled by your <strong>Sequence steps</strong>. 
+                    Create additional steps in the Sequences tab to add more follow-ups with custom delays.
+                  </p>
                 </div>
 
                 <div className="space-y-3">

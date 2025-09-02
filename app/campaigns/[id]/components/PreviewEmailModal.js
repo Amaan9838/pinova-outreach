@@ -25,6 +25,8 @@ export default function TestEmailModal({
   });
   const [availableMailboxes, setAvailableMailboxes] = useState([]);
   const [availableLeads, setAvailableLeads] = useState([]);
+  const [loadingLeads, setLoadingLeads] = useState(false);
+  const [loadingMailboxes, setLoadingMailboxes] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Fetch mailboxes and leads when modal opens
@@ -36,28 +38,48 @@ export default function TestEmailModal({
   }, [isOpen, campaignId]);
 
   const fetchMailboxes = async () => {
+    setLoadingMailboxes(true);
     try {
+      console.log('Fetching mailboxes...');
       const response = await fetch('/api/mailboxes');
       const data = await response.json();
+      console.log('Mailboxes response:', data);
+      
       if (data.success) {
         setAvailableMailboxes(data.mailboxes || []);
+        console.log('Set mailboxes:', data.mailboxes?.length || 0);
+      } else {
+        console.error('Mailboxes API error:', data.error);
+        toast.error('Failed to load mailboxes: ' + data.error);
       }
     } catch (error) {
       console.error('Failed to fetch mailboxes:', error);
-      toast.error('Error: ' + error.message);
+      toast.error('Error fetching mailboxes: ' + error.message);
+    } finally {
+      setLoadingMailboxes(false);
     }
   };
 
   const fetchLeads = async () => {
+    setLoadingLeads(true);
     try {
+      console.log('Fetching leads for campaign:', campaignId);
       const response = await fetch(`/api/campaigns/${campaignId}/prospects`);
       const data = await response.json();
+      console.log('Leads response:', data);
+      
       if (data.success) {
         setAvailableLeads(data.prospects || []);
+        console.log('Set leads:', data.prospects?.length || 0);
+      } else {
+        console.error('Leads API error:', data.error);
+        toast.error('Failed to load leads: ' + data.error);
       }
     } catch (error) {
       console.error('Failed to fetch leads:', error);
       toast.error('Error fetching leads: ' + error.message);
+    } finally {
+      setLoadingLeads(false);
     }
   };
 
@@ -115,7 +137,7 @@ export default function TestEmailModal({
         body: JSON.stringify({
           testEmail: testEmailSettings.testEmail,
           stepNumber: steps[editingIndex].stepNumber,
-          sendFrom: testEmailSettings.sendFrom,
+          mailboxId: testEmailSettings.sendFrom,
           leadData: testEmailSettings.selectedLead,
           subject: replaceVariables(steps[editingIndex].subject, testEmailSettings.selectedLead),
           content: replaceVariables(steps[editingIndex].template, testEmailSettings.selectedLead)
@@ -165,12 +187,16 @@ export default function TestEmailModal({
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {availableMailboxes.length > 0 ? (
+                    {loadingMailboxes ? (
+                      <SelectItem value="loading" disabled>
+                        Loading mailboxes...
+                      </SelectItem>
+                    ) : availableMailboxes.length > 0 ? (
                       availableMailboxes.map((mailbox) => (
-                        <SelectItem key={mailbox._id || mailbox.id} value={mailbox.email}>
+                        <SelectItem key={mailbox._id || mailbox.id} value={mailbox._id}>
                           <div className="flex flex-col">
-                            <span className="font-medium">{mailbox.email}</span>
-                            <span className="text-xs text-gray-500">{mailbox.name || 'Default'}</span>
+                            <span className="font-medium">{mailbox.fromEmail}</span>
+                            <span className="text-xs text-gray-500">{mailbox.fromName || 'Default'}</span>
                           </div>
                         </SelectItem>
                       ))
@@ -197,7 +223,11 @@ export default function TestEmailModal({
                     <SelectValue placeholder="Select a lead..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {availableLeads.length > 0 ? (
+                    {loadingLeads ? (
+                      <SelectItem value="loading" disabled>
+                        Loading leads...
+                      </SelectItem>
+                    ) : availableLeads.length > 0 ? (
                       availableLeads.map((lead, index) => (
                         <SelectItem key={lead._id || index} value={(lead._id || index)?.toString()}>
                           <div className="flex flex-col">
@@ -299,7 +329,10 @@ export default function TestEmailModal({
                 <div>
                   <span className="text-sm text-gray-500">From:</span>
                   <span className="ml-2 text-sm text-gray-900">
-                    {testEmailSettings.sendFrom || 'No sender selected'}
+                    {(() => {
+                      const selectedMailbox = availableMailboxes.find(m => m._id === testEmailSettings.sendFrom);
+                      return selectedMailbox ? `${selectedMailbox.fromName} <${selectedMailbox.fromEmail}>` : 'No sender selected';
+                    })()}
                   </span>
                 </div>
                 <div>

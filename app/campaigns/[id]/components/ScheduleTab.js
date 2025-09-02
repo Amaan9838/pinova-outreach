@@ -217,27 +217,9 @@ export default function ScheduleTab({
               </Select>
             </div>
 
-            {/* Timezone */}
+            {/* Note: Timezone moved to Options tab */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Timezone</label>
-              <Select 
-                value={scheduleSettings.timing.timezone}
-                onValueChange={(value) => 
-                  setScheduleSettings(prev => ({
-                    ...prev,
-                    timing: { ...prev.timing, timezone: value }
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {timezones.map((tz) => (
-                    <SelectItem key={tz} value={tz}>{tz}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <p className="text-sm text-gray-500 italic">Timezone settings are configured in the Options tab</p>
             </div>
           </div>
         </div>
@@ -282,55 +264,31 @@ export default function ScheduleTab({
         <div className="space-y-4 pt-6 border-t">
           <h3 className="text-lg font-medium text-gray-900">Additional Settings</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Daily Email Limit</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-600">Delay Between Emails</label>
+            <div className="flex items-center gap-2">
               <Input
                 type="number"
                 min="1"
-                max="1000"
-                value={campaign?.settings?.dailyLimit || 50}
-                className="max-w-32"
-                placeholder="50"
+                max="60"
+                value={scheduleSettings.emailDelay || 5}
+                onChange={(e) => setScheduleSettings(prev => ({ ...prev, emailDelay: parseInt(e.target.value) || 5 }))}
+                className="max-w-20"
               />
-              <p className="text-xs text-gray-500">Maximum emails to send per day</p>
+              <span className="text-sm text-gray-500">minutes</span>
             </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Delay Between Emails</label>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  min="1"
-                  max="60"
-                  defaultValue={5}
-                  className="max-w-20"
-                />
-                <span className="text-sm text-gray-500">minutes</span>
-              </div>
-              <p className="text-xs text-gray-500">Time to wait between each email</p>
-            </div>
+            <p className="text-xs text-gray-500">Time to wait between each email</p>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center space-x-2">
-              <Checkbox id="respect-holidays" defaultChecked />
+              <Checkbox 
+                id="respect-holidays" 
+                checked={scheduleSettings.respectHolidays || false}
+                onCheckedChange={(checked) => setScheduleSettings(prev => ({ ...prev, respectHolidays: checked }))}
+              />
               <label htmlFor="respect-holidays" className="text-sm font-medium text-gray-900">
                 Respect holidays and weekends
-              </label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Checkbox id="auto-pause" defaultChecked />
-              <label htmlFor="auto-pause" className="text-sm font-medium text-gray-900">
-                Auto-pause on replies
-              </label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Checkbox id="track-opens" defaultChecked />
-              <label htmlFor="track-opens" className="text-sm font-medium text-gray-900">
-                Track email opens
               </label>
             </div>
           </div>

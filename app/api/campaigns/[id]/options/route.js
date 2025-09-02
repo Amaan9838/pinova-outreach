@@ -69,8 +69,6 @@ export async function PUT(request, { params }) {
         campaign.followUpSettings.enabled = followUpSettings.enabled ?? campaign.followUpSettings.enabled ?? false;
         campaign.followUpSettings.stopOnReply = followUpSettings.stopOnReply ?? campaign.followUpSettings.stopOnReply ?? true;
         campaign.followUpSettings.stopOnOpen = followUpSettings.stopOnOpen ?? campaign.followUpSettings.stopOnOpen ?? false;
-        campaign.followUpSettings.maxFollowUps = parseInt(followUpSettings.maxFollowUps) || campaign.followUpSettings.maxFollowUps || 3;
-        campaign.followUpSettings.followUpDelay = parseInt(followUpSettings.followUpDelay) || campaign.followUpSettings.followUpDelay || 3;
         
         // Mark the followUpSettings field as modified for Mongoose
         campaign.markModified('followUpSettings');
@@ -159,9 +157,7 @@ export async function GET(request, { params }) {
     const followUpSettings = campaign.followUpSettings || {
       enabled: false,
       stopOnReply: true,
-      stopOnOpen: false,
-      maxFollowUps: 3,
-      followUpDelay: 3
+      stopOnOpen: false
     };
 
     console.log('GET /options - Returning options:', options);

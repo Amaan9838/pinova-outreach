@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongodb';
-import Campaign from '@/models/Campaign';
-import Message from '@/models/Message';
-import { sendEmail } from '@/lib/email-service';
+import dbConnect from '../../../../lib/mongodb.js';
+import Campaign from '../../../../models/Campaign.js';
+import Message from '../../../../models/Message.js';
+import { SMTPService } from '../../../../lib/smtp.js';
 
 export async function GET() {
   try {
-    await connectDB();
+    await dbConnect();
     
     const now = new Date();
     const currentHour = now.getHours();
@@ -106,15 +106,21 @@ export async function GET() {
           
           await message.save();
           
-          // Send email (implement your email service)
+          // Send email using SMTP service
           try {
-            await sendEmail({
+            const result = await SMTPService.sendEmail({
+              mailbox: campaign.options?.selectedMailbox,
               to: prospect.email,
               subject,
-              content,
-              campaignId: campaign._id,
+              html: content,
+              text: content,
+              trackingId: `campaign-${campaign._id}-${message._id}`,
               messageId: message._id
             });
+            
+            if (!result.success) {
+              throw new Error(result.error || 'Failed to send email');
+            }
             
             message.status = 'sent';
             message.sentAt = now;

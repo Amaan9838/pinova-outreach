@@ -41,7 +41,7 @@ export async function POST(request, { params }) {
     await dbConnect();
     
     const { id } = params;
-    const { testEmail, stepNumber = 1 } = await request.json();
+    const { testEmail, stepNumber = 1, mailboxId, leadData, subject, content } = await request.json();
     
     if (!testEmail) {
       return NextResponse.json(
@@ -68,16 +68,17 @@ export async function POST(request, { params }) {
       );
     }
 
-    // Get the selected mailbox from campaign options
-    if (!campaign.options?.selectedMailbox) {
+    // Use provided mailboxId or fall back to campaign options
+    const selectedMailboxId = mailboxId || campaign.options?.selectedMailbox;
+    if (!selectedMailboxId) {
       return NextResponse.json(
-        { success: false, error: 'No mailbox selected for this campaign. Please select a mailbox in campaign options.' },
+        { success: false, error: 'No mailbox selected. Please select a mailbox.' },
         { status: 400 }
       );
     }
 
     // Fetch and verify the mailbox
-    const mailbox = await Mailbox.findById(campaign.options.selectedMailbox);
+    const mailbox = await Mailbox.findById(selectedMailboxId);
     if (!mailbox) {
       return NextResponse.json(
         { success: false, error: 'Selected mailbox not found' },
@@ -92,8 +93,8 @@ export async function POST(request, { params }) {
       );
     }
 
-    // Create test prospect data for personalization
-    const testProspect = {
+    // Use provided lead data or create test prospect data for personalization
+    const testProspect = leadData || {
       firstName: 'John',
       lastName: 'Doe', 
       email: testEmail,
@@ -104,9 +105,9 @@ export async function POST(request, { params }) {
     };
 
     try {
-      // Personalize content
-      const personalizedSubject = personalizeContent(step.subject, testProspect, campaign);
-      let personalizedTemplate = personalizeContent(step.template, testProspect, campaign);
+      // Use provided content or personalize step content
+      const personalizedSubject = subject || personalizeContent(step.subject, testProspect, campaign);
+      let personalizedTemplate = content || personalizeContent(step.template, testProspect, campaign);
       
       // Replace placeholder [Your name] with actual sender name
       personalizedTemplate = personalizedTemplate.replace(/\[Your name\]/g, mailbox.fromName);

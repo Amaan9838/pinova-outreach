@@ -22,15 +22,12 @@ export async function PUT(request, { params }) {
 
     console.log('PUT /schedule - Found campaign:', campaign.name);
 
-    // Update campaign schedule settings
+    // Update campaign schedule settings - simplified to avoid duplication with options
     campaign.schedule = {
       name: scheduleData.name || 'New schedule',
-      startDate: scheduleData.startDate || 'now',
-      endDate: scheduleData.endDate || 'no-end',
       timing: {
         from: scheduleData.timing?.from || '9:00 AM',
-        to: scheduleData.timing?.to || '6:00 PM',
-        timezone: scheduleData.timing?.timezone || 'Eastern Time (US & Canada) (UTC-04:00)'
+        to: scheduleData.timing?.to || '6:00 PM'
       },
       days: {
         monday: scheduleData.days?.monday ?? true,
@@ -41,13 +38,8 @@ export async function PUT(request, { params }) {
         saturday: scheduleData.days?.saturday ?? false,
         sunday: scheduleData.days?.sunday ?? false
       },
-      settings: {
-        dailyLimit: scheduleData.settings?.dailyLimit || 50,
-        delayBetweenEmails: scheduleData.settings?.delayBetweenEmails || 5,
-        respectHolidays: scheduleData.settings?.respectHolidays ?? true,
-        autoPauseOnReplies: scheduleData.settings?.autoPauseOnReplies ?? true,
-        trackOpens: scheduleData.settings?.trackOpens ?? true
-      }
+      emailDelay: scheduleData.emailDelay || 5,
+      respectHolidays: scheduleData.respectHolidays ?? true
     };
 
     console.log('PUT /schedule - Saving schedule:', campaign.schedule);
@@ -87,12 +79,9 @@ export async function GET(request, { params }) {
       success: true,
       schedule: campaign.schedule || {
         name: 'New schedule',
-        startDate: 'now',
-        endDate: 'no-end',
         timing: {
           from: '9:00 AM',
-          to: '6:00 PM',
-          timezone: 'Eastern Time (US & Canada) (UTC-04:00)'
+          to: '6:00 PM'
         },
         days: {
           monday: true,
@@ -103,13 +92,8 @@ export async function GET(request, { params }) {
           saturday: false,
           sunday: false
         },
-        settings: {
-          dailyLimit: 50,
-          delayBetweenEmails: 5,
-          respectHolidays: true,
-          autoPauseOnReplies: true,
-          trackOpens: true
-        }
+        emailDelay: 5,
+        respectHolidays: true
       }
     });
 
