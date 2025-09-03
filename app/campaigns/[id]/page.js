@@ -88,8 +88,19 @@ export default function CampaignDetailsPage({ params }) {
         // Calculate message counts
         const sent = data.messages.filter(m => m.status === 'sent' || m.status === 'delivered' || m.status === 'opened' || m.status === 'replied').length;
         const delivered = data.messages.filter(m => m.status === 'delivered' || m.status === 'opened' || m.status === 'replied').length;
-        const opened = data.messages.filter(m => m.status === 'opened' || m.status === 'replied').length;
-        const replied = data.messages.filter(m => m.status === 'replied').length;
+        
+        // Fix open rate calculation - check openedAt field or events array for opens
+        const opened = data.messages.filter(m => 
+          m.openedAt || 
+          (m.events && m.events.some(event => event.type === 'opened')) ||
+          m.status === 'replied' // replied implies opened
+        ).length;
+        
+        // Fix reply rate calculation - check events array for replies
+        const replied = data.messages.filter(m => 
+          (m.events && m.events.some(event => event.type === 'replied')) ||
+          m.status === 'replied'
+        ).length;
         
         setSentCount(sent);
         setDeliveredCount(delivered);
