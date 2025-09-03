@@ -198,6 +198,24 @@ export default function CampaignDetailsPage({ params }) {
     }
   };
 
+  const startCampaign = async () => {
+    try {
+      const response = await fetch(`/api/campaigns/${params.id}/start`, {
+        method: 'POST'
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert('✅ Campaign started successfully!');
+        fetchCampaignDetails();
+      } else {
+        alert('❌ Failed to start campaign: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Failed to start campaign:', error);
+      alert('❌ Failed to start campaign');
+    }
+  };
+
   const rescheduleNow = async () => {
     try {
       const response = await fetch(`/api/campaigns/${params.id}/reschedule`, {
@@ -292,6 +310,7 @@ export default function CampaignDetailsPage({ params }) {
         processSequencesManually={processSequencesManually}
         pauseCampaign={pauseCampaign}
         resumeCampaign={resumeCampaign}
+        startCampaign={startCampaign}
         deleteCampaign={() => setDeleteCampaignDialog(true)}
       />
 
@@ -384,6 +403,7 @@ export default function CampaignDetailsPage({ params }) {
             processSequencesManually={processSequencesManually}
             pauseCampaign={pauseCampaign}
             resumeCampaign={resumeCampaign}
+            startCampaign={startCampaign}
             deleteCampaign={() => setDeleteCampaignDialog(true)}
           />
         </TabsContent>

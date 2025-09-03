@@ -13,6 +13,7 @@ export default function Header({
   processSequencesManually,
   pauseCampaign,
   resumeCampaign,
+  startCampaign,
   deleteCampaign,
 }) {
   const router = useRouter();
@@ -113,6 +114,18 @@ export default function Header({
             >
               <Play className="h-4 w-4" />
               Resume
+            </Button>
+          )}
+
+          {campaign.status === 'draft' && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={startCampaign}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+            >
+              <Play className="h-4 w-4" />
+              Start
             </Button>
           )}
           
