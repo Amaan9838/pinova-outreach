@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '../../../../../lib/mongodb.js';
-import Prospect from '../../../../../models/Prospect.js';
-import CampaignProspect from '../../../../../models/CampaignProspect.js';
+import dbConnect from '../../../../lib/mongodb.js';
+import Prospect from '../../../../models/Prospect.js';
+import CampaignProspect from '../../../../models/CampaignProspect.js';
+import Campaign from '../../../../models/Campaign.js';
 
 export async function POST(request, { params }) {
   try {

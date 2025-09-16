@@ -1,7 +1,7 @@
-import dbConnect from '../../../../../lib/mongodb.js';
-import Prospect from '../../../../../models/Prospect.js';
-import CampaignProspect from '../../../../../models/CampaignProspect.js';
-import Campaign from '../../../../../models/Campaign.js';
+import dbConnect from '../../../../lib/mongodb.js';
+import Prospect from '../../../../models/Prospect.js';
+import CampaignProspect from '../../../../models/CampaignProspect.js';
+import Campaign from '../../../../models/Campaign.js';
 
 export async function POST(request, { params }) {
   try {
@@ -25,7 +25,7 @@ export async function POST(request, { params }) {
       );
     }
 
-    const importedCount = 0;
+    let importedCount = 0;
     const errors = [];
     const createdProspects = [];
     const createdCampaignProspects = [];
