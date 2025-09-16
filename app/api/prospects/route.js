@@ -44,21 +44,48 @@ export async function POST(request) {
       );
     }
 
+    // Process additional emails
+    let additionalEmails = [];
+    if (data.additionalEmails && Array.isArray(data.additionalEmails)) {
+      additionalEmails = data.additionalEmails;
+    }
+
+    // Process custom fields
+    let customFields = [];
+    if (data.customFields && Array.isArray(data.customFields)) {
+      customFields = data.customFields.filter(field => 
+        field && field.name && field.name.trim() !== ''
+      );
+    }
+
+    // Process tags
+    let tags = [];
+    if (data.tags) {
+      if (Array.isArray(data.tags)) {
+        tags = data.tags;
+      } else if (typeof data.tags === 'string') {
+        tags = data.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+      }
+    }
+
     // Create prospect
     const prospect = new Prospect({
       email: data.email,
+      additionalEmails,
       firstName: data.firstName,
-      lastName: data.lastName,
-      company: data.company,
-      city: data.city,
-      neighborhood: data.neighborhood,
-      listingPrice: data.listingPrice,
-      instagramUrl: data.instagramUrl,
-      linkedinUrl: data.linkedinUrl,
-      websiteUrl: data.websiteUrl,
-      sourceUrl: data.sourceUrl,
-      tags: data.tags || [],
-      customFields: data.customFields || new Map()
+      lastName: data.lastName || '',
+      company: data.company || '',
+      phone: data.phone || '',
+      website: data.website || '',
+      industry: data.industry || '',
+      position: data.position || '',
+      notes: data.notes || '',
+      instagram: data.instagram || '',
+      linkedin: data.linkedin || '',
+      personalizationNote: data.personalizationNote || '',
+      customFields,
+      tags,
+      source: data.source || 'manual'
     });
 
     await prospect.save();

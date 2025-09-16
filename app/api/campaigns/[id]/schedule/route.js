@@ -1,107 +1,185 @@
 import dbConnect from '../../../../../lib/mongodb.js';
-import Campaign from '../../../../../models/Campaign.js';
+import { CampaignSchedulingService } from '../../../../../lib/campaignScheduling.js';
 
-export async function PUT(request, { params }) {
+export const dynamic = 'force-dynamic';
+
+/**
+ * Schedule a campaign for future execution
+ */
+export async function POST(request, { params }) {
   try {
     await dbConnect();
     
     const { id } = params;
-    console.log('PUT /schedule - Campaign ID:', id);
+    const {
+      startDateTime,
+      timezone = 'UTC',
+      businessHours,
+      staggerSettings,
+      autoActivateWhenReady = false,
+      dailySendCap
+    } = await request.json();
     
-    const scheduleData = await request.json();
-    console.log('PUT /schedule - Received data:', scheduleData);
-    
-    const campaign = await Campaign.findById(id);
-    if (!campaign) {
-      console.log('PUT /schedule - Campaign not found:', id);
+    if (!startDateTime) {
       return Response.json(
-        { success: false, error: 'Campaign not found' },
-        { status: 404 }
+        { success: false, error: 'Start date and time are required' },
+        { status: 400 }
       );
     }
-
-    console.log('PUT /schedule - Found campaign:', campaign.name);
-
-    // Update campaign schedule settings - simplified to avoid duplication with options
-    campaign.schedule = {
-      name: scheduleData.name || 'New schedule',
-      timing: {
-        from: scheduleData.timing?.from || '9:00 AM',
-        to: scheduleData.timing?.to || '6:00 PM'
-      },
-      days: {
-        monday: scheduleData.days?.monday ?? true,
-        tuesday: scheduleData.days?.tuesday ?? true,
-        wednesday: scheduleData.days?.wednesday ?? true,
-        thursday: scheduleData.days?.thursday ?? true,
-        friday: scheduleData.days?.friday ?? true,
-        saturday: scheduleData.days?.saturday ?? false,
-        sunday: scheduleData.days?.sunday ?? false
-      },
-      emailDelay: parseInt(scheduleData.emailDelay) || 5,
-      respectHolidays: scheduleData.respectHolidays ?? true
+    
+    // Validate start time is in the future
+    const startTime = new Date(startDateTime);
+    if (startTime <= new Date()) {
+      return Response.json(
+        { success: false, error: 'Start time must be in the future' },
+        { status: 400 }
+      );
+    }
+    
+    const options = {
+      timezone,
+      autoActivateWhenReady
     };
-
-    console.log('PUT /schedule - Saving schedule:', JSON.stringify(campaign.schedule, null, 2));
-    console.log('PUT /schedule - emailDelay value:', scheduleData.emailDelay, 'parsed:', parseInt(scheduleData.emailDelay));
-    await campaign.save();
-    console.log('PUT /schedule - Schedule saved successfully');
-
-    return Response.json({
-      success: true,
-      message: 'Schedule settings saved successfully',
-      schedule: campaign.schedule
-    });
-
+    
+    if (businessHours) {
+      options.businessHours = businessHours;
+    }
+    
+    if (staggerSettings) {
+      options.staggerSettings = staggerSettings;
+    }
+    
+    if (dailySendCap) {
+      options.dailySendCap = dailySendCap;
+    }
+    
+    const result = await CampaignSchedulingService.scheduleCampaign(
+      id,
+      startTime,
+      options
+    );
+    
+    if (result.success) {
+      return Response.json({
+        success: true,
+        message: result.message,
+        status: result.status,
+        startDateTime: result.startDateTime,
+        campaign: result.campaign,
+        errors: result.errors || []
+      });
+    } else {
+      return Response.json(
+        { success: false, error: result.error },
+        { status: 400 }
+      );
+    }
+    
   } catch (error) {
-    console.error('Save schedule settings error:', error);
+    console.error('Campaign schedule error:', error);
     return Response.json(
-      { success: false, error: 'Failed to save schedule settings' },
+      { success: false, error: 'Failed to schedule campaign: ' + error.message },
       { status: 500 }
     );
   }
 }
 
-export async function GET(request, { params }) {
+/**
+ * Reschedule a campaign
+ */
+export async function PATCH(request, { params }) {
+  try {
+    await dbConnect();
+    
+    const { id } = params;
+    const { startDateTime } = await request.json();
+    
+    if (!startDateTime) {
+      return Response.json(
+        { success: false, error: 'New start date and time are required' },
+        { status: 400 }
+      );
+    }
+    
+    const newStartTime = new Date(startDateTime);
+    if (newStartTime <= new Date()) {
+      return Response.json(
+        { success: false, error: 'New start time must be in the future' },
+        { status: 400 }
+      );
+    }
+    
+    const result = await CampaignSchedulingService.rescheduleCampaign(
+      id,
+      newStartTime
+    );
+    
+    if (result.success) {
+      return Response.json({
+        success: true,
+        message: result.message,
+        newStartDateTime: result.newStartDateTime,
+        campaign: result.campaign
+      });
+    } else {
+      return Response.json(
+        { success: false, error: result.error },
+        { status: 400 }
+      );
+    }
+    
+  } catch (error) {
+    console.error('Campaign reschedule error:', error);
+    return Response.json(
+      { success: false, error: 'Failed to reschedule campaign: ' + error.message },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Cancel a scheduled campaign
+ */
+export async function DELETE(request, { params }) {
   try {
     await dbConnect();
     
     const { id } = params;
     
+    const Campaign = (await import('../../../../../models/Campaign.js')).default;
     const campaign = await Campaign.findById(id);
+    
     if (!campaign) {
       return Response.json(
         { success: false, error: 'Campaign not found' },
         { status: 404 }
       );
     }
-
+    
+    if (!campaign.isScheduled()) {
+      return Response.json(
+        { success: false, error: 'Campaign is not scheduled' },
+        { status: 400 }
+      );
+    }
+    
+    // Cancel the campaign
+    campaign.status = 'cancelled';
+    campaign.cancelledAt = new Date();
+    campaign.scheduling.startDateTime = undefined;
+    
+    await campaign.save();
+    
     return Response.json({
       success: true,
-      schedule: campaign.schedule || {
-        name: 'New schedule',
-        timing: {
-          from: '9:00 AM',
-          to: '6:00 PM'
-        },
-        days: {
-          monday: true,
-          tuesday: true,
-          wednesday: true,
-          thursday: true,
-          friday: true,
-          saturday: false,
-          sunday: false
-        },
-        emailDelay: 5,
-        respectHolidays: true
-      }
+      message: 'Campaign schedule cancelled successfully',
+      campaign
     });
-
+    
   } catch (error) {
-    console.error('Get schedule settings error:', error);
+    console.error('Campaign cancel schedule error:', error);
     return Response.json(
-      { success: false, error: 'Failed to get schedule settings' },
+      { success: false, error: 'Failed to cancel campaign schedule: ' + error.message },
       { status: 500 }
     );
   }

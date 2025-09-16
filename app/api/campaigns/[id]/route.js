@@ -1,5 +1,6 @@
 import dbConnect from '../../../../lib/mongodb.js';
 import Campaign from '../../../../models/Campaign.js';
+import CampaignProspect from '../../../../models/CampaignProspect.js';
 // Ensure referenced models are registered before populate
 import '../../../../models/Prospect.js';
 import '../../../../models/MailboxFixed.js';
@@ -12,9 +13,9 @@ export async function GET(request, { params }) {
     
     const { id } = params;
     
-    const campaign = await Campaign.findById(id)
-      .populate('mailboxes', 'fromName fromEmail status dailyCap')
-      .populate('prospects.prospectId', 'firstName lastName email company city');
+    // Find the campaign (without populating old prospects)
+    let campaign = await Campaign.findById(id)
+      .populate('mailboxes', 'fromName fromEmail status dailyCap');
     
     if (!campaign) {
       return Response.json(
@@ -22,7 +23,45 @@ export async function GET(request, { params }) {
         { status: 404 }
       );
     }
-    
+
+    // Get prospects from CampaignProspect model
+    const campaignProspects = await CampaignProspect.find({ campaign: id })
+      .populate('prospect', 'firstName lastName email company phone website industry position notes instagram linkedin personalizationNote customFields tags status')
+      .sort({ createdAt: 1 })
+      .lean();
+
+    // Calculate prospect statistics
+    const prospectCount = campaignProspects.length;
+    const prospectStats = {};
+    campaignProspects.forEach(cp => {
+      const status = cp.status || 'pending';
+      prospectStats[status] = (prospectStats[status] || 0) + 1;
+    });
+
+    // Transform for backward compatibility - populate campaign.prospects with prospect data
+    const populatedProspects = campaignProspects.map(cp => ({
+      _id: cp._id,
+      prospectId: cp.prospect._id,
+      currentStep: cp.sequenceStep || 1,
+      status: cp.status || 'pending',
+      // Include all prospect details
+      ...cp.prospect,
+      // CampaignProspect specific fields
+      nextSendAt: cp.nextSendAt,
+      emailsSent: cp.emailsSent || 0,
+      emailsOpened: cp.emailsOpened || 0,
+      emailsClicked: cp.emailsClicked || 0,
+      emailsReplied: cp.emailsReplied || 0,
+      lastSentAt: cp.lastSentAt
+    }));
+
+    // Update campaign object with new data
+    campaign = campaign.toObject();
+    campaign.prospects = populatedProspects; // For backward compatibility
+    campaign.prospectCount = prospectCount;
+    campaign.prospectStats = prospectStats;
+    campaign.campaignProspects = campaignProspects; // Raw data for new features
+
     return Response.json({
       success: true,
       campaign
@@ -59,28 +98,28 @@ export async function PATCH(request, { params }) {
       // console.log('Updating sequence with data:', updates.sequence);
       
      // Process and validate sequence data
-const processedSequence = updates.sequence.map((step, index) => {
-  const stepNumber = parseInt(step.stepNumber) || (index + 1);
-  return {
-    ...(step._id && { _id: step._id }), // Preserve existing _id if it exists
-    stepNumber: stepNumber,
-    template: step.template || '',
-    subject: step.subject || '',
-    waitHours: stepNumber === 1 ? 0 : (parseInt(step.waitHours) || 0),
-    waitMinutes: stepNumber === 1 ? 0 : (parseInt(step.waitMinutes) || 0),
-    conditions: {
-      ifOpened: step.conditions?.ifOpened || 'continue',
-      ifReplied: step.conditions?.ifReplied || 'stop',
-      ifBounced: step.conditions?.ifBounced || 'stop'
-    }
-  };
-});
+  const processedSequence = updates.sequence.map((step, index) => {
+    const stepNumber = parseInt(step.stepNumber) || (index + 1);
+    return {
+      ...(step._id && { _id: step._id }), // Preserve existing _id if it exists
+      stepNumber: stepNumber,
+      template: step.template && step.template.trim() ? step.template : 'Add your email template here...',
+      subject: step.subject && step.subject.trim() ? step.subject : 'Email Subject',
+      waitHours: stepNumber === 1 ? 0 : (parseInt(step.waitHours) || 0),
+      waitMinutes: stepNumber === 1 ? 0 : (parseInt(step.waitMinutes) || 0),
+      conditions: {
+        ifOpened: step.conditions?.ifOpened || 'continue',
+        ifReplied: step.conditions?.ifReplied || 'stop',
+        ifBounced: step.conditions?.ifBounced || 'stop'
+      }
+    };
+  });
 
-// Instead of assigning the array, update each step individually
-campaign.sequence = processedSequence;
-campaign.markModified('sequence'); // Force Mongoose to save the array
+  // Instead of assigning the array, update each step individually
+  campaign.sequence = processedSequence;
+  campaign.markModified('sequence'); // Force Mongoose to save the array
       
-// console.log('Processed sequence:', processedSequence);
+  // console.log('Processed sequence:', processedSequence);
       // campaign.sequence = processedSequence;
     }
     
@@ -121,6 +160,16 @@ campaign.markModified('sequence'); // Force Mongoose to save the array
     if (updates.notes !== undefined) {
       campaign.options.notes = updates.notes;
     }
+    
+    // Handle mailboxes array updates
+    if (updates.mailboxes !== undefined) {
+      campaign.mailboxes = updates.mailboxes;
+    }
+    
+    // Handle status updates
+    if (updates.status !== undefined) {
+      campaign.status = updates.status;
+    }
 
     // Update timestamp
     campaign.updatedAt = new Date();
@@ -130,6 +179,14 @@ campaign.markModified('sequence'); // Force Mongoose to save the array
     // Save with validation
     const savedCampaign = await campaign.save();
     // console.log('After save - checking database:', JSON.stringify(savedCampaign.sequence, null, 2));
+
+    // If status changed to active and we have campaign prospects, update their status
+    if (updates.status === 'active') {
+      await CampaignProspect.updateMany(
+        { campaign: id, status: 'pending' },
+        { status: 'active', nextSendAt: new Date() }
+      );
+    }
 
     return Response.json({
       success: true,

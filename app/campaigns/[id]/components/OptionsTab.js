@@ -9,12 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Mail, RotateCcw, Zap, Play, Pause, Trash2, Settings, Save } from 'lucide-react';
+import { Mail, Zap, Play, Pause, Trash2, Settings, Save } from 'lucide-react';
 
 export default function OptionsTab({
   campaign,
   sendTestEmail,
-  rescheduleNow,
   processSequencesManually,
   pauseCampaign,
   resumeCampaign,
@@ -26,8 +25,7 @@ export default function OptionsTab({
     trackOpens: true,
     trackClicks: true,
     unsubscribeLink: true,
-    dailyLimit: 50,
-    timezone: 'UTC',
+
     notes: '',
     // Follow-up settings
     followUpEnabled: false,
@@ -49,8 +47,7 @@ export default function OptionsTab({
         trackOpens: campaign.options?.trackOpens ?? true,
         trackClicks: campaign.options?.trackClicks ?? true,
         unsubscribeLink: campaign.options?.unsubscribeLink ?? true,
-        dailyLimit: campaign.options?.dailyLimit || 50,
-        timezone: campaign.options?.timezone || 'UTC',
+
         notes: campaign.options?.notes || '',
         // Follow-up settings from campaign
         followUpEnabled: campaign.followUpSettings?.enabled ?? false,
@@ -120,8 +117,7 @@ export default function OptionsTab({
           trackOpens: settings.trackOpens,
           trackClicks: settings.trackClicks,
           unsubscribeLink: settings.unsubscribeLink,
-          dailyLimit: parseInt(settings.dailyLimit) || 50,
-          timezone: settings.timezone || 'UTC',
+
           notes: settings.notes || '',
           // Follow-up settings
           followUpSettings: {
@@ -187,14 +183,6 @@ export default function OptionsTab({
             <Button onClick={sendTestEmail} className="flex items-center gap-2">
               <Mail className="h-4 w-4" />
               Send Test Email
-            </Button>
-            <Button 
-              onClick={rescheduleNow} 
-              variant="outline"
-              className="flex items-center gap-2 text-orange-600 border-orange-200 hover:bg-orange-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Reschedule Now
             </Button>
             <Button 
               onClick={processSequencesManually} 

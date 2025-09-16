@@ -14,8 +14,10 @@ import { toast } from 'sonner';
 import Header from './components/Header';
 import AnalyticsTab from './components/AnalyticsTab';
 import EnhancedLeadsTab from './components/EnhancedLeadsTab';
+
 import SequencesTab from './components/SequencesTab';
 import ScheduleTab from './components/ScheduleTab';
+import CampaignControls from '@/components/CampaignControls';
 import OptionsTab from './components/OptionsTab';
 import TemplateModal from './components/TemplateModal';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,7 +34,6 @@ export default function CampaignDetailsPage({ params }) {
   const [deleteCampaignDialog, setDeleteCampaignDialog] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [sequenceSaving, setSequenceSaving] = useState(false);
-  const [scheduleSaving, setScheduleSaving] = useState(false);
   const [templatesModalOpen, setTemplatesModalOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [steps, setSteps] = useState([]);
@@ -40,25 +41,6 @@ export default function CampaignDetailsPage({ params }) {
   const [openedCount, setOpenedCount] = useState(0);
   const [deliveredCount, setDeliveredCount] = useState(0);
   const [repliedCount, setRepliedCount] = useState(0);
-  const [scheduleSettings, setScheduleSettings] = useState({
-    name: 'New schedule',
-    startDate: 'now',
-    endDate: 'no-end',
-    timing: {
-      from: '9:00 AM',
-      to: '6:00 PM',
-      timezone: 'Eastern Time (US & Canada) (UTC-04:00)'
-    },
-    days: {
-      monday: true,
-      tuesday: true,
-      wednesday: true,
-      thursday: true,
-      friday: true,
-      saturday: false,
-      sunday: false
-    }
-  });
 
   useEffect(() => {
     fetchCampaignDetails();
@@ -227,23 +209,6 @@ export default function CampaignDetailsPage({ params }) {
     }
   };
 
-  const rescheduleNow = async () => {
-    try {
-      const response = await fetch(`/api/campaigns/${params.id}/reschedule`, {
-        method: 'POST'
-      });
-      const data = await response.json();
-      if (data.success) {
-        alert(`✅ Rescheduled ${data.rescheduledCount} prospects for immediate sending!`);
-        fetchCampaignDetails();
-      } else {
-        alert('❌ Failed to reschedule: ' + data.error);
-      }
-    } catch (error) {
-      console.error('Failed to reschedule:', error);
-      alert('❌ Failed to reschedule');
-    }
-  };
 
   const saveSequence = async (updatedSteps) => {
     setSequenceSaving(true);
@@ -265,23 +230,6 @@ export default function CampaignDetailsPage({ params }) {
     }
   };
 
-  const saveScheduleSettings = async () => {
-    setScheduleSaving(true);
-    try {
-      const res = await fetch(`/api/campaigns/${params.id}/schedule`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(scheduleSettings)
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error);
-      toast.success('Schedule settings saved successfully!');
-    } catch (err) {
-      toast.error(err.message || 'Failed to save schedule settings');
-    } finally {
-      setScheduleSaving(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -317,12 +265,23 @@ export default function CampaignDetailsPage({ params }) {
         campaign={campaign}
         getStatusColor={getStatusColor}
         sendTestEmail={sendTestEmail}
-        rescheduleNow={rescheduleNow}
         processSequencesManually={processSequencesManually}
         pauseCampaign={pauseCampaign}
         resumeCampaign={resumeCampaign}
         startCampaign={startCampaign}
         deleteCampaign={() => setDeleteCampaignDialog(true)}
+      />
+
+      {/* Campaign Controls Component */}
+      <CampaignControls
+        campaign={campaign}
+        onStart={startCampaign}
+        onPause={pauseCampaign}
+        onResume={resumeCampaign}
+        onCampaignUpdate={(updatedCampaign) => {
+          setCampaign(updatedCampaign);
+          fetchCampaignDetails();
+        }}
       />
 
       {/* Delete Campaign Confirmation Dialog */}
@@ -399,10 +358,11 @@ export default function CampaignDetailsPage({ params }) {
         <TabsContent value="schedule">
           <ScheduleTab
             campaign={campaign}
-            scheduleSettings={scheduleSettings}
-            setScheduleSettings={setScheduleSettings}
-            scheduleSaving={scheduleSaving}
-            saveScheduleSettings={saveScheduleSettings}
+            campaignId={params.id}
+            onCampaignUpdate={(updatedCampaign) => {
+              setCampaign(updatedCampaign);
+              fetchCampaignDetails();
+            }}
           />
         </TabsContent>
 
@@ -410,7 +370,6 @@ export default function CampaignDetailsPage({ params }) {
           <OptionsTab
             campaign={campaign}
             sendTestEmail={sendTestEmail}
-            rescheduleNow={rescheduleNow}
             processSequencesManually={processSequencesManually}
             pauseCampaign={pauseCampaign}
             resumeCampaign={resumeCampaign}

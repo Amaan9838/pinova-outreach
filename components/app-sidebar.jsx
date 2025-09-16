@@ -32,9 +32,9 @@ import {
 // Navigation data derived from app/layout.js links
 const data = {
   user: {
-    name: "User",
-    email: "user@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    name: "Pinova",
+    email: "support@pinova.in",
+    avatar: "/pinova.jpg",
   },
   teams: [
     { name: "Pinova", logo: GalleryVerticalEnd, plan: "Prod" },
@@ -47,6 +47,8 @@ const data = {
     { title: "Mailboxes", url: "/mailboxes", icon: Mailbox },
     { title: "Compose", url: "/compose", icon: PenSquare },
     { title: "Debug", url: "/debug", icon: Bug },
+    { title: "Settings", url: "/settings", icon: Settings2 },
+
   ],
   projects: [],
 }

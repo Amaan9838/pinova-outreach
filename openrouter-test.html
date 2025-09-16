@@ -1,0 +1,47 @@
+<html>
+<body>
+    <div style="max-width: 800px; margin: 20px auto; font-family: Arial, sans-serif;">
+        <h1>OpenRouter Model Explorer</h1>
+        <select id="model-select" style="padding: 8px; margin-bottom: 10px;">
+            <option value="openrouter:meta-llama/llama-3.1-8b-instruct">Meta Llama 3.1 (8B)</option>
+            <option value="openrouter:anthropic/claude-3.5-sonnet">Anthropic Claude 3.5 Sonnet</option>
+            <option value="openrouter:mistralai/mistral-7b-instruct">Mistral 7B</option>
+            <option value="openrouter:google/gemini-pro-1.5">Google Gemini Pro 1.5</option>
+            <option value="openrouter:openai/gpt-4o-mini">OpenAI GPT-4o Mini</option>
+        </select>
+        <textarea id="prompt" rows="4" style="width: 100%; padding: 8px; margin-bottom: 10px;" 
+            placeholder="Enter your prompt here...">Explain how solar panels work.</textarea>
+        <button id="generate" style="padding: 8px 16px;">Generate</button>
+        <div id="loading" style="display: none; margin-top: 10px;">Generating response...</div>
+        <div id="response" style="margin-top: 20px; padding: 15px; border: 1px solid #ddd; 
+            border-radius: 5px; min-height: 200px;"></div>
+    </div>
+
+    <script src="https://js.puter.com/v2/"></script>
+    <script>
+        document.getElementById('generate').addEventListener('click', async () => {
+            const modelSelect = document.getElementById('model-select');
+            const promptInput = document.getElementById('prompt');
+            const responseDiv = document.getElementById('response');
+            const loadingDiv = document.getElementById('loading');
+            
+            const selectedModel = modelSelect.value;
+            const prompt = promptInput.value;
+            
+            if (!prompt) return;
+            
+            responseDiv.innerHTML = '';
+            loadingDiv.style.display = 'block';
+            
+            try {
+                const response = await puter.ai.chat(prompt, {model: selectedModel});
+                responseDiv.innerHTML = response;
+            } catch (error) {
+                responseDiv.innerHTML = `Error: ${error.message}`;
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

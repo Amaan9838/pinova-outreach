@@ -1,11 +1,28 @@
 import mongoose from 'mongoose';
 
 const ProspectSchema = new mongoose.Schema({
+  // Primary email (required)
   email: {
     type: String,
     required: true,
     unique: true,
   },
+  // Additional emails for multi-email support
+  additionalEmails: [{
+    email: {
+      type: String,
+      required: true,
+    },
+    type: {
+      type: String,
+      enum: ['work', 'personal', 'other'],
+      default: 'work',
+    },
+    isPrimary: {
+      type: Boolean,
+      default: false,
+    }
+  }],
   firstName: {
     type: String,
     required: true,
@@ -50,6 +67,7 @@ const ProspectSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  // Enhanced custom fields with proper structure
   customFields: [{
     name: {
       type: String,
@@ -58,20 +76,32 @@ const ProspectSchema = new mongoose.Schema({
     value: {
       type: mongoose.Schema.Types.Mixed,
       required: true,
+    },
+    type: {
+      type: String,
+      enum: ['text', 'number', 'url', 'email', 'date'],
+      default: 'text',
     }
   }],
   status: {
     type: String,
     enum: ['active', 'suppressed', 'bounced', 'unsubscribed', 'pending'],
     default: 'active',
-    default: 'active',
   },
   tags: [{
     type: String,
   }],
-  customFields: {
-    type: Map,
-    of: String,
+  // Source information for tracking where prospect came from
+  source: {
+    type: String,
+    enum: ['manual', 'csv_import', 'api', 'integration'],
+    default: 'manual',
+  },
+  // Import metadata
+  importMetadata: {
+    importId: String,
+    importDate: Date,
+    originalData: mongoose.Schema.Types.Mixed,
   },
   createdAt: {
     type: Date,

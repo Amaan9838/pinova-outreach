@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Search, Filter, Plus, Upload, Download, Edit2, Trash2, Eye, MoreHorizontal, Users, Mail, Building, MapPin, Tag, ExternalLink, Calendar, Star, Phone, Briefcase, Globe, Building2 } from 'lucide-react';
+import { Search, Filter, Plus, Upload, Download, Edit2, Trash2, Eye, MoreHorizontal, Users, Mail, Building, MapPin, Tag, ExternalLink, Calendar, Star, Phone, Briefcase, Globe, Building2, SlidersHorizontal, ArrowUpDown, CheckSquare, Square, Bookmark, X, ChevronDown, Zap, Target, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarInitials } from '@/components/ui/avatar';
+import EnhancedCSVImport from '@/components/EnhancedCSVImport';
+import MultiEmailInput from '@/components/MultiEmailInput';
 
 export default function ProspectsPage() {
   const [prospects, setProspects] = useState([]);
@@ -25,10 +27,16 @@ export default function ProspectsPage() {
   const [showImportForm, setShowImportForm] = useState(false);
   const [editingProspect, setEditingProspect] = useState(null);
   const [showProspectDetails, setShowProspectDetails] = useState(null);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [sortBy, setSortBy] = useState('newest');
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [savedFilters, setSavedFilters] = useState([]);
+  const [activeFilterSet, setActiveFilterSet] = useState(null);
   const [newProspect, setNewProspect] = useState({
     firstName: '',
     lastName: '',
     email: '',
+    additionalEmails: [],
     company: '',
     phone: '',
     website: '',
@@ -48,19 +56,27 @@ export default function ProspectsPage() {
     fetchProspects();
   }, []);
 
-  // Filter prospects based on search and filters
+  // Enhanced filtering and sorting
   useEffect(() => {
     let filtered = prospects;
 
-    // Search filter
+    // Advanced search filter
     if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(prospect => 
-        prospect.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        prospect.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        prospect.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        prospect.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        prospect.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        prospect.neighborhood?.toLowerCase().includes(searchTerm.toLowerCase())
+        prospect.firstName?.toLowerCase().includes(searchLower) ||
+        prospect.lastName?.toLowerCase().includes(searchLower) ||
+        prospect.email?.toLowerCase().includes(searchLower) ||
+        prospect.company?.toLowerCase().includes(searchLower) ||
+        prospect.city?.toLowerCase().includes(searchLower) ||
+        prospect.neighborhood?.toLowerCase().includes(searchLower) ||
+        prospect.position?.toLowerCase().includes(searchLower) ||
+        prospect.industry?.toLowerCase().includes(searchLower) ||
+        prospect.phone?.includes(searchTerm) ||
+        prospect.website?.toLowerCase().includes(searchLower) ||
+        prospect.notes?.toLowerCase().includes(searchLower) ||
+        prospect.personalizationNote?.toLowerCase().includes(searchLower) ||
+        prospect.tags?.some(tag => tag.toLowerCase().includes(searchLower))
       );
     }
 
@@ -76,8 +92,26 @@ export default function ProspectsPage() {
       );
     }
 
+    // Sort prospects
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        case 'oldest':
+          return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+        case 'name':
+          return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+        case 'company':
+          return (a.company || '').localeCompare(b.company || '');
+        case 'status':
+          return (a.status || '').localeCompare(b.status || '');
+        default:
+          return 0;
+      }
+    });
+
     setFilteredProspects(filtered);
-  }, [prospects, searchTerm, statusFilter, tagFilter]);
+  }, [prospects, searchTerm, statusFilter, tagFilter, sortBy]);
 
   const fetchProspects = async () => {
     try {
@@ -203,6 +237,24 @@ export default function ProspectsPage() {
     }
   };
 
+  const selectAllVisible = () => {
+    const visibleIds = filteredProspects.slice(0, 50).map(p => p._id); // First 50 visible
+    setSelectedProspects(prev => {
+      const newSelected = [...new Set([...prev, ...visibleIds])];
+      return newSelected;
+    });
+  };
+
+  const deselectAll = () => {
+    setSelectedProspects([]);
+  };
+
+  const invertSelection = () => {
+    const allIds = filteredProspects.map(p => p._id);
+    const unselected = allIds.filter(id => !selectedProspects.includes(id));
+    setSelectedProspects(unselected);
+  };
+
   const getUniqueStatuses = () => {
     const statuses = [...new Set(prospects.map(p => p.status).filter(Boolean))];
     return statuses;
@@ -239,6 +291,7 @@ export default function ProspectsPage() {
             firstName: '',
             lastName: '',
             email: '',
+            additionalEmails: [],
             company: '',
             phone: '',
             website: '',
@@ -293,30 +346,25 @@ export default function ProspectsPage() {
     }
   };
 
-  const handleFileImport = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    
+  const handleCSVImport = async (mappedData) => {
     try {
-      const response = await fetch('/api/prospects/import', {
+      const response = await fetch('/api/prospects/bulk', {
         method: 'POST',
-        body: formData
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prospects: mappedData })
       });
       
       const data = await response.json();
       if (data.success) {
-        alert(`Import completed! ${data.results.imported} prospects imported, ${data.results.skipped} skipped.`);
-        if (data.results.errors.length > 0) {
-          console.log('Import errors:', data.results.errors);
-        }
+        toast.success(`Successfully imported ${data.imported} prospects!`);
         setShowImportForm(false);
-        fetchProspects(); // Refresh list
+        fetchProspects();
       } else {
-        alert(data.error || 'Failed to import prospects');
+        toast.error(data.error || 'Failed to import prospects');
       }
     } catch (error) {
       console.error('Failed to import prospects:', error);
-      alert('Failed to import prospects');
+      toast.error('Failed to import prospects');
     }
   };
 
@@ -339,10 +387,10 @@ export default function ProspectsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+      <div className="min-h-screen bg-gray-50 p-6">
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
             <div className="text-gray-600 font-medium">Loading prospects...</div>
           </div>
         </div>
@@ -351,96 +399,182 @@ export default function ProspectsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
+        {/* Enhanced Header Section */}
         <div className="mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Prospects</h1>
-              <p className="text-gray-600 text-lg">Manage your contact database with advanced tools</p>
-              <div className="flex items-center gap-6 mt-4">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-blue-600" />
-                  <span className="text-sm font-medium text-gray-700">{prospects.length} Total</span>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Contact Management</h1>
+              <p className="text-gray-600 text-lg">Advanced prospect database with smart filtering and bulk operations</p>
+              
+              {/* Enhanced Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-50 rounded-lg">
+                      <Users className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-gray-900">{prospects.length.toLocaleString()}</div>
+                      <div className="text-sm text-gray-600">Total Prospects</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Mail className="h-5 w-5 text-green-600" />
-                  <span className="text-sm font-medium text-gray-700">{prospects.filter(p => p.status === 'active').length} Active</span>
+                
+                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-emerald-50 rounded-lg">
+                      <CheckSquare className="h-5 w-5 text-emerald-600" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-emerald-600">{prospects.filter(p => p.status === 'active').length}</div>
+                      <div className="text-sm text-gray-600">Active</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Star className="h-5 w-5 text-yellow-600" />
-                  <span className="text-sm font-medium text-gray-700">{filteredProspects.length} Filtered</span>
+                
+                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-50 rounded-lg">
+                      <Target className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-purple-600">{filteredProspects.length}</div>
+                      <div className="text-sm text-gray-600">Filtered Results</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-amber-50 rounded-lg">
+                      <TrendingUp className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-amber-600">{selectedProspects.length}</div>
+                      <div className="text-sm text-gray-600">Selected</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
-                <DialogTrigger asChild>
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Prospect
-                  </Button>
-                </DialogTrigger>
-              </Dialog>
-              <Dialog open={showImportForm} onOpenChange={setShowImportForm}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Import CSV
-                  </Button>
-                </DialogTrigger>
-              </Dialog>
-              <Button variant="outline" onClick={downloadTemplate} className="border-gray-200 text-gray-700 hover:bg-gray-50">
-                <Download className="h-4 w-4 mr-2" />
-                Template
-              </Button>
+            
+            <div className="flex flex-col gap-3">
+              <div className="flex gap-3">
+                <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-gray-900 hover:bg-gray-800 text-white shadow-lg gap-2">
+                      <Plus className="h-4 w-4" />
+                      Add Prospect
+                    </Button>
+                  </DialogTrigger>
+                </Dialog>
+                
+                <Dialog open={showImportForm} onOpenChange={setShowImportForm}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 gap-2">
+                      <Upload className="h-4 w-4" />
+                      Import CSV
+                    </Button>
+                  </DialogTrigger>
+                </Dialog>
+              </div>
+              
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={downloadTemplate} className="border-gray-300 text-gray-700 hover:bg-gray-50 gap-2">
+                  <Download className="h-4 w-4" />
+                  Template
+                </Button>
+                
+                <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 gap-2">
+                  <Zap className="h-4 w-4" />
+                  Smart Segments
+                </Button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Search and Filter Bar */}
-        <Card className="mb-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+        {/* Enhanced Search and Filter Bar */}
+        <Card className="mb-6 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
           <CardContent className="p-6">
-            <div className="flex flex-col lg:flex-row gap-4">
+            {/* Main Search Row */}
+            <div className="flex flex-col lg:flex-row gap-4 mb-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
-                  placeholder="Search prospects by name, email, company, or location..."
+                  placeholder="Search prospects by name, email, company, location, or any field..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-12 h-12 text-base border-gray-200 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/20 rounded-xl"
                 />
               </div>
               <div className="flex gap-3">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-40 h-12 border-gray-200">
-                    <SelectValue placeholder="Status" />
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className={`h-12 gap-2 ${showAdvancedFilters ? 'bg-blue-50 border-blue-200 text-blue-700' : ''}`}
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  Advanced Filters
+                  <ChevronDown className={`h-4 w-4 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} />
+                </Button>
+              </div>
+            </div>
+
+            {/* Quick Filters Row */}
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700">Quick filters:</span>
+                <Button
+                  variant={statusFilter === 'active' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter(statusFilter === 'active' ? 'all' : 'active')}
+                  className="h-8 text-xs"
+                >
+                  Active ({prospects.filter(p => p.status === 'active').length})
+                </Button>
+                <Button
+                  variant={statusFilter === 'suppressed' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter(statusFilter === 'suppressed' ? 'all' : 'suppressed')}
+                  className="h-8 text-xs"
+                >
+                  Suppressed ({prospects.filter(p => p.status === 'suppressed').length})
+                </Button>
+                <Button
+                  variant={tagFilter !== '__all__' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTagFilter(tagFilter === '__all__' ? getUniqueTags()[0] || '__all__' : '__all__')}
+                  className="h-8 text-xs"
+                >
+                  <Tag className="h-3 w-3 mr-1" />
+                  Tagged ({prospects.filter(p => p.tags && p.tags.length > 0).length})
+                </Button>
+              </div>
+              
+              <div className="flex items-center gap-2 ml-auto">
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-40 h-8 text-xs">
+                    <ArrowUpDown className="h-3 w-3 mr-1" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    {getUniqueStatuses().map(status => (
-                      <SelectItem key={status} value={status}>{status}</SelectItem>
-                    ))}
+                    <SelectItem value="newest">Newest First</SelectItem>
+                    <SelectItem value="oldest">Oldest First</SelectItem>
+                    <SelectItem value="name">Name A-Z</SelectItem>
+                    <SelectItem value="company">Company A-Z</SelectItem>
+                    <SelectItem value="status">Status</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={tagFilter} onValueChange={setTagFilter}>
-                  <SelectTrigger className="w-40 h-12 border-gray-200">
-                    <SelectValue placeholder="Tags" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__all__">All Tags</SelectItem>
-                    {getUniqueTags().map(tag => (
-                      <SelectItem key={tag} value={tag}>{tag}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                
                 <div className="flex border border-gray-200 rounded-lg overflow-hidden">
                   <Button
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('grid')}
-                    className="rounded-none h-12 px-4"
+                    className="rounded-none h-8 px-3 text-xs"
                   >
                     Grid
                   </Button>
@@ -448,29 +582,144 @@ export default function ProspectsPage() {
                     variant={viewMode === 'table' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('table')}
-                    className="rounded-none h-12 px-4"
+                    className="rounded-none h-8 px-3 text-xs"
                   >
                     Table
                   </Button>
                 </div>
               </div>
             </div>
-            
-            {/* Bulk Actions */}
-            {selectedProspects.length > 0 && (
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-blue-800">
-                    {selectedProspects.length} prospects selected
-                  </span>
+
+            {/* Advanced Filters Panel */}
+            {showAdvancedFilters && (
+              <div className="border-t border-gray-200 pt-4 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-2">Status</label>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="All Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        {getUniqueStatuses().map(status => (
+                          <SelectItem key={status} value={status}>
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${getStatusColor(status).replace('text-', 'bg-').replace('bg-', 'bg-').split(' ')[0]}`} />
+                              {status}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-2">Tags</label>
+                    <Select value={tagFilter} onValueChange={setTagFilter}>
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="All Tags" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__all__">All Tags</SelectItem>
+                        {getUniqueTags().map(tag => (
+                          <SelectItem key={tag} value={tag}>
+                            <Tag className="h-3 w-3 mr-2" />
+                            {tag}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-2">Company</label>
+                    <Input placeholder="Filter by company" className="h-10" />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-2">Location</label>
+                    <Input placeholder="Filter by location" className="h-10" />
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <Bookmark className="h-4 w-4" />
+                      Save Filter Set
+                    </Button>
+                    {savedFilters.length > 0 && (
+                      <Select>
+                        <SelectTrigger className="w-48 h-8">
+                          <SelectValue placeholder="Load saved filter" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {savedFilters.map((filter, index) => (
+                            <SelectItem key={index} value={filter.id}>{filter.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                  
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => handleBulkAction('active')}>
+                    <Button variant="ghost" size="sm" onClick={() => {
+                      setSearchTerm('');
+                      setStatusFilter('all');
+                      setTagFilter('__all__');
+                    }}>
+                      Clear All
+                    </Button>
+                    <Button size="sm" className="gap-2">
+                      <Filter className="h-4 w-4" />
+                      Apply Filters
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Enhanced Bulk Actions */}
+            {selectedProspects.length > 0 && (
+              <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <CheckSquare className="h-5 w-5 text-blue-600" />
+                      <span className="font-semibold text-blue-900">
+                        {selectedProspects.length} prospects selected
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedProspects([])}
+                      className="text-blue-700 hover:text-blue-900 hover:bg-blue-100"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => handleBulkAction('active')} className="gap-2">
+                      <CheckSquare className="h-4 w-4" />
                       Activate
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleBulkAction('suppressed')}>
+                    <Button size="sm" variant="outline" onClick={() => handleBulkAction('suppressed')} className="gap-2">
+                      <Square className="h-4 w-4" />
                       Suppress
                     </Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleBulkAction('delete')}>
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <Tag className="h-4 w-4" />
+                      Add Tags
+                    </Button>
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      Export
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => handleBulkAction('delete')} className="gap-2">
+                      <Trash2 className="h-4 w-4" />
                       Delete
                     </Button>
                   </div>
@@ -482,7 +731,7 @@ export default function ProspectsPage() {
 
         {/* Main Content Area */}
         {filteredProspects.length === 0 ? (
-          <Card className="text-center py-16 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+          <Card className="text-center py-16 border border-gray-200 bg-white shadow-sm">
             <CardContent>
               <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No prospects found</h3>
@@ -493,7 +742,7 @@ export default function ProspectsPage() {
                 }
               </p>
               {!searchTerm && statusFilter === 'all' && tagFilter === '__all__' && (
-                <Button onClick={() => setShowAddForm(true)} className="bg-blue-600 hover:bg-blue-700">
+                <Button onClick={() => setShowAddForm(true)} className="bg-gray-900 hover:bg-gray-800">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Your First Prospect
                 </Button>
@@ -566,60 +815,14 @@ export default function ProspectsPage() {
           </DialogContent>
         </Dialog>
 
-        {/* Import CSV Dialog */}
-        <Dialog open={showImportForm} onOpenChange={setShowImportForm}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Import Prospects from CSV</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleFileImport} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  CSV File
-                </label>
-                <Input
-                  type="file"
-                  name="file"
-                  accept=".csv"
-                  className="border-gray-200"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Upload a CSV file with prospect data. Required column: email
-                </p>
-              </div>
-              
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-blue-800 mb-2">Supported Columns:</h4>
-                <p className="text-xs text-blue-700">
-                  first_name, last_name, email (required), company, city, neighborhood, 
-                  listing_price, instagram_url, linkedin_url, website_url, tags
-                </p>
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={downloadTemplate}
-                  className="text-xs text-blue-600 hover:text-blue-800 p-0 h-auto mt-2"
-                >
-                  Download CSV template
-                </Button>
-              </div>
-
-              <div className="flex justify-end space-x-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowImportForm(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                  Import Prospects
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+        {/* Enhanced CSV Import */}
+        <EnhancedCSVImport
+          isOpen={showImportForm}
+          onClose={() => setShowImportForm(false)}
+          onImport={handleCSVImport}
+          title="Import Prospects Database"
+          description="Upload and manage your prospect database with advanced field mapping and multiple email support"
+        />
 
         {/* Prospect Details Dialog */}
         <Dialog open={!!showProspectDetails} onOpenChange={() => setShowProspectDetails(null)}>
@@ -945,15 +1148,12 @@ function ProspectForm({ prospect, customFields, setCustomFields, setProspect, on
               onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email *
-            </label>
-            <Input
-              type="email"
-              value={formData.email || ''}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
+          <div className="col-span-2">
+            <MultiEmailInput
+              primaryEmail={formData.email}
+              additionalEmails={formData.additionalEmails || []}
+              onPrimaryEmailChange={(email) => setFormData({ ...formData, email })}
+              onAdditionalEmailsChange={(emails) => setFormData({ ...formData, additionalEmails: emails })}
             />
           </div>
           <div>

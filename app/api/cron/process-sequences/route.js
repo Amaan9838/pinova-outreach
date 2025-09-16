@@ -1,36 +1,33 @@
 import { SequencerService } from '../../../../lib/sequencer.js';
-import { processAllCampaigns } from '../../../../lib/campaignExecutor.js';
 
 export async function POST(request) {
   try {
-    console.log('Processing campaigns with integrated settings...');
+    console.log('=== EMAIL SEQUENCE PROCESSING START ===');
     
-    // Use new integrated campaign executor
-    const results = await processAllCampaigns();
+    // Use SequencerService - the unified, working email processor
+    console.log('Processing sequences with SequencerService...');
+    const results = await SequencerService.processSequences();
     
-    // Also run legacy sequencer for backward compatibility
-    await SequencerService.processSequences();
-
-    const totalSent = results.reduce((sum, r) => sum + (r.sent || 0), 0);
-    const totalFollowUps = results.reduce((sum, r) => sum + (r.followUpsSent || 0), 0);
-    const errors = results.filter(r => r.error || (r.errors && r.errors.length > 0));
-
+    // Get campaign count for stats
+    const { default: Campaign } = await import('../../../../models/Campaign.js');
+    const activeCampaigns = await Campaign.find({ status: 'active' });
+    
+    console.log('=== EMAIL SEQUENCE PROCESSING COMPLETE ===');
+    
     return Response.json({
       success: true,
-      message: `Campaigns processed successfully`,
+      message: `Email sequences processed successfully`,
       stats: {
-        campaignsProcessed: results.length,
-        emailsSent: totalSent,
-        followUpsSent: totalFollowUps,
-        errors: errors.length
-      },
-      results
+        campaignsProcessed: activeCampaigns.length,
+        processingSystem: 'SequencerService (Unified)',
+        timestamp: new Date().toISOString()
+      }
     });
 
   } catch (error) {
     console.error('Process campaigns error:', error);
     return Response.json(
-      { success: false, error: 'Failed to process campaigns' },
+      { success: false, error: 'Failed to process campaigns: ' + error.message },
       { status: 500 }
     );
   }
@@ -38,22 +35,5 @@ export async function POST(request) {
 
 // Allow GET for testing
 export async function GET() {
-  try {
-    console.log('Processing campaigns (GET test)...');
-    
-    const results = await processAllCampaigns();
-    
-    return Response.json({
-      success: true,
-      message: 'Campaigns processed successfully (test run)',
-      results
-    });
-
-  } catch (error) {
-    console.error('Process campaigns test error:', error);
-    return Response.json(
-      { success: false, error: 'Failed to process campaigns' },
-      { status: 500 }
-    );
-  }
+  return POST(); // Use same logic as POST
 }

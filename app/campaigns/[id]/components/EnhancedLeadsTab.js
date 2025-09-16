@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -10,9 +10,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from "sonner";
-import { Plus, Upload, Download, Search, Filter, Eye, Edit, Trash2, Users } from 'lucide-react';
+import { Plus, Upload, Download, Search, Filter, Eye, Edit, Trash2, Users, AlertTriangle, CheckCircle, Clock, Zap, Settings, RefreshCw } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import EnhancedCSVImport from '@/components/EnhancedCSVImport';
+import MultiEmailInput from '@/components/MultiEmailInput';
 
-export default function EnhancedLeadsTab({ campaign, getStatusColor, campaignId }) {
+export default function EnhancedLeadsTab({ campaign, campaignId, getStatusColor }) {
   const [showAddProspect, setShowAddProspect] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showProspectDetails, setShowProspectDetails] = useState(false);
@@ -27,6 +30,135 @@ export default function EnhancedLeadsTab({ campaign, getStatusColor, campaignId 
   const [showAddForm, setShowAddForm] = useState(false);
   const [showImportForm, setShowImportForm] = useState(false);
   const [deleteProspectDialog, setDeleteProspectDialog] = useState({ open: false, prospectId: null, prospectName: '' });
+  const [selectedProspectIds, setSelectedProspectIds] = useState([]);
+  const [clickTimeout, setClickTimeout] = useState(null);
+
+  // Campaign status and validation state
+  const [validationStatus, setValidationStatus] = useState({
+    status: 'pending',
+    errors: [],
+    lastChecked: null
+  });
+  const [validating, setValidating] = useState(false);
+  const [autoRefreshing, setAutoRefreshing] = useState(false);
+  const [activatingPending, setActivatingPending] = useState(false);
+
+  // Load validation status from campaign
+  useEffect(() => {
+    if (campaign?.validation) {
+      setValidationStatus({
+        status: campaign.validation.status || 'pending',
+        errors: campaign.validation.errors || [],
+        lastChecked: campaign.validation.lastChecked
+      });
+    }
+  }, [campaign]);
+
+  // Auto-refresh prospects data every 30 seconds for active campaigns
+  useEffect(() => {
+    if (campaign?.status === 'active') {
+      const interval = setInterval(async () => {
+        console.log('Auto-refreshing prospects data...');
+        setAutoRefreshing(true);
+        await fetchProspects();
+        setAutoRefreshing(false);
+      }, 30000); // 30 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [campaign?.status]);
+
+  // Validation functions
+  const validateCampaign = async () => {
+    setValidating(true);
+    try {
+      const response = await fetch(`/api/campaigns/${campaignId}/validate`, {
+        method: 'POST'
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setValidationStatus({
+          status: data.validation.valid ? 'valid' : 'invalid',
+          errors: data.validation.errors || [],
+          lastChecked: new Date()
+        });
+
+        if (data.validation.valid) {
+          toast.success('Campaign validation passed');
+        } else {
+          toast.error(`Validation failed: ${data.validation.errors.length} issues found`);
+        }
+      } else {
+        toast.error('Failed to validate campaign');
+      }
+    } catch (error) {
+      console.error('Validation error:', error);
+      toast.error('Failed to validate campaign');
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'valid':
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'invalid':
+        return <AlertTriangle className="h-4 w-4 text-red-600" />;
+      case 'pending':
+        return <Clock className="h-4 w-4 text-yellow-600" />;
+      default:
+        return <Clock className="h-4 w-4 text-gray-400" />;
+    }
+  };
+
+  // const getStatusColor = (status) => {
+  //   switch (status) {
+  //     case 'valid':
+  //       return 'bg-green-50 text-green-700 border-green-200';
+  //     case 'invalid':
+  //       return 'bg-red-50 text-red-700 border-red-200';
+  //     case 'pending':
+  //       return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+  //     default:
+  //       return 'bg-gray-50 text-gray-700 border-gray-200';
+  //   }
+  // };
+
+  // Handle single/double click functionality
+  const handleProspectClick = (prospectData, event) => {
+    // Prevent click if clicking on action buttons
+    if (event.target.closest('button') || event.target.closest('.dropdown')) {
+      return;
+    }
+
+    if (clickTimeout) {
+      // Double click - open edit modal
+      clearTimeout(clickTimeout);
+      setClickTimeout(null);
+      setEditingProspect(prospectData);
+      setShowEditProspect(true);
+    } else {
+      // Single click - select prospect
+      const timeout = setTimeout(() => {
+        setSelectedProspectIds(prev => {
+          const isSelected = prev.includes(prospectData._id);
+          if (event.ctrlKey || event.metaKey) {
+            // Multi-select with Ctrl/Cmd
+            return isSelected 
+              ? prev.filter(id => id !== prospectData._id)
+              : [...prev, prospectData._id];
+          } else {
+            // Single select
+            return isSelected ? [] : [prospectData._id];
+          }
+        });
+        setClickTimeout(null);
+      }, 250);
+      setClickTimeout(timeout);
+    }
+  };
   const [selectedExistingProspects, setSelectedExistingProspects] = useState([]);
   const [csvData, setCsvData] = useState('');
   const [csvHeaders, setCsvHeaders] = useState([]);
@@ -41,6 +173,7 @@ export default function EnhancedLeadsTab({ campaign, getStatusColor, campaignId 
   const [newProspect, setNewProspect] = useState({
     firstName: '',
     email: '',
+    additionalEmails: [],
     company: '',
     phone: '',
     website: '',
@@ -54,6 +187,7 @@ export default function EnhancedLeadsTab({ campaign, getStatusColor, campaignId 
   const [editedProspect, setEditedProspect] = useState({
     firstName: '',
     email: '',
+    additionalEmails: [],
     company: '',
     phone: '',
     website: '',
@@ -119,6 +253,10 @@ export default function EnhancedLeadsTab({ campaign, getStatusColor, campaignId 
     loadProspects();
   }, [campaignId]);
 
+
+
+
+
   const filteredProspects = prospects.filter(p => {
     const matchesSearch = !searchTerm || 
       `${p.firstName || ''} ${p.lastName || ''} ${p.email} ${p.company || ''}`
@@ -162,6 +300,7 @@ export default function EnhancedLeadsTab({ campaign, getStatusColor, campaignId 
           firstName: '',
           lastName: '',
           email: '',
+          additionalEmails: [],
           company: '',
           phone: '',
           website: '',
@@ -206,36 +345,25 @@ const handleDeleteProspect = async (prospectId) => {
   }
 };
 
-  const handleCSVAnalysis = () => {
-    if (!csvData.trim()) {
-      toast('Please paste CSV data first');
-      return;
+  const handleCSVImport = async (mappedData) => {
+    try {
+      const response = await fetch(`/api/campaigns/${campaignId}/prospects/bulk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prospects: mappedData })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        toast.success(`✅ Successfully imported ${result.imported} prospects!`);
+        setShowImportModal(false);
+        fetchProspects();
+      } else {
+        toast.error('❌ Import failed: ' + result.error);
+      }
+    } catch (error) {
+      toast.error('❌ Import error: ' + error.message);
     }
-
-    const lines = csvData.trim().split('\n');
-    const headers = lines[0].split(',').map(h => h.trim());
-    const rows = lines.slice(1).map(line => line.split(',').map(cell => cell.trim()));
-
-    setCsvHeaders(headers);
-    setCsvRows(rows);
-    
-    // Auto-map common fields
-    const autoMapping = {};
-    headers.forEach((header, index) => {
-      const lowerHeader = header.toLowerCase();
-      if (lowerHeader.includes('first') && lowerHeader.includes('name')) autoMapping[index] = 'firstName';
-      else if (lowerHeader.includes('last') && lowerHeader.includes('name')) autoMapping[index] = 'lastName';
-      else if (lowerHeader.includes('email')) autoMapping[index] = 'email';
-      else if (lowerHeader.includes('company')) autoMapping[index] = 'company';
-      else if (lowerHeader.includes('phone')) autoMapping[index] = 'phone';
-      else if (lowerHeader.includes('website')) autoMapping[index] = 'website';
-      else if (lowerHeader.includes('industry')) autoMapping[index] = 'industry';
-      else if (lowerHeader.includes('position') || lowerHeader.includes('title')) autoMapping[index] = 'position';
-    });
-
-    setFieldMapping(autoMapping);
-    setShowImportModal(false);
-    setShowFieldMapping(true);
   };
 
   const handleImportWithMapping = async () => {
@@ -311,11 +439,38 @@ const handleDeleteProspect = async (prospectId) => {
     }
   };
 
+  // Debounced search for available prospects
+  const debouncedFetchAvailableProspects = useCallback(
+    debounce((searchTerm) => {
+      fetchAvailableProspects(searchTerm);
+    }, 500),
+    [campaignId]
+  );
+
   useEffect(() => {
     if (showAddExisting) {
-      fetchAvailableProspects(searchAvailableTerm);
+      // Initial load without search term
+      if (searchAvailableTerm === '') {
+        fetchAvailableProspects('');
+      } else {
+        // Use debounced search for typed queries
+        debouncedFetchAvailableProspects(searchAvailableTerm);
+      }
     }
-  }, [showAddExisting, searchAvailableTerm]);
+  }, [showAddExisting, searchAvailableTerm, debouncedFetchAvailableProspects]);
+  
+  // Debounce utility function
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
 
   const handleAddExistingProspects = async () => {
     if (selectedExistingProspects.length === 0) {
@@ -346,45 +501,81 @@ const handleDeleteProspect = async (prospectId) => {
     }
   };
 
-  const handleUpdateProspect = async () => {
-    try {
-      const response = await fetch(`/api/prospects/${editingProspect._id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(editedProspect)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update prospect');
-      }
-
-      // Update the prospects list with the edited data
-      setProspects(prospects.map(p => 
-        p._id === editingProspect._id ? {...p, ...editedProspect} : p
-      ));
-
-      // Reset states
-      setEditingProspect(null);
-      setShowEditProspect(false);
-      setEditedProspect({
-        firstName: '',
-        email: '',
-        company: '',
-        phone: '',
-        website: '',
-        industry: '',
-        position: '',
-        notes: '',
-        instagram: '',
-        linkedin: '',
-        personalizationNote: ''
-      });
-
-    } catch (error) {
-      console.error('Error updating prospect:', error);
+  // Activate pending prospects
+  const handleActivatePendingProspects = async () => {
+    const pendingCount = prospects.filter(p => p.status === 'pending').length;
+    if (pendingCount === 0) {
+      toast('No pending prospects to activate');
+      return;
     }
+
+    setActivatingPending(true);
+    try {
+      const response = await fetch(`/api/campaigns/${campaignId}/prospects/activate-pending`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          toast.success(`✅ Activated ${data.activated} pending prospects`);
+          await fetchProspects(); // Refresh the prospects list
+        } else {
+          toast.error(data.error || 'Failed to activate prospects');
+        }
+      } else {
+        toast.error('Failed to activate prospects');
+      }
+    } catch (error) {
+      console.error('Failed to activate prospects:', error);
+      toast.error('Error activating prospects');
+    } finally {
+      setActivatingPending(false);
+    }
+  };
+
+  const handleUpdateProspect = async () => {
+      try {
+        const response = await fetch(`/api/campaigns/${campaignId}/prospects/${editingProspect._id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(editedProspect)
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update prospect');
+        }
+  
+        // Update the prospects list with the edited data
+        setProspects(prospects.map(p => 
+          p._id === editingProspect._id ? {...p, ...editedProspect} : p
+        ));
+  
+        // Reset states
+        setEditingProspect(null);
+        setShowEditProspect(false);
+        setEditedProspect({
+          firstName: '',
+          email: '',
+          company: '',
+          phone: '',
+          website: '',
+          industry: '',
+          position: '',
+          notes: '',
+          instagram: '',
+          linkedin: '',
+          personalizationNote: ''
+        });
+  
+        toast.success('Prospect updated successfully');
+      } catch (error) {
+        console.error('Error updating prospect:', error);
+        toast.error('Failed to update prospect: ' + error.message);
+      }
   };
 
   // Add this effect to populate editedProspect when editing starts
@@ -392,7 +583,9 @@ const handleDeleteProspect = async (prospectId) => {
     if (editingProspect) {
       setEditedProspect({
         firstName: editingProspect.firstName || '',
+        lastName: editingProspect.lastName || '',
         email: editingProspect.email || '',
+        additionalEmails: editingProspect.additionalEmails || [],
         company: editingProspect.company || '',
         phone: editingProspect.phone || '',
         website: editingProspect.website || '',
@@ -401,7 +594,8 @@ const handleDeleteProspect = async (prospectId) => {
         notes: editingProspect.notes || '',
         instagram: editingProspect.instagram || '',
         linkedin: editingProspect.linkedin || '',
-        personalizationNote: editingProspect.personalizationNote || ''
+        personalizationNote: editingProspect.personalizationNote || '',
+        customFields: editingProspect.customFields || []
       });
     }
   }, [editingProspect]);
@@ -421,7 +615,8 @@ const handleDeleteProspect = async (prospectId) => {
       prospect.position || '',
       prospect.status || '',
       prospect.currentStep || 1,
-      prospect.nextSendAt ? new Date(prospect.nextSendAt).toISOString() : ''
+      prospect.nextSendAt ? new Date(prospect.nextSendAt).toLocaleString() :
+        (prospect.status === 'active' ? 'Ready Now' : prospect.status === 'completed' ? 'Completed' : '-')
     ]);
 
     const csvContent = [csvHeaders, ...csvData]
@@ -469,13 +664,120 @@ const handleDeleteProspect = async (prospectId) => {
 
   return (
     <div className="space-y-6">
+      {/* Campaign Status & Validation Banner */}
+      {campaign && (
+        <div className="space-y-3">
+          {/* Campaign Status */}
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                {campaign.status === 'active' && <Zap className="h-5 w-5 text-green-600" />}
+                {campaign.status === 'scheduled' && <Clock className="h-5 w-5 text-blue-600" />}
+                {campaign.status === 'pending_scheduled' && <AlertTriangle className="h-5 w-5 text-yellow-600" />}
+                {campaign.status === 'draft' && <Settings className="h-5 w-5 text-gray-600" />}
+                <span className="font-medium text-gray-900">Campaign Status:</span>
+                <Badge className={`capitalize ${
+                  campaign.status === 'active' ? 'bg-green-100 text-green-800' :
+                  campaign.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
+                  campaign.status === 'pending_scheduled' ? 'bg-yellow-100 text-yellow-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  {campaign.status.replace('_', ' ')}
+                </Badge>
+              </div>
+              {campaign.scheduling?.startDateTime && (
+                <span className="text-sm text-gray-600">
+                  Scheduled for: {new Date(campaign.scheduling.startDateTime).toLocaleString()}
+                </span>
+              )}
+            </div>
+            <Button
+              onClick={validateCampaign}
+              disabled={validating}
+              variant="outline"
+              size="sm"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${validating ? 'animate-spin' : ''}`} />
+              Validate
+            </Button>
+          </div>
+
+          {/* Validation Status & Warnings */}
+          {validationStatus.status === 'invalid' && validationStatus.errors.length > 0 && (
+            <Alert className="border-red-200 bg-red-50">
+              <AlertTriangle className="h-4 w-4 text-red-600" />
+              <AlertDescription>
+                <div className="space-y-2">
+                  <p className="font-medium text-red-800">Campaign validation failed:</p>
+                  <ul className="list-disc list-inside space-y-1 text-sm text-red-700">
+                    {validationStatus.errors.map((error, index) => (
+                      <li key={index}>
+                        {error.message}
+                        {error.code === 'NO_PROSPECTS' && (
+                          <Button
+                            onClick={() => setShowAddProspect(true)}
+                            variant="link"
+                            size="sm"
+                            className="ml-2 p-0 h-auto text-red-600 underline"
+                          >
+                            Add prospects now
+                          </Button>
+                        )}
+                        {error.code === 'NO_MAILBOX' && (
+                          <Button
+                            onClick={() => window.open(`/campaigns/${campaignId}?tab=options`, '_blank')}
+                            variant="link"
+                            size="sm"
+                            className="ml-2 p-0 h-auto text-red-600 underline"
+                          >
+                            Configure mailbox
+                          </Button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Success Status */}
+          {validationStatus.status === 'valid' && (
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                Campaign is ready to start! All validations passed.
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+      )}
+
       {/* Header with Actions */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Prospects</h2>
-          <p className="text-sm text-gray-600">
-            {prospects.length} total prospects • {prospects.filter(p => p.status === 'active').length} active
-          </p>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-gray-900">Prospects</h2>
+            {autoRefreshing && (
+              <div className="flex items-center gap-1 text-xs text-blue-600">
+                <RefreshCw className="h-3 w-3 animate-spin" />
+                <span>Auto-refreshing...</span>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-4 text-sm text-gray-600">
+            <span>{prospects.length} total</span>
+            <span>•</span>
+            <span className="text-green-600">{prospects.filter(p => p.status === 'active').length} active</span>
+            <span>•</span>
+            <span className="text-blue-600">{prospects.filter(p => p.nextSendAt && new Date(p.nextSendAt) <= new Date()).length} ready to send</span>
+            {campaign?.status === 'pending_scheduled' && prospects.length === 0 && (
+              <Badge variant="outline" className="text-yellow-600 border-yellow-300">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                No prospects added
+              </Badge>
+            )}
+          </div>
         </div>
         
         <div className="flex flex-wrap gap-2">
@@ -511,6 +813,28 @@ const handleDeleteProspect = async (prospectId) => {
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
+
+          {/* Activate Pending Button - only show if there are pending prospects */}
+          {prospects.filter(p => p.status === 'pending').length > 0 && (
+            <Button
+              onClick={handleActivatePendingProspects}
+              disabled={activatingPending}
+              className="bg-yellow-600 hover:bg-yellow-700"
+              size="sm"
+            >
+              {activatingPending ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Activating...
+                </>
+              ) : (
+                <>
+                  <Zap className="h-4 w-4 mr-2" />
+                  Activate {prospects.filter(p => p.status === 'pending').length} Pending
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -567,14 +891,29 @@ const handleDeleteProspect = async (prospectId) => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredProspects.map((prospectData, index) => (
-                <tr key={index} className="hover:bg-gray-50">
+              {filteredProspects.map((prospectData, index) => {
+                const isSelected = selectedProspectIds.includes(prospectData._id);
+                return (
+                <tr 
+                  key={index} 
+                  className={`cursor-pointer transition-colors ${
+                    isSelected 
+                      ? 'bg-blue-50 border-blue-200' 
+                      : 'hover:bg-gray-50'
+                  }`}
+                  onClick={(e) => handleProspectClick(prospectData, e)}
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">
                         {prospectData.firstName} {prospectData.lastName}
                       </div>
                       <div className="text-sm text-gray-500">{prospectData.email}</div>
+                      {prospectData.additionalEmails && prospectData.additionalEmails.length > 0 && (
+                        <div className="text-xs text-gray-400 mt-1">
+                          +{prospectData.additionalEmails.length} more email{prospectData.additionalEmails.length > 1 ? 's' : ''}
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -589,12 +928,12 @@ const handleDeleteProspect = async (prospectId) => {
                       {prospectData.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {prospectData.nextSendAt 
-                      ? new Date(prospectData.nextSendAt).toLocaleString() 
-                      : 'Not scheduled'
-                    }
-                  </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+  {prospectData.nextSendAt 
+    ? new Date(prospectData.nextSendAt).toLocaleString() 
+    : (prospectData.status === 'active' ? 'Ready Now' : prospectData.status === 'completed' ? 'Completed' : '-')
+  }
+</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center gap-2">
                       <Button
@@ -644,7 +983,8 @@ const handleDeleteProspect = async (prospectId) => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
           
@@ -670,177 +1010,241 @@ const handleDeleteProspect = async (prospectId) => {
 
       {/* Add Prospect Modal */}
       <Dialog open={showAddProspect} onOpenChange={setShowAddProspect}>
-        <DialogContent className="max-w-2xl">
-          <div className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Prospect</h3>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col bg-white border-0 shadow-2xl p-0">
+          <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-gray-100">
+            <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+              <div className="p-2 bg-gray-900 rounded-xl">
+                <Plus className="h-6 w-6 text-white" />
+              </div>
+              Add New Prospect
+            </DialogTitle>
+            <DialogDescription className="text-base text-gray-600">
+              Add a new prospect to this campaign with detailed information
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto px-6 py-6">
+            <div className="space-y-6">
             
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
-                <Input
-                  value={newProspect.firstName}
-                  onChange={(e) => setNewProspect(prev => ({ ...prev, firstName: e.target.value }))}
-                  placeholder="John"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                <Input
-                  value={newProspect.lastName || ''}
-                  onChange={(e) => setNewProspect(prev => ({ ...prev, lastName: e.target.value }))}
-                  placeholder="Doe"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                <Input
-                  type="email"
-                  value={newProspect.email}
-                  onChange={(e) => setNewProspect(prev => ({ ...prev, email: e.target.value }))}
-                  placeholder="john@company.com"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
-                <Input
-                  value={newProspect.company}
-                  onChange={(e) => setNewProspect(prev => ({ ...prev, company: e.target.value }))}
-                  placeholder="Acme Corp"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <Input
-                  value={newProspect.phone}
-                  onChange={(e) => setNewProspect(prev => ({ ...prev, phone: e.target.value }))}
-                  placeholder="+1 (555) 123-4567"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
-                <Input
-                  value={newProspect.website}
-                  onChange={(e) => setNewProspect(prev => ({ ...prev, website: e.target.value }))}
-                  placeholder="https://company.com"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
-                <Input
-                  value={newProspect.industry}
-                  onChange={(e) => setNewProspect(prev => ({ ...prev, industry: e.target.value }))}
-                  placeholder="Technology"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
-                <Input
-                  value={newProspect.position}
-                  onChange={(e) => setNewProspect(prev => ({ ...prev, position: e.target.value }))}
-                  placeholder="CEO"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500">@</span>
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">First Name *</label>
+                    <Input
+                      value={newProspect.firstName}
+                      onChange={(e) => setNewProspect(prev => ({ ...prev, firstName: e.target.value }))}
+                      placeholder="John"
+                      required
+                      className="h-11"
+                    />
                   </div>
-                  <Input
-                    value={newProspect.instagram}
-                    onChange={(e) => setNewProspect(prev => ({ ...prev, instagram: e.target.value }))}
-                    className="pl-8"
-                    placeholder="username"
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Last Name</label>
+                    <Input
+                      value={newProspect.lastName || ''}
+                      onChange={(e) => setNewProspect(prev => ({ ...prev, lastName: e.target.value }))}
+                      placeholder="Doe"
+                      className="h-11"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <MultiEmailInput
+                    primaryEmail={newProspect.email}
+                    additionalEmails={newProspect.additionalEmails || []}
+                    onPrimaryEmailChange={(email) => setNewProspect(prev => ({ ...prev, email }))}
+                    onAdditionalEmailsChange={(emails) => setNewProspect(prev => ({ ...prev, additionalEmails: emails }))}
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
-                <Input
-                  value={newProspect.linkedin}
-                  onChange={(e) => setNewProspect(prev => ({ ...prev, linkedin: e.target.value }))}
-                  placeholder="linkedin.com/in/username"
-                />
+
+              {/* Company Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Company Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Company</label>
+                    <Input
+                      value={newProspect.company}
+                      onChange={(e) => setNewProspect(prev => ({ ...prev, company: e.target.value }))}
+                      placeholder="Acme Corp"
+                      className="h-11"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Position</label>
+                    <Input
+                      value={newProspect.position}
+                      onChange={(e) => setNewProspect(prev => ({ ...prev, position: e.target.value }))}
+                      placeholder="CEO"
+                      className="h-11"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Industry</label>
+                    <Input
+                      value={newProspect.industry}
+                      onChange={(e) => setNewProspect(prev => ({ ...prev, industry: e.target.value }))}
+                      placeholder="Technology"
+                      className="h-11"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Website</label>
+                    <Input
+                      value={newProspect.website}
+                      onChange={(e) => setNewProspect(prev => ({ ...prev, website: e.target.value }))}
+                      placeholder="https://company.com"
+                      className="h-11"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Personalization Note</label>
-              <Textarea
-                value={newProspect.personalizationNote}
-                onChange={(e) => setNewProspect(prev => ({ ...prev, personalizationNote: e.target.value }))}
-                placeholder="Add personalization details for this prospect..."
-                rows={2}
-                className="mb-4"
-              />
-            </div>
-            
-            <div className="mb-4">
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium text-gray-700">Custom Fields</label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCustomFields([...customFields, { name: '', value: '' }])}
-                >
-                  <Plus className="h-4 w-4 mr-1" /> Add Field
-                </Button>
+
+              {/* Contact Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Contact Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Phone</label>
+                    <Input
+                      value={newProspect.phone}
+                      onChange={(e) => setNewProspect(prev => ({ ...prev, phone: e.target.value }))}
+                      placeholder="+1 (555) 123-4567"
+                      className="h-11"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">LinkedIn</label>
+                    <Input
+                      value={newProspect.linkedin}
+                      onChange={(e) => setNewProspect(prev => ({ ...prev, linkedin: e.target.value }))}
+                      placeholder="linkedin.com/in/username"
+                      className="h-11"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Instagram</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span className="text-gray-500">@</span>
+                      </div>
+                      <Input
+                        value={newProspect.instagram}
+                        onChange={(e) => setNewProspect(prev => ({ ...prev, instagram: e.target.value }))}
+                        className="pl-8 h-11"
+                        placeholder="username"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-              
-              {customFields.map((field, index) => (
-                <div key={index} className="flex gap-2 mb-2">
-                  <Input
-                    value={field.name}
-                    onChange={(e) => {
-                      const updated = [...customFields];
-                      updated[index].name = e.target.value;
-                      setCustomFields(updated);
-                    }}
-                    placeholder="Field name"
-                    className="flex-1"
+            
+              {/* Personalization */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Personalization</h3>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Personalization Note</label>
+                  <Textarea
+                    value={newProspect.personalizationNote}
+                    onChange={(e) => setNewProspect(prev => ({ ...prev, personalizationNote: e.target.value }))}
+                    placeholder="Add personalization details for this prospect..."
+                    rows={3}
+                    className="resize-none"
                   />
-                  <Input
-                    value={field.value}
-                    onChange={(e) => {
-                      const updated = [...customFields];
-                      updated[index].value = e.target.value;
-                      setCustomFields(updated);
-                    }}
-                    placeholder="Value"
-                    className="flex-1"
-                  />
+                </div>
+              </div>
+            
+              {/* Custom Fields */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold text-gray-900">Custom Fields</h3>
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      const updated = customFields.filter((_, i) => i !== index);
-                      setCustomFields(updated);
-                    }}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCustomFields([...customFields, { name: '', value: '' }])}
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
                   >
-                    <Trash2 className="h-4 w-4 text-red-500" />
+                    <Plus className="h-4 w-4 mr-2" /> Add Field
                   </Button>
                 </div>
-              ))}
-            </div>
+                
+                <div className="space-y-3">
+                  {customFields.map((field, index) => (
+                    <div key={index} className="flex gap-3 items-center p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <Input
+                        value={field.name}
+                        onChange={(e) => {
+                          const updated = [...customFields];
+                          updated[index].name = e.target.value;
+                          setCustomFields(updated);
+                        }}
+                        placeholder="Field name"
+                        className="flex-1 h-10"
+                      />
+                      <Input
+                        value={field.value}
+                        onChange={(e) => {
+                          const updated = [...customFields];
+                          updated[index].value = e.target.value;
+                          setCustomFields(updated);
+                        }}
+                        placeholder="Value"
+                        className="flex-1 h-10"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const updated = customFields.filter((_, i) => i !== index);
+                          setCustomFields(updated);
+                        }}
+                        className="text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-              <Textarea
-                value={newProspect.notes}
-                onChange={(e) => setNewProspect(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Additional notes about this prospect..."
-                rows={3}
-              />
+              {/* Notes */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Additional Notes</h3>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Notes</label>
+                  <Textarea
+                    value={newProspect.notes}
+                    onChange={(e) => setNewProspect(prev => ({ ...prev, notes: e.target.value }))}
+                    placeholder="Additional notes about this prospect..."
+                    rows={4}
+                    className="resize-none"
+                  />
+                </div>
+              </div>
             </div>
-            
+          </div>
+
+          {/* Footer */}
+          <div className="flex-shrink-0 px-6 py-4 border-t border-gray-200 bg-white">
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setShowAddProspect(false)}>
+            
+              <Button 
+                variant="outline" 
+                onClick={() => setShowAddProspect(false)}
+                className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2"
+              >
                 Cancel
               </Button>
-              <Button onClick={handleAddProspect} className="bg-blue-600 hover:bg-blue-700">
+              <Button 
+                onClick={handleAddProspect} 
+                className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-2 font-medium"
+              >
                 Add Prospect
               </Button>
             </div>
@@ -848,163 +1252,15 @@ const handleDeleteProspect = async (prospectId) => {
         </DialogContent>
       </Dialog>
 
-      {/* Import CSV Modal */}
-      <Dialog open={showImportModal} onOpenChange={setShowImportModal}>
-        <DialogContent className="max-w-3xl">
-          <div className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Import Prospects from CSV</h3>
-            
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-2">
-                CSV should have headers: firstName, lastName, email, company, phone, website, industry, position
-              </p>
-              <div className="bg-gray-50 p-3 rounded text-xs font-mono">
-                firstName,lastName,email,company,phone,website,industry,position<br/>
-                John,Doe,john@company.com,Acme Corp,+1234567890,https://acme.com,Technology,CEO
-              </div>
-            </div>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Upload CSV File or Paste Data</label>
-              
-              {/* File Upload Section */}
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 mb-4 text-center">
-                <input
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  id="csv-upload"
-                />
-                <label htmlFor="csv-upload" className="cursor-pointer">
-                  <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">
-                    Click to upload CSV file or drag and drop
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Supports .csv files up to 10MB
-                  </p>
-                </label>
-              </div>
-              
-              <div className="text-center text-sm text-gray-500 mb-4">OR</div>
-              
-              {/* Manual Paste Section */}
-              <label className="block text-sm font-medium text-gray-700 mb-1">Paste CSV Data</label>
-              <Textarea
-                value={csvData}
-                onChange={(e) => setCsvData(e.target.value)}
-                placeholder="Paste your CSV data here..."
-                rows={8}
-                className="font-mono text-sm"
-              />
-            </div>
-            
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setShowImportModal(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleCSVAnalysis} 
-                disabled={importing}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                Analyze & Map Fields
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Enhanced CSV Import Modal */}
+      <EnhancedCSVImport
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImport={handleCSVImport}
+        title="Import Campaign Prospects"
+        description="Upload prospect data with advanced field mapping, custom variables, and multiple email support"
+      />
 
-      {/* Field Mapping Modal */}
-      <Dialog open={showFieldMapping} onOpenChange={setShowFieldMapping}>
-        <DialogContent className="max-w-4xl">
-          <div className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Map CSV Fields</h3>
-            
-            <div className="mb-4">
-              <p className="text-sm text-gray-600">
-                We've automatically mapped your CSV fields. Review and adjust as needed:
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              {csvHeaders.map((header, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div className="flex-1">
-                    <label className="text-sm font-medium text-gray-700">{header}</label>
-                  </div>
-                  <div className="flex-1">
-                    <Select 
-                      value={fieldMapping[index] || ''} 
-                      onValueChange={(value) => 
-                        setFieldMapping(prev => ({ ...prev, [index]: value }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select field" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="skip">Skip this field</SelectItem>
-                        <SelectItem value="firstName">First Name</SelectItem>
-                        <SelectItem value="lastName">Last Name</SelectItem>
-                        <SelectItem value="email">Email</SelectItem>
-                        <SelectItem value="company">Company</SelectItem>
-                        <SelectItem value="phone">Phone</SelectItem>
-                        <SelectItem value="website">Website</SelectItem>
-                        <SelectItem value="industry">Industry</SelectItem>
-                        <SelectItem value="position">Position</SelectItem>
-                        <SelectItem value="notes">Notes</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="bg-gray-50 p-4 rounded-lg mb-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Preview (First 3 rows)</h4>
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-xs">
-                  <thead>
-                    <tr>
-                      {Object.values(fieldMapping).map((field, index) => (
-                        <th key={index} className="px-2 py-1 text-left font-medium text-gray-700">
-                          {field || 'Skipped'}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {csvRows.slice(0, 3).map((row, rowIndex) => (
-                      <tr key={rowIndex}>
-                        {row.map((cell, cellIndex) => (
-                          <td key={cellIndex} className="px-2 py-1 text-gray-600">
-                            {fieldMapping[cellIndex] ? cell : '-'}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setShowFieldMapping(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleImportWithMapping} 
-                disabled={importing}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {importing ? 'Importing...' : `Import ${csvRows.length} Prospects`}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Add Existing Prospects Modal */}
       <Dialog open={showAddExisting} onOpenChange={(open) => {
@@ -1066,25 +1322,30 @@ const handleDeleteProspect = async (prospectId) => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {availableProspects.map((prospect) => (
-                        <tr 
-                          key={prospect._id} 
-                          className={`hover:bg-gray-50 ${selectedExistingProspects.includes(prospect._id) ? 'bg-blue-50' : ''}`}
-                        >
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <input
-                              type="checkbox"
-                              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                              checked={selectedExistingProspects.includes(prospect._id)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedExistingProspects([...selectedExistingProspects, prospect._id]);
-                                } else {
-                                  setSelectedExistingProspects(selectedExistingProspects.filter(id => id !== prospect._id));
-                                }
-                              }}
-                            />
-                          </td>
+                      {availableProspects.map((prospect) => {
+                        const isSelected = selectedExistingProspects.includes(prospect._id);
+                        const handleToggleSelection = () => {
+                          if (isSelected) {
+                            setSelectedExistingProspects(selectedExistingProspects.filter(id => id !== prospect._id));
+                          } else {
+                            setSelectedExistingProspects([...selectedExistingProspects, prospect._id]);
+                          }
+                        };
+                        
+                        return (
+                          <tr 
+                            key={prospect._id} 
+                            className={`hover:bg-gray-50 cursor-pointer transition-colors ${isSelected ? 'bg-blue-50 border-l-4 border-blue-500' : ''}`}
+                            onClick={handleToggleSelection}
+                          >
+                            <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                checked={isSelected}
+                                onChange={handleToggleSelection}
+                              />
+                            </td>
                           <td className="px-4 py-3 whitespace-nowrap">
                             <div className="font-medium text-gray-900">
                               {prospect.firstName} {prospect.lastName}
@@ -1097,7 +1358,8 @@ const handleDeleteProspect = async (prospectId) => {
                             {prospect.company || '-'}
                           </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                   
@@ -1160,108 +1422,261 @@ const handleDeleteProspect = async (prospectId) => {
 
       {/* Edit Prospect Modal */}
       <Dialog open={showEditProspect} onOpenChange={setShowEditProspect}>
-        <DialogContent className="max-w-2xl">
-          {editingProspect && (
-            <div className="p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Prospect</h3>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col bg-white border-0 shadow-2xl p-0">
+          <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-gray-100">
+            <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+              <div className="p-2 bg-gray-900 rounded-xl">
+                <Edit className="h-6 w-6 text-white" />
+              </div>
+              Edit Prospect
+            </DialogTitle>
+            <DialogDescription className="text-base text-gray-600">
+              Update prospect information and details
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto px-6 py-6">
+            {editingProspect && (
+              <div className="space-y-6">
               
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
-                  <Input
-                    value={editingProspect.firstName || ''}
-                    onChange={(e) => setEditingProspect(prev => ({ ...prev, firstName: e.target.value }))}
-                    placeholder="John"
-                  />
+                {/* Basic Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">First Name *</label>
+                      <Input
+                        value={editedProspect.firstName || ''}
+                        onChange={(e) => setEditedProspect(prev => ({ ...prev, firstName: e.target.value }))}
+                        placeholder="John"
+                        className="h-11"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Last Name</label>
+                      <Input
+                        value={editedProspect.lastName || ''}
+                        onChange={(e) => setEditedProspect(prev => ({ ...prev, lastName: e.target.value }))}
+                        placeholder="Doe"
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Primary Email *</label>
+                      <Input
+                        type="email"
+                        value={editedProspect.email || ''}
+                        onChange={(e) => setEditedProspect(prev => ({ ...prev, email: e.target.value }))}
+                        placeholder="john@company.com"
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Additional Email</label>
+                      <Input
+                        type="email"
+                        value={editedProspect.additionalEmails?.[0]?.email || ''}
+                        onChange={(e) => {
+                          const email = e.target.value;
+                          setEditedProspect(prev => ({
+                            ...prev,
+                            additionalEmails: email ? [{ email, type: 'work', isPrimary: false }] : []
+                          }));
+                        }}
+                        placeholder="john.doe@company.com"
+                        className="h-11"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                  <Input
-                    value={editingProspect.lastName || ''}
-                    onChange={(e) => setEditingProspect(prev => ({ ...prev, lastName: e.target.value }))}
-                    placeholder="Doe"
-                  />
+
+                {/* Company Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Company Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Company</label>
+                      <Input
+                        value={editedProspect.company || ''}
+                        onChange={(e) => setEditedProspect(prev => ({ ...prev, company: e.target.value }))}
+                        placeholder="Acme Corp"
+                        className="h-11"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Position</label>
+                      <Input
+                        value={editedProspect.position || ''}
+                        onChange={(e) => setEditedProspect(prev => ({ ...prev, position: e.target.value }))}
+                        placeholder="CEO"
+                        className="h-11"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Industry</label>
+                      <Input
+                        value={editedProspect.industry || ''}
+                        onChange={(e) => setEditedProspect(prev => ({ ...prev, industry: e.target.value }))}
+                        placeholder="Technology"
+                        className="h-11"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Website</label>
+                      <Input
+                        value={editedProspect.website || ''}
+                        onChange={(e) => setEditedProspect(prev => ({ ...prev, website: e.target.value }))}
+                        placeholder="https://company.com"
+                        className="h-11"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                  <Input
-                    type="email"
-                    value={editingProspect.email || ''}
-                    onChange={(e) => setEditingProspect(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="john@company.com"
-                  />
+
+                {/* Contact Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Contact Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Phone</label>
+                      <Input
+                        value={editedProspect.phone || ''}
+                        onChange={(e) => setEditedProspect(prev => ({ ...prev, phone: e.target.value }))}
+                        placeholder="+1 (555) 123-4567"
+                        className="h-11"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">LinkedIn</label>
+                      <Input
+                        value={editedProspect.linkedin || ''}
+                        onChange={(e) => setEditedProspect(prev => ({ ...prev, linkedin: e.target.value }))}
+                        placeholder="linkedin.com/in/username"
+                        className="h-11"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Instagram</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <span className="text-gray-500">@</span>
+                        </div>
+                        <Input
+                          value={editedProspect.instagram || ''}
+                          onChange={(e) => setEditedProspect(prev => ({ ...prev, instagram: e.target.value }))}
+                          className="pl-8 h-11"
+                          placeholder="username"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
-                  <Input
-                    value={editingProspect.company || ''}
-                    onChange={(e) => setEditingProspect(prev => ({ ...prev, company: e.target.value }))}
-                    placeholder="Acme Corp"
-                  />
+
+                {/* Personalization */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Personalization</h3>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Personalization Note</label>
+                    <Textarea
+                      value={editedProspect.personalizationNote || ''}
+                      onChange={(e) => setEditedProspect(prev => ({ ...prev, personalizationNote: e.target.value }))}
+                      placeholder="Add personalization details for this prospect..."
+                      rows={3}
+                      className="resize-none"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                  <Input
-                    value={editingProspect.phone || ''}
-                    onChange={(e) => setEditingProspect(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="+1 (555) 123-4567"
-                  />
+
+                {/* Custom Fields */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Custom Fields</h3>
+                  {editingProspect?.customFields && editingProspect.customFields.length > 0 ? (
+                    <div className="space-y-3">
+                      {editingProspect.customFields.map((field, index) => (
+                        <div key={index} className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                              {field.name || `Custom Field ${index + 1}`}
+                            </label>
+                            <Input
+                              value={field.value || ''}
+                              onChange={(e) => {
+                                const updatedFields = [...(editedProspect.customFields || [])];
+                                if (!updatedFields[index]) {
+                                  updatedFields[index] = { name: field.name, value: '', type: 'text' };
+                                }
+                                updatedFields[index].value = e.target.value;
+                                setEditedProspect(prev => ({ ...prev, customFields: updatedFields }));
+                              }}
+                              placeholder={`Enter ${field.name || 'value'}`}
+                              className="h-11"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No custom fields defined for this prospect.</p>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
-                  <Input
-                    value={editingProspect.website || ''}
-                    onChange={(e) => setEditingProspect(prev => ({ ...prev, website: e.target.value }))}
-                    placeholder="https://company.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
-                  <Input
-                    value={editingProspect.industry || ''}
-                    onChange={(e) => setEditingProspect(prev => ({ ...prev, industry: e.target.value }))}
-                    placeholder="Technology"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
-                  <Input
-                    value={editingProspect.position || ''}
-                    onChange={(e) => setEditingProspect(prev => ({ ...prev, position: e.target.value }))}
-                    placeholder="CEO"
-                  />
+
+                {/* Notes */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Additional Notes</h3>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Notes</label>
+                    <Textarea
+                      value={editedProspect.notes || ''}
+                      onChange={(e) => setEditedProspect(prev => ({ ...prev, notes: e.target.value }))}
+                      placeholder="Additional notes about this prospect..."
+                      rows={4}
+                      className="resize-none"
+                    />
+                  </div>
                 </div>
               </div>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                <Textarea
-                  value={editingProspect.notes || ''}
-                  onChange={(e) => setEditingProspect(prev => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Additional notes about this prospect..."
-                  rows={3}
-                />
-              </div>
-              
-              <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={() => setShowEditProspect(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleUpdateProspect} className="bg-blue-600 hover:bg-blue-700">
-                  Update Prospect
-                </Button>
-              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="flex-shrink-0 px-6 py-4 border-t border-gray-200 bg-white">
+            <div className="flex justify-end gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowEditProspect(false)}
+                className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleUpdateProspect} 
+                className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-2 font-medium"
+              >
+                Update Prospect
+              </Button>
             </div>
-          )}
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* Prospect Details Modal */}
       <Dialog open={showProspectDetails} onOpenChange={setShowProspectDetails}>
-        <DialogContent className="max-w-2xl">
-          {selectedProspect && (
-            <div className="p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Prospect Details</h3>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col bg-white border-0 shadow-2xl p-0">
+          <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-gray-100">
+            <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+              <div className="p-2 bg-gray-900 rounded-xl">
+                <Eye className="h-6 w-6 text-white" />
+              </div>
+              Prospect Details
+            </DialogTitle>
+            <DialogDescription className="text-base text-gray-600">
+              View detailed information about this prospect
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto px-6 py-6">
+            {selectedProspect && (
+              <div className="space-y-6">
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -1282,7 +1697,7 @@ const handleDeleteProspect = async (prospectId) => {
                   <label className="text-sm font-medium text-gray-500">Position</label>
                   <p className="text-sm text-gray-900">{selectedProspect.position || 'N/A'}</p>
                 </div>
-                <div>
+                <div> 
                   <label className="text-sm font-medium text-gray-500">Status</label>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedProspect.status)}`}>
                     {selectedProspect.status}
@@ -1301,6 +1716,7 @@ const handleDeleteProspect = async (prospectId) => {
               </div>
             </div>
           )}
+          </div>
         </DialogContent>
       </Dialog>
       

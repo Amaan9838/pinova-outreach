@@ -3,13 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Play, Pause, RotateCcw, Zap, Mail, Trash2 } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Zap, Mail, Trash2 } from 'lucide-react';
 
 export default function Header({
   campaign,
   getStatusColor,
   sendTestEmail,
-  rescheduleNow,
   processSequencesManually,
   pauseCampaign,
   resumeCampaign,
@@ -73,15 +72,6 @@ export default function Header({
             Test Email
           </Button>
           
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={rescheduleNow}
-            className="flex items-center gap-2 text-orange-600 border-orange-200 hover:bg-orange-50"
-          >
-            <RotateCcw className="h-4 w-4" />
-            Reschedule
-          </Button>
           
           <Button
             variant="outline"

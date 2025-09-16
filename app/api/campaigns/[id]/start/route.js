@@ -1,5 +1,9 @@
 import dbConnect from '../../../../../lib/mongodb.js';
 import Campaign from '../../../../../models/Campaign.js';
+import CampaignProspect from '../../../../../models/CampaignProspect.js';
+import { CampaignProspectService } from '../../../../../lib/services/CampaignProspectService.js';
+import { CampaignValidationService } from '../../../../../lib/campaignValidation.js';
+import { CampaignNotificationService } from '../../../../../lib/campaignNotifications.js';
 
 export async function POST(request, { params }) {
   try {
@@ -15,52 +19,97 @@ export async function POST(request, { params }) {
       );
     }
 
-    // Validate campaign can be started
-    if (!campaign.sequence || campaign.sequence.length === 0) {
+    // Check if campaign can be started
+    if (!['draft', 'pending_scheduled', 'scheduled', 'failed', 'paused'].includes(campaign.status)) {
       return Response.json(
-        { success: false, error: 'Campaign must have at least one sequence step' },
+        { success: false, error: `Campaign cannot be started from status: ${campaign.status}` },
         { status: 400 }
       );
     }
 
-    if (!campaign.options?.selectedMailbox) {
+    // Perform full validation (with manual start context - allows past start times)
+    console.log(`Validating campaign ${id} for manual start...`);
+    const validation = await CampaignValidationService.validateCampaign(id, { isManualStart: true });
+    
+    if (!validation.valid) {
+      const errorMessages = validation.errors.map(e => e.message).join(', ');
+      console.log(`Campaign validation failed: ${errorMessages}`);
+      
       return Response.json(
-        { success: false, error: 'Campaign must have at least one mailbox' },
+        {
+          success: false,
+          error: `Campaign validation failed: ${errorMessages}`,
+          errors: validation.errors
+        },
         { status: 400 }
       );
     }
 
-    if (!campaign.prospects || campaign.prospects.length === 0) {
-      return Response.json(
-        { success: false, error: 'Campaign must have at least one prospect' },
-        { status: 400 }
-      );
-    }
+    console.log(`Campaign ${id} validation passed, starting campaign...`);
 
-    // Update campaign status and set next send times for prospects
+    // Store previous status for notifications
+    const previousStatus = campaign.status;
+
+    // Update campaign status
     campaign.status = 'active';
+    campaign.startedAt = new Date();
     
-    const now = new Date();
-    console.log('Starting campaign, current time:', now);
+    // Clear any validation errors since we're starting successfully
+    campaign.validation.status = 'valid';
+    campaign.validation.errors = [];
+    campaign.validation.retryCount = 0;
+    campaign.validation.nextRetryAt = undefined;
     
-    campaign.prospects.forEach((prospect, index) => {
-      if (prospect.status === 'pending') {
-        prospect.status = 'active';
-        prospect.currentStep = 1;
-        // Schedule first send within next 10 minutes, spread out
-        const delayMinutes = index * 2; // 0, 2, 4, 6 minutes etc.
-        prospect.nextSendAt = new Date(now.getTime() + delayMinutes * 60 * 1000);
-        
-        console.log(`Scheduled prospect ${prospect.prospectId} for ${prospect.nextSendAt}`);
-      }
-    });
-
     await campaign.save();
+
+    // Sync prospects with campaign status using the service
+    const syncResult = await CampaignProspectService.syncProspectsWithCampaignStatus(
+      id,
+      'active'
+    );
+
+    if (!syncResult.success) {
+      console.error(`Failed to sync prospects for campaign ${id}:`, syncResult.error);
+      
+      // If sync fails, revert campaign status
+      campaign.status = previousStatus;
+      await campaign.save();
+      
+      return Response.json(
+        {
+          success: false,
+          error: `Failed to sync prospects: ${syncResult.error}`
+        },
+        { status: 500 }
+      );
+    } else {
+      console.log(`Synced ${syncResult.modified} prospects for campaign ${id}`);
+    }
+
+    // Send notifications
+    try {
+      await CampaignNotificationService.notifyCampaignStatusChange(
+        campaign,
+        previousStatus
+      );
+
+      await CampaignNotificationService.notifySchedulingEvent(
+        campaign,
+        'manually_started',
+        { startedAt: campaign.startedAt }
+      );
+    } catch (notificationError) {
+      console.error('Failed to send start notifications:', notificationError);
+      // Don't fail the start process due to notification issues
+    }
 
     return Response.json({
       success: true,
       message: 'Campaign started successfully',
-      campaign
+      campaign,
+      syncResult: {
+        modified: syncResult.modified
+      }
     });
 
   } catch (error) {

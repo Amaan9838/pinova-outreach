@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Filter, Plus, MoreHorizontal, Play, Pause, Copy, Edit2, Trash2, Calendar, Users, Mail, Eye, TrendingUp } from 'lucide-react';
+import { Search, Filter, Plus, MoreHorizontal, Play, Pause, Copy, Edit2, Trash2, Calendar, Users, Mail, Eye, TrendingUp, RefreshCw, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -72,11 +72,7 @@ export default function CampaignsPage() {
       }
     } catch (error) {
       console.error('Failed to fetch campaigns:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch campaigns",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch campaigns");
     } finally {
       setLoading(false);
     }
@@ -106,6 +102,7 @@ export default function CampaignsPage() {
           body = { name: newName };
           break;
         case 'delete':
+          endpoint += '/delete';
           method = 'DELETE';
           break;
       }
@@ -145,8 +142,12 @@ export default function CampaignsPage() {
   const getStatusColor = (status) => {
     switch (status) {
       case 'active': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'scheduled': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'pending_scheduled': return 'bg-yellow-50 text-yellow-700 border-yellow-200';
       case 'paused': return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'completed': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'completed': return 'bg-green-50 text-green-700 border-green-200';
+      case 'failed': return 'bg-red-50 text-red-700 border-red-200';
+      case 'cancelled': return 'bg-gray-50 text-gray-700 border-gray-200';
       case 'draft': return 'bg-gray-50 text-gray-700 border-gray-200';
       default: return 'bg-gray-50 text-gray-700 border-gray-200';
     }
@@ -414,13 +415,19 @@ export default function CampaignsPage() {
                       <Calendar className="h-4 w-4" />
                       <span><strong>Created:</strong> {campaign.createdAt ? new Date(campaign.createdAt).toLocaleDateString() : 'Unknown'}</span>
                     </div>
+                    {campaign.scheduling?.startDateTime && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Clock className="h-4 w-4" />
+                        <span><strong>Scheduled:</strong> {new Date(campaign.scheduling.startDateTime).toLocaleString()}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Action Buttons */}
                   <div className="flex justify-between items-center">
                     <div className="flex gap-2">
                       {campaign.status === 'draft' && (
-                        <Button 
+                        <Button
                           onClick={() => handleCampaignAction(campaign._id, 'start')}
                           size="sm"
                           className="bg-green-600 hover:bg-green-700 text-white"
@@ -429,8 +436,29 @@ export default function CampaignsPage() {
                           Start
                         </Button>
                       )}
+                      {campaign.status === 'scheduled' && (
+                        <Button
+                          onClick={() => handleCampaignAction(campaign._id, 'start')}
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <Play className="h-4 w-4 mr-1" />
+                          Start Now
+                        </Button>
+                      )}
+                      {campaign.status === 'pending_scheduled' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-yellow-200 text-yellow-700 hover:bg-yellow-50"
+                          disabled
+                        >
+                          <Calendar className="h-4 w-4 mr-1" />
+                          Pending
+                        </Button>
+                      )}
                       {campaign.status === 'active' && (
-                        <Button 
+                        <Button
                           onClick={() => handleCampaignAction(campaign._id, 'pause')}
                           size="sm"
                           variant="outline"
@@ -441,13 +469,24 @@ export default function CampaignsPage() {
                         </Button>
                       )}
                       {campaign.status === 'paused' && (
-                        <Button 
+                        <Button
                           onClick={() => handleCampaignAction(campaign._id, 'resume')}
                           size="sm"
                           className="bg-green-600 hover:bg-green-700 text-white"
                         >
                           <Play className="h-4 w-4 mr-1" />
                           Resume
+                        </Button>
+                      )}
+                      {campaign.status === 'failed' && (
+                        <Button
+                          onClick={() => handleCampaignAction(campaign._id, 'retry')}
+                          size="sm"
+                          variant="outline"
+                          className="border-red-200 text-red-700 hover:bg-red-50"
+                        >
+                          <RefreshCw className="h-4 w-4 mr-1" />
+                          Retry
                         </Button>
                       )}
                     </div>

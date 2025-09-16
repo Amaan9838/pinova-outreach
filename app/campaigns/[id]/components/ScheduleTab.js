@@ -1,403 +1,680 @@
-'use client';
+"use client"
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, Plus, Clock } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { 
+  Calendar as CalendarIcon, 
+  Clock, 
+  AlertTriangle, 
+  CheckCircle, 
+  XCircle,
+  Settings,
+  Users,
+  Zap,
+  RefreshCw
+} from 'lucide-react';
+import { format } from 'date-fns';
 import { toast } from 'sonner';
 
-export default function ScheduleTab({
-  campaign,
-  scheduleSettings,
-  setScheduleSettings,
-  scheduleSaving,
-  saveScheduleSettings,
-}) {
-  const [saving, setSaving] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [timezone, setTimezone] = useState('Asia/Kolkata'); // Default IST
+export default function ScheduleTab({ campaign, campaignId, onCampaignUpdate }) {
+  const [scheduleSettings, setScheduleSettings] = useState({
+    startDate: null,
+    startTime: '09:00',
+    timezone: 'UTC',
+    businessHours: {
+      enabled: true,
+      startTime: '09:00',
+      endTime: '17:00',
+      daysOfWeek: [1, 2, 3, 4, 5] // Monday to Friday
+    },
+    dailySendCap: 50,
+    staggerSettings: {
+      enabled: true,
+      baseDelayMinutes: 2,
+      randomVariationMinutes: 1
+    },
+    autoActivateWhenReady: false
+  });
+  
+  const [validationStatus, setValidationStatus] = useState({
+    status: 'pending',
+    errors: [],
+    lastChecked: null
+  });
+  
+  const [loading, setLoading] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [prospectStats, setProspectStats] = useState({
+    total: 0,
+    pending: 0,
+    active: 0,
+    completed: 0,
+    failed: 0
+  });
+  const [loadingProspects, setLoadingProspects] = useState(false);
 
-  // Load schedule settings and timezone on component mount
+  // Load existing schedule settings
   useEffect(() => {
-    const loadScheduleSettings = async () => {
-      try {
-        const response = await fetch(`/api/campaigns/${campaign._id}/schedule`);
-        
-        if (response.ok) {
-          const data = await response.json();
-          
-          if (data.success && data.schedule) {
-            setScheduleSettings(data.schedule);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load schedule settings:', error);
-      }
-    };
-
-    const loadTimezone = async () => {
-      try {
-        const response = await fetch(`/api/campaigns/${campaign._id}/options`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.options?.timezone) {
-            setTimezone(data.options.timezone);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load timezone:', error);
-      }
-    };
-
-    if (campaign?._id) {
-      loadScheduleSettings();
-      loadTimezone();
+    if (campaign?.scheduling) {
+      const scheduling = campaign.scheduling;
+      setScheduleSettings(prev => ({
+        ...prev,
+        startDate: scheduling.startDateTime ? new Date(scheduling.startDateTime) : null,
+        startTime: scheduling.startDateTime ? 
+          format(new Date(scheduling.startDateTime), 'HH:mm') : '09:00',
+        timezone: scheduling.timezone || 'UTC',
+        businessHours: scheduling.businessHours || prev.businessHours,
+        dailySendCap: scheduling.dailySendCap || 50,
+        staggerSettings: scheduling.staggerSettings || prev.staggerSettings,
+        autoActivateWhenReady: scheduling.autoActivateWhenReady || false
+      }));
     }
-  }, [campaign?._id, setScheduleSettings]);
-
-  // Update current time every minute
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  const handleSaveSchedule = async () => {
-    setSaving(true);
-    try {
-      // Validate schedule settings
-      if (!scheduleSettings.timing?.from || !scheduleSettings.timing?.to) {
-        throw new Error('Please set both start and end times');
-      }
-
-      // Convert 12-hour format to 24-hour for comparison
-      const convertTo24Hour = (time12h) => {
-        const [time, modifier] = time12h.split(' ');
-        let [hours, minutes] = time.split(':');
-        if (hours === '12') hours = '00';
-        if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
-        return `${String(hours).padStart(2, '0')}:${minutes}`;
-      };
-
-      const fromTime24 = convertTo24Hour(scheduleSettings.timing.from);
-      const toTime24 = convertTo24Hour(scheduleSettings.timing.to);
-      
-      // Ensure at least one day is selected
-      const hasSelectedDays = Object.values(scheduleSettings.days).some(day => day);
-      if (!hasSelectedDays) {
-        throw new Error('Please select at least one day for sending emails');
-      }
-
-      // Ensure "from" time is before "to" time
-      if (fromTime24 >= toTime24) {
-        throw new Error('Start time must be before end time');
-      }
-
-      // Validate email delay
-      if (!scheduleSettings.emailDelay || scheduleSettings.emailDelay < 1 || scheduleSettings.emailDelay > 60) {
-        throw new Error('Email delay must be between 1 and 60 minutes');
-      }
-
-      const response = await fetch(`/api/campaigns/${campaign._id}/schedule`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...scheduleSettings,
-          initialStartTime: new Date().toISOString(),
-          nextScheduledTime: null,
-          lastProcessedTime: null
-        })
+    
+    if (campaign?.validation) {
+      setValidationStatus({
+        status: campaign.validation.status || 'pending',
+        errors: campaign.validation.errors || [],
+        lastChecked: campaign.validation.lastChecked
       });
-      
+    }
+  }, [campaign]);
+
+  // Fetch prospect stats on component mount and when campaign changes
+  useEffect(() => {
+    fetchProspectStats();
+  }, [campaignId, campaign?.status]);
+
+  const timezones = [
+    { value: 'UTC', label: 'UTC' },
+    { value: 'America/New_York', label: 'Eastern Time (ET)' },
+    { value: 'America/Chicago', label: 'Central Time (CT)' },
+    { value: 'America/Denver', label: 'Mountain Time (MT)' },
+    { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+    { value: 'Europe/London', label: 'London (GMT)' },
+    { value: 'Europe/Paris', label: 'Paris (CET)' },
+    { value: 'Asia/Tokyo', label: 'Tokyo (JST)' },
+    { value: 'Asia/Kolkata', label: 'India (IST)' },
+    { value: 'Australia/Sydney', label: 'Sydney (AEST)' }
+  ];
+
+  // Fetch prospect statistics
+  const fetchProspectStats = async () => {
+    if (!campaignId) return;
+
+    setLoadingProspects(true);
+    try {
+      const response = await fetch(`/api/campaigns/${campaignId}/prospects`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.prospects) {
+          const stats = data.prospects.reduce((acc, prospect) => {
+            acc.total++;
+            acc[prospect.status] = (acc[prospect.status] || 0) + 1;
+            return acc;
+          }, { total: 0, pending: 0, active: 0, completed: 0, failed: 0, paused: 0 });
+
+          setProspectStats(stats);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch prospect stats:', error);
+    } finally {
+      setLoadingProspects(false);
+    }
+  };
+
+  // Activate pending prospects
+  const activatePendingProspects = async () => {
+    if (!campaignId || prospectStats.pending === 0) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/campaigns/${campaignId}/prospects/activate-pending`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          toast.success(`Activated ${data.activated} pending prospects`);
+          fetchProspectStats(); // Refresh stats
+          if (onCampaignUpdate) onCampaignUpdate();
+        } else {
+          toast.error(data.error || 'Failed to activate prospects');
+        }
+      } else {
+        toast.error('Failed to activate prospects');
+      }
+    } catch (error) {
+      console.error('Failed to activate prospects:', error);
+      toast.error('Error activating prospects');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const daysOfWeek = [
+    { value: 1, label: 'Mon' },
+    { value: 2, label: 'Tue' },
+    { value: 3, label: 'Wed' },
+    { value: 4, label: 'Thu' },
+    { value: 5, label: 'Fri' },
+    { value: 6, label: 'Sat' },
+    { value: 0, label: 'Sun' }
+  ];
+
+  const validateCampaign = async () => {
+    setValidating(true);
+    try {
+      const response = await fetch(`/api/campaigns/${campaignId}/validate`, {
+        method: 'POST'
+      });
       const data = await response.json();
       
       if (data.success) {
-        setScheduleSettings(data.schedule);
-        toast.success('Schedule settings saved. Campaign will start sending at the next available time slot.');
+        setValidationStatus({
+          status: data.validation.valid ? 'valid' : 'invalid',
+          errors: data.validation.errors || [],
+          lastChecked: new Date()
+        });
+        
+        if (data.validation.valid) {
+          toast.success('Campaign validation passed');
+        } else {
+          toast.error(`Validation failed: ${data.validation.errors.length} issues found`);
+        }
       } else {
-        throw new Error(data.error || 'Failed to save schedule settings');
+        toast.error('Failed to validate campaign');
       }
     } catch (error) {
-      console.error('Error saving schedule settings:', error);
-      toast.error(error.message);
+      console.error('Validation error:', error);
+      toast.error('Failed to validate campaign');
     } finally {
-      setSaving(false);
+      setValidating(false);
     }
   };
-  // Format current time based on timezone
-  const formatCurrentTime = () => {
+
+  const scheduleCampaign = async () => {
+    if (!scheduleSettings.startDate) {
+      toast.error('Please select a start date');
+      return;
+    }
+
+    setLoading(true);
     try {
-      return currentTime.toLocaleString('en-US', {
-        timeZone: timezone,
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric'
+      // Combine date and time
+      const [hours, minutes] = scheduleSettings.startTime.split(':');
+      const startDateTime = new Date(scheduleSettings.startDate);
+      startDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+      const response = await fetch(`/api/campaigns/${campaignId}/schedule`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          startDateTime: startDateTime.toISOString(),
+          timezone: scheduleSettings.timezone,
+          businessHours: scheduleSettings.businessHours,
+          staggerSettings: scheduleSettings.staggerSettings,
+          autoActivateWhenReady: scheduleSettings.autoActivateWhenReady,
+          dailySendCap: scheduleSettings.dailySendCap
+        })
       });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success(data.message);
+        if (onCampaignUpdate) {
+          onCampaignUpdate(data.campaign);
+        }
+        
+        // Update validation status
+        if (data.errors && data.errors.length > 0) {
+          setValidationStatus({
+            status: 'invalid',
+            errors: data.errors,
+            lastChecked: new Date()
+          });
+        } else {
+          setValidationStatus({
+            status: 'valid',
+            errors: [],
+            lastChecked: new Date()
+          });
+        }
+      } else {
+        toast.error(data.error || 'Failed to schedule campaign');
+      }
     } catch (error) {
-      return currentTime.toLocaleString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric'
-      });
+      console.error('Schedule error:', error);
+      toast.error('Failed to schedule campaign');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const [schedules] = useState([
-    { id: 1, name: 'New schedule', active: true }
-  ]);
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'valid':
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'invalid':
+        return <XCircle className="h-4 w-4 text-red-600" />;
+      default:
+        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
+    }
+  };
 
-  // Time options for dropdowns
-  const timeOptions = [
-    '12:00 AM', '1:00 AM', '2:00 AM', '3:00 AM', '4:00 AM', '5:00 AM',
-    '6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM',
-    '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM',
-    '6:00 PM', '7:00 PM', '8:00 PM', '9:00 PM', '10:00 PM', '11:00 PM'
-  ];
-
-  const timezones = [
-    'India Standard Time (UTC+05:30)',
-    'Eastern Time (US & Canada) (UTC-04:00)',
-    'Central Time (US & Canada) (UTC-05:00)',
-    'Mountain Time (US & Canada) (UTC-06:00)',
-    'Pacific Time (US & Canada) (UTC-07:00)',
-    'UTC (UTC+00:00)',
-    'London Time (UTC+00:00)',
-    'Tokyo Time (UTC+09:00)',
-    'Sydney Time (UTC+10:00)'
-  ];
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'valid':
+        return 'bg-green-50 text-green-700 border-green-200';
+      case 'invalid':
+        return 'bg-red-50 text-red-700 border-red-200';
+      default:
+        return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+    }
+  };
 
   return (
-    <div className="flex gap-6">
-      {/* Left Sidebar - Schedule List */}
-      <div className="w-80 space-y-4">
-        {/* Current Time Display */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <Clock className="h-5 w-5 text-blue-600" />
-            <div className="flex-1">
-              <div className="text-sm font-medium text-gray-900">Current Time</div>
-              <div className="text-sm text-blue-600 font-medium">{formatCurrentTime()}</div>
-              <div className="text-xs text-gray-500 mt-1">
-                {timezone === 'Asia/Kolkata' ? 'IST (UTC+05:30)' : timezone}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Start/End Section */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-            <Calendar className="h-5 w-5 text-gray-600" />
-            <div className="flex-1">
-              <div className="text-sm font-medium text-gray-900">Start</div>
-              <div className="text-sm text-blue-600 font-medium">Now</div>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-            <Calendar className="h-5 w-5 text-gray-600" />
-            <div className="flex-1">
-              <div className="text-sm font-medium text-gray-900">End</div>
-              <div className="text-sm text-blue-600 font-medium">No end date</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Schedule List */}
-        <div className="space-y-2">
-          {schedules.map((schedule) => (
-            <div
-              key={schedule.id}
-              className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                schedule.active
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
+    <div className="space-y-6">
+      {/* Validation Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            {getStatusIcon(validationStatus.status)}
+            Campaign Validation
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between mb-4">
+            <Badge className={`${getStatusColor(validationStatus.status)} border`}>
+              {validationStatus.status.toUpperCase()}
+            </Badge>
+            <Button 
+              onClick={validateCampaign} 
+              disabled={validating}
+              variant="outline"
+              size="sm"
             >
-              <Calendar className="h-5 w-5 text-gray-600" />
-              <div className="flex-1">
-                <div className="text-sm font-medium text-gray-900">{schedule.name}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Add Schedule Button */}
-        <button className="w-full text-blue-600 font-medium text-sm hover:text-blue-700 transition-colors flex items-center justify-center gap-2 py-2">
-          <Plus className="h-4 w-4" />
-          Add schedule
-        </button>
-      </div>
-
-      {/* Right Panel - Schedule Editor */}
-      <div className="flex-1 space-y-6">
-        {/* Schedule Name */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-900">Schedule Name</label>
-          <Input
-            value={scheduleSettings.name}
-            onChange={(e) => setScheduleSettings(prev => ({ ...prev, name: e.target.value }))}
-            className="max-w-md"
-            placeholder="Enter schedule name"
-          />
-        </div>
-
-        {/* Timing Section */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900">Timing</h3>
+              <RefreshCw className={`h-4 w-4 mr-2 ${validating ? 'animate-spin' : ''}`} />
+              Validate Now
+            </Button>
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* From Time */}
+          {validationStatus.errors.length > 0 && (
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">From</label>
-              <Select 
-                value={scheduleSettings.timing.from} 
-                onValueChange={(value) => 
-                  setScheduleSettings(prev => ({
-                    ...prev,
-                    timing: { ...prev.timing, from: value }
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {timeOptions.map((time) => (
-                    <SelectItem key={time} value={time}>{time}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <h4 className="text-sm font-medium text-red-700">Issues to resolve:</h4>
+              {validationStatus.errors.map((error, index) => (
+                <Alert key={index} className="border-red-200 bg-red-50">
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-700">
+                    {error.message}
+                  </AlertDescription>
+                </Alert>
+              ))}
             </div>
+          )}
+          
+          {validationStatus.lastChecked && (
+            <p className="text-sm text-gray-500 mt-2">
+              Last checked: {format(new Date(validationStatus.lastChecked), 'PPp')}
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
-            {/* To Time */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">To</label>
-              <Select 
-                value={scheduleSettings.timing.to}
-                onValueChange={(value) => 
-                  setScheduleSettings(prev => ({
-                    ...prev,
-                    timing: { ...prev.timing, to: value }
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {timeOptions.map((time) => (
-                    <SelectItem key={time} value={time}>{time}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+      {/* Prospect Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Prospect Status
+            {loadingProspects && <RefreshCw className="h-4 w-4 animate-spin" />}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900">{prospectStats.total}</div>
+              <div className="text-sm text-gray-500">Total</div>
             </div>
-
-            {/* Timezone Info */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Timezone</label>
-              <div className="p-2 bg-gray-50 rounded border">
-                <p className="text-sm text-gray-700">
-                  {timezone === 'Asia/Kolkata' ? 'India Standard Time (IST)' : timezone}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Configure timezone in the Options tab
-                </p>
-              </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">{prospectStats.pending}</div>
+              <div className="text-sm text-gray-500">Pending</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{prospectStats.active}</div>
+              <div className="text-sm text-gray-500">Active</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{prospectStats.completed}</div>
+              <div className="text-sm text-gray-500">Completed</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">{prospectStats.failed}</div>
+              <div className="text-sm text-gray-500">Failed</div>
             </div>
           </div>
-        </div>
 
-        {/* Days Section */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900">Days</h3>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-            {Object.entries({
-              monday: 'Monday',
-              tuesday: 'Tuesday', 
-              wednesday: 'Wednesday',
-              thursday: 'Thursday',
-              friday: 'Friday',
-              saturday: 'Saturday',
-              sunday: 'Sunday'
-            }).map(([key, label]) => (
-              <div key={key} className="flex items-center space-x-2">
-                <Checkbox
-                  id={key}
-                  checked={scheduleSettings.days[key]}
-                  onCheckedChange={(checked) => 
-                    setScheduleSettings(prev => ({
-                      ...prev,
-                      days: { ...prev.days, [key]: checked }
-                    }))
-                  }
-                />
-                <label 
-                  htmlFor={key}
-                  className="text-sm font-medium text-gray-900 cursor-pointer"
+          {/* Action buttons for pending prospects */}
+          {prospectStats.pending > 0 && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium text-yellow-800">
+                    {prospectStats.pending} prospects are pending
+                  </h4>
+                  <p className="text-sm text-yellow-700">
+                    These prospects need to be activated to start receiving emails.
+                  </p>
+                </div>
+                <Button
+                  onClick={activatePendingProspects}
+                  disabled={loading}
+                  className="bg-yellow-600 hover:bg-yellow-700"
                 >
-                  {label}
-                </label>
+                  {loading ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Activating...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="h-4 w-4 mr-2" />
+                      Activate Pending
+                    </>
+                  )}
+                </Button>
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          )}
 
-        {/* Additional Settings */}
-        <div className="space-y-4 pt-6 border-t">
-          <h3 className="text-lg font-medium text-gray-900">Additional Settings</h3>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">Delay Between Emails</label>
-            <div className="flex items-center gap-2">
+          {prospectStats.total === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <Users className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+              <p className="text-lg font-medium">No prospects added</p>
+              <p className="text-sm">Add prospects to your campaign to start scheduling.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Schedule Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CalendarIcon className="h-5 w-5" />
+            Schedule Configuration
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Date and Time */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Start Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {scheduleSettings.startDate ? 
+                      format(scheduleSettings.startDate, 'PPP') : 
+                      'Select date'
+                    }
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={scheduleSettings.startDate}
+                    onSelect={(date) => setScheduleSettings(prev => ({ ...prev, startDate: date }))}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Start Time</Label>
               <Input
-                type="number"
-                min="1"
-                max="60"
-                value={scheduleSettings.emailDelay || 5}
-                onChange={(e) => setScheduleSettings(prev => ({ ...prev, emailDelay: parseInt(e.target.value) || 5 }))}
-                className="max-w-20"
+                type="time"
+                value={scheduleSettings.startTime}
+                onChange={(e) => setScheduleSettings(prev => ({ ...prev, startTime: e.target.value }))}
               />
-              <span className="text-sm text-gray-500">minutes</span>
-            </div>
-            <p className="text-xs text-gray-500">Time to wait between each email</p>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="respect-holidays" 
-                checked={scheduleSettings.respectHolidays || false}
-                onCheckedChange={(checked) => setScheduleSettings(prev => ({ ...prev, respectHolidays: checked }))}
-              />
-              <label htmlFor="respect-holidays" className="text-sm font-medium text-gray-900">
-                Respect holidays and weekends
-              </label>
             </div>
           </div>
-        </div>
 
-        {/* Save Button */}
-        <div className="flex justify-end pt-6">
-          <Button 
-            className="bg-blue-600 hover:bg-blue-700 px-8"
-            disabled={saving || scheduleSaving}
-            onClick={handleSaveSchedule}
-          >
-            {(saving || scheduleSaving) ? 'Saving...' : 'Save'}
-          </Button>
-        </div>
+          {/* Timezone */}
+          <div className="space-y-2">
+            <Label>Timezone</Label>
+            <Select 
+              value={scheduleSettings.timezone} 
+              onValueChange={(value) => setScheduleSettings(prev => ({ ...prev, timezone: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {timezones.map(tz => (
+                  <SelectItem key={tz.value} value={tz.value}>
+                    {tz.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Auto-activate toggle */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Auto-activate when ready</Label>
+              <p className="text-sm text-gray-500">
+                Automatically start campaign when validation passes
+              </p>
+            </div>
+            <Switch
+              checked={scheduleSettings.autoActivateWhenReady}
+              onCheckedChange={(checked) =>
+                setScheduleSettings(prev => ({ ...prev, autoActivateWhenReady: checked }))
+              }
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Business Hours */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Business Hours
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Enable business hours</Label>
+              <p className="text-sm text-gray-500">
+                Only send emails during specified hours
+              </p>
+            </div>
+            <Switch
+              checked={scheduleSettings.businessHours.enabled}
+              onCheckedChange={(checked) =>
+                setScheduleSettings(prev => ({
+                  ...prev,
+                  businessHours: { ...prev.businessHours, enabled: checked }
+                }))
+              }
+            />
+          </div>
+
+          {scheduleSettings.businessHours.enabled && (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Start Time</Label>
+                  <Input
+                    type="time"
+                    value={scheduleSettings.businessHours.startTime}
+                    onChange={(e) => setScheduleSettings(prev => ({
+                      ...prev,
+                      businessHours: { ...prev.businessHours, startTime: e.target.value }
+                    }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>End Time</Label>
+                  <Input
+                    type="time"
+                    value={scheduleSettings.businessHours.endTime}
+                    onChange={(e) => setScheduleSettings(prev => ({
+                      ...prev,
+                      businessHours: { ...prev.businessHours, endTime: e.target.value }
+                    }))}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Days of Week</Label>
+                <div className="flex gap-2">
+                  {daysOfWeek.map(day => (
+                    <Button
+                      key={day.value}
+                      variant={scheduleSettings.businessHours.daysOfWeek.includes(day.value) ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => {
+                        const days = scheduleSettings.businessHours.daysOfWeek;
+                        const newDays = days.includes(day.value)
+                          ? days.filter(d => d !== day.value)
+                          : [...days, day.value];
+                        setScheduleSettings(prev => ({
+                          ...prev,
+                          businessHours: { ...prev.businessHours, daysOfWeek: newDays }
+                        }));
+                      }}
+                    >
+                      {day.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Advanced Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Advanced Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Daily Send Cap */}
+          <div className="space-y-2">
+            <Label>Daily Send Limit</Label>
+            <Input
+              type="number"
+              min="1"
+              max="1000"
+              value={scheduleSettings.dailySendCap}
+              onChange={(e) => setScheduleSettings(prev => ({
+                ...prev,
+                dailySendCap: parseInt(e.target.value) || 50
+              }))}
+            />
+            <p className="text-sm text-gray-500">
+              Maximum emails to send per day across all prospects
+            </p>
+          </div>
+
+          {/* Stagger Settings */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Enable email staggering</Label>
+                <p className="text-sm text-gray-500">
+                  Spread emails over time to appear more natural
+                </p>
+              </div>
+              <Switch
+                checked={scheduleSettings.staggerSettings.enabled}
+                onCheckedChange={(checked) =>
+                  setScheduleSettings(prev => ({
+                    ...prev,
+                    staggerSettings: { ...prev.staggerSettings, enabled: checked }
+                  }))
+                }
+              />
+            </div>
+
+            {scheduleSettings.staggerSettings.enabled && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Base Delay (minutes)</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={scheduleSettings.staggerSettings.baseDelayMinutes}
+                    onChange={(e) => setScheduleSettings(prev => ({
+                      ...prev,
+                      staggerSettings: {
+                        ...prev.staggerSettings,
+                        baseDelayMinutes: parseInt(e.target.value) || 2
+                      }
+                    }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Random Variation (±minutes)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="30"
+                    value={scheduleSettings.staggerSettings.randomVariationMinutes}
+                    onChange={(e) => setScheduleSettings(prev => ({
+                      ...prev,
+                      staggerSettings: {
+                        ...prev.staggerSettings,
+                        randomVariationMinutes: parseInt(e.target.value) || 1
+                      }
+                    }))}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Schedule Button */}
+      <div className="flex justify-end">
+        <Button 
+          onClick={scheduleCampaign} 
+          disabled={loading || !scheduleSettings.startDate}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          <Clock className="h-4 w-4 mr-2" />
+          {loading ? 'Scheduling...' : 'Schedule Campaign'}
+        </Button>
       </div>
     </div>
   );

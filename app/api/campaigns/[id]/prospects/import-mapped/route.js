@@ -1,5 +1,6 @@
 import dbConnect from '../../../../../../lib/mongodb.js';
 import Campaign from '../../../../../../models/Campaign.js';
+import CampaignProspect from '../../../../../../models/CampaignProspect.js';
 import Prospect from '../../../../../../models/Prospect.js';
 
 export async function POST(request, { params }) {
@@ -64,19 +65,23 @@ export async function POST(request, { params }) {
           await prospect.save();
         }
 
-        // Check if prospect is already in campaign
-        const existingProspect = campaign.prospects.find(p => 
-          p.prospectId.toString() === prospect._id.toString()
-        );
+        // Check if prospect is already in campaign using CampaignProspect model
+        const existingCampaignProspect = await CampaignProspect.findOne({
+          campaign: id,
+          prospect: prospect._id
+        });
 
-        if (!existingProspect) {
-          // Add prospect to campaign
-          campaign.prospects.push({
-            prospectId: prospect._id,
-            currentStep: 1,
+        if (!existingCampaignProspect) {
+          // Create new CampaignProspect entry
+          const campaignProspect = new CampaignProspect({
+            campaign: id,
+            prospect: prospect._id,
+            sequenceStep: 1,
             status: 'pending',
-            nextSendAt: null
+            createdAt: new Date(),
+            updatedAt: new Date()
           });
+          await campaignProspect.save();
           imported++;
         }
 
@@ -85,8 +90,9 @@ export async function POST(request, { params }) {
       }
     }
 
-    // Save campaign with new prospects
+    // Update campaign prospect count
     if (imported > 0) {
+      campaign.prospectCount = (campaign.prospectCount || 0) + imported;
       await campaign.save();
     }
 

@@ -1,5 +1,6 @@
 import dbConnect from '../../../../../lib/mongodb.js';
 import Campaign from '../../../../../models/Campaign.js';
+import { CampaignProspectService } from '../../../../../lib/services/CampaignProspectService.js';
 
 export async function POST(request, { params }) {
   try {
@@ -17,7 +18,20 @@ export async function POST(request, { params }) {
 
     // Update campaign status
     campaign.status = 'active';
+    campaign.resumedAt = new Date();
     await campaign.save();
+
+    // Sync prospects with campaign status - resume paused prospects
+    const syncResult = await CampaignProspectService.syncProspectsWithCampaignStatus(
+      id,
+      'active'
+    );
+
+    if (!syncResult.success) {
+      console.error(`Failed to sync prospects for campaign ${id}:`, syncResult.error);
+    } else {
+      console.log(`Synced ${syncResult.modified} prospects for campaign ${id}`);
+    }
 
     return Response.json({
       success: true,

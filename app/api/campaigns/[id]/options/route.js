@@ -57,7 +57,11 @@ export async function PUT(request, { params }) {
       campaign.options.trackClicks = options.trackClicks ?? campaign.options.trackClicks ?? true;
       campaign.options.unsubscribeLink = options.unsubscribeLink ?? campaign.options.unsubscribeLink ?? true;
       campaign.options.dailyLimit = parseInt(options.dailyLimit) || campaign.options.dailyLimit || 50;
-      campaign.options.timezone = options.timezone || campaign.options.timezone || 'UTC';
+      // Update scheduling timezone instead of options timezone
+      if (options.timezone) {
+        campaign.scheduling = campaign.scheduling || {};
+        campaign.scheduling.timezone = options.timezone;
+      }
       campaign.options.notes = options.notes ?? campaign.options.notes ?? '';
       
       // Update follow-up settings if provided
@@ -80,12 +84,75 @@ export async function PUT(request, { params }) {
       
       // Save the campaign
       await campaign.save();
-      
+
+      // Auto-validate campaign after mailbox update
+      console.log('PUT /options - Running auto-validation after mailbox update');
+      const { CampaignValidationService } = await import('../../../../../lib/campaignValidation.js');
+      const validation = await CampaignValidationService.validateCampaign(campaign._id);
+
+      // Update validation status
+      campaign.validation = {
+        status: validation.valid ? 'valid' : 'invalid',
+        errors: validation.errors || [],
+        lastChecked: new Date()
+      };
+
+      let statusChanged = false;
+      let autoActivated = false;
+
+      // Auto-transition status if validation now passes
+      if (validation.valid) {
+        if (campaign.status === 'pending_scheduled' && campaign.scheduling?.startDateTime) {
+          // Was pending due to validation, now valid and has schedule - move to scheduled
+          campaign.status = 'scheduled';
+          statusChanged = true;
+          console.log(`Campaign ${campaign._id} auto-transitioned to scheduled after validation pass`);
+        } else if (campaign.status === 'pending_scheduled' && !campaign.scheduling?.startDateTime) {
+          // Was pending due to validation, now valid but no schedule - could auto-activate
+          if (campaign.scheduling?.autoActivateWhenReady) {
+            campaign.status = 'active';
+            autoActivated = true;
+            statusChanged = true;
+            console.log(`Campaign ${campaign._id} auto-activated after validation pass`);
+
+            // Sync prospects with campaign status
+            const { CampaignProspectService } = await import('../../../../../lib/services/CampaignProspectService.js');
+
+            try {
+              const syncResult = await CampaignProspectService.syncProspectsWithCampaignStatus(
+                campaign._id,
+                'active',
+                { staggerSettings: campaign.scheduling?.staggerSettings || {} }
+              );
+              console.log(`Auto-synced ${syncResult.modified} prospects for activated campaign ${campaign._id}`);
+            } catch (scheduleError) {
+              console.error(`Failed to sync prospects for campaign ${campaign._id}:`, scheduleError);
+            }
+          } else {
+            campaign.status = 'draft';
+            statusChanged = true;
+            console.log(`Campaign ${campaign._id} moved to draft - ready for scheduling`);
+          }
+        }
+      }
+
+      // Save again if status changed
+      if (statusChanged) {
+        await campaign.save();
+      }
+
       return NextResponse.json({
         success: true,
         message: 'Campaign options updated successfully',
         options: campaign.options,
-        followUpSettings: campaign.followUpSettings
+        followUpSettings: campaign.followUpSettings,
+        validation: {
+          valid: validation.valid,
+          errors: validation.errors || []
+        },
+        statusChanged,
+        autoActivated,
+        newStatus: campaign.status
       });
     } catch (error) {
       console.error('Error updating campaign options:', error);
@@ -150,9 +217,11 @@ export async function GET(request, { params }) {
       trackClicks: true,
       unsubscribeLink: true,
       dailyLimit: 50,
-      timezone: 'UTC',
       notes: ''
     };
+
+    // Get timezone from scheduling instead of options
+    options.timezone = campaign.scheduling?.timezone || 'UTC';
 
     const followUpSettings = campaign.followUpSettings || {
       enabled: false,

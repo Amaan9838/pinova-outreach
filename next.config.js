@@ -8,6 +8,25 @@ const nextConfig = {
     JWT_SECRET: process.env.JWT_SECRET,
     TRACKING_DOMAIN: process.env.TRACKING_DOMAIN,
   },
+  // Fix aggressive hot reload
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+        ignored: [
+          '**/node_modules',
+          '**/logs/**',
+          '**/tests/**',
+          '**/scripts/**',
+          '**/*.test.js',
+          '**/test-*.js',
+          '**/quick-test.js'
+        ]
+      }
+    }
+    return config
+  },
 }
 
 module.exports = nextConfig

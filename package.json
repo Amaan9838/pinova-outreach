@@ -6,7 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest --config tests/setup/jest.config.js",
+    "test:watch": "jest --config tests/setup/jest.config.js --watch",
+    "test:coverage": "jest --config tests/setup/jest.config.js --coverage",
+    "test:api": "jest --config tests/setup/jest.config.js tests/api/",
+    "test:schema": "jest --config tests/setup/jest.config.js tests/schema/",
+    "validate-schema": "node scripts/validate-schemas.js",
+    "check-performance": "node scripts/performance-check.js",
+    "error-report": "node scripts/error-report.js"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
@@ -15,6 +23,7 @@
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-progress": "^1.1.7",
     "@radix-ui/react-scroll-area": "^1.2.10",
     "@radix-ui/react-select": "^2.2.6",
@@ -29,7 +38,7 @@
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "date-fns": "^2.30.0",
+    "date-fns": "^4.1.0",
     "imap": "^0.8.19",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.292.0",
@@ -37,11 +46,11 @@
     "mongoose": "^8.0.0",
     "next": "14.0.4",
     "next-themes": "^0.4.6",
-    "node-cron": "^3.0.3",
     "nodemailer": "^6.9.7",
     "postcss": "^8",
     "quill": "^2.0.3",
     "react": "^18",
+    "react-day-picker": "^9.9.0",
     "react-dom": "^18",
     "react-hook-form": "^7.48.2",
     "react-quill": "^2.0.0",
@@ -53,7 +62,14 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "dotenv": "^16.3.1",
     "eslint": "^8",
-    "eslint-config-next": "14.0.4"
+    "eslint-config-next": "14.0.4",
+    "jest": "^29.7.0",
+    "jest-environment-node": "^29.7.0",
+    "supertest": "^6.3.4"
   }
 }
