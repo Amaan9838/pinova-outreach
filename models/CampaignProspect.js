@@ -102,6 +102,24 @@ const CampaignProspectSchema = new mongoose.Schema({
     type: Date
   },
   
+  // AI Follow-up System
+  lastOpenedAt: {
+    type: Date,
+    index: true
+  },
+  awaitingReply: {
+    type: Boolean,
+    default: false
+  },
+  aiFollowUpsGenerated: {
+    type: Number,
+    default: 0,
+    max: 5 // Max 5 AI-generated follow-ups
+  },
+  lastAiFollowUpAt: {
+    type: Date
+  },
+  
   // Additional metadata
   notes: {
     type: String,
@@ -293,7 +311,7 @@ CampaignProspectSchema.statics.findByProspect = function(prospectId, status = nu
 
 CampaignProspectSchema.statics.getCampaignStats = function(campaignId) {
   return this.aggregate([
-    { $match: { campaign: mongoose.Types.ObjectId(campaignId) } },
+    { $match: { campaign: new mongoose.Types.ObjectId(campaignId) } },
     {
       $group: {
         _id: '$status',

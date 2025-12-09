@@ -94,7 +94,7 @@ const ProspectSchema = new mongoose.Schema({
   // Source information for tracking where prospect came from
   source: {
     type: String,
-    enum: ['manual', 'csv_import', 'api', 'integration'],
+    enum: ['manual', 'csv_import', 'bulk_import', 'campaign_import', 'api', 'integration'],
     default: 'manual',
   },
   // Import metadata

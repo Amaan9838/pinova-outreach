@@ -61,7 +61,7 @@ export async function POST(request, { params }) {
             customFields: prospectData.customFields || [],
             tags: prospectData.tags || [],
             status: 'active',
-            source: 'bulk_import'
+            source: 'csv_import'
           });
 
           await prospect.save();

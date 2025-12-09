@@ -63,9 +63,14 @@ export function NavMain({
             ) : (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild tooltip={item.title} data-active={active} className={active ? "bg-sidebar-accent text-sidebar-accent-foreground" : undefined}>
-                  <a href={item.url}>
+                  <a href={item.url} className="flex items-center gap-2">
                     {item.icon && <item.icon />}
-                    <span>{item.title}</span>
+                    <span className="flex-1">{item.title}</span>
+                    {item.badge && (
+                      <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white font-medium">
+                        {item.badge}
+                      </span>
+                    )}
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>

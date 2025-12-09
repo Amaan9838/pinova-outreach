@@ -130,7 +130,7 @@ export async function POST(request, { params }) {
         personalizationNote: personalizationNote.trim(),
         status: 'active',
         customFields: Array.isArray(customFields) ? customFields : [],
-        source: 'campaign_manual_add'
+        source: 'manual'
       };
 
       prospect = new Prospect(prospectData);

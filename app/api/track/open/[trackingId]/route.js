@@ -1,6 +1,7 @@
 import dbConnect from '../../../../../lib/mongodb.js';
 import Message from '../../../../../models/Message.js';
 import Campaign from '../../../../../models/Campaign.js';
+import CampaignProspect from '../../../../../models/CampaignProspect.js';
 
 export const runtime = 'nodejs'; // Run in Node.js, not Edge
 export const dynamic = 'force-dynamic'; // Force dynamic execution
@@ -47,6 +48,22 @@ export async function GET(request, { params }) {
           await campaign.save();
           console.log(`Updated campaign ${campaign.name} open stats to ${campaign.stats.opened}`);
         }
+
+        // Update CampaignProspect stats for pipeline tracking
+        await CampaignProspect.updateOne(
+          { 
+            campaign: message.campaignId, 
+            prospect: message.prospectId 
+          },
+          { 
+            $inc: { emailsOpened: 1 },
+            $set: { 
+              openedAt: new Date(),
+              lastOpenedAt: new Date(), // Track last open for AI follow-ups
+              awaitingReply: true // Flag for AI follow-up system
+            }
+          }
+        );
       } else {
         console.log('Email already marked as opened');
       }
