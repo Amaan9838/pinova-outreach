@@ -214,7 +214,12 @@ export default function FieldMappingModal({
         if (mappedField.startsWith('custom_')) {
           const customFieldName = mappedField.replace('custom_', '');
           const customField = customFields.find(cf => cf.name === customFieldName);
-          if (customField) {
+          
+          // Special handling for customSubject and customTemplate - they go directly to mappedRow
+          if (customFieldName === 'customSubject' || customFieldName === 'customTemplate') {
+            mappedRow[customFieldName] = cellValue;
+          } else if (customField) {
+            // Regular custom fields go to customFields array
             customFieldsData.push({
               name: customFieldName,
               value: cellValue,

@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from "sonner";
-import { Plus, Upload, Download, Search, Filter, Eye, Edit, Trash2, Users, AlertTriangle, CheckCircle, Clock, Zap, Settings, RefreshCw } from 'lucide-react';
+import { Plus, Upload, Download, Search, Filter, Eye, Edit, Trash2, Users } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import EnhancedCSVImport from '@/components/EnhancedCSVImport';
 import MultiEmailInput from '@/components/MultiEmailInput';
@@ -33,98 +33,13 @@ export default function EnhancedLeadsTab({ campaign, campaignId, getStatusColor 
   const [selectedProspectIds, setSelectedProspectIds] = useState([]);
   const [clickTimeout, setClickTimeout] = useState(null);
 
-  // Campaign status and validation state
-  const [validationStatus, setValidationStatus] = useState({
-    status: 'pending',
-    errors: [],
-    lastChecked: null
-  });
-  const [validating, setValidating] = useState(false);
-  const [autoRefreshing, setAutoRefreshing] = useState(false);
-  const [activatingPending, setActivatingPending] = useState(false);
 
-  // Load validation status from campaign
-  useEffect(() => {
-    if (campaign?.validation) {
-      setValidationStatus({
-        status: campaign.validation.status || 'pending',
-        errors: campaign.validation.errors || [],
-        lastChecked: campaign.validation.lastChecked
-      });
-    }
-  }, [campaign]);
 
-  // Auto-refresh prospects data every 30 seconds for active campaigns
-  useEffect(() => {
-    if (campaign?.status === 'active') {
-      const interval = setInterval(async () => {
-        console.log('Auto-refreshing prospects data...');
-        setAutoRefreshing(true);
-        await fetchProspects();
-        setAutoRefreshing(false);
-      }, 30000); // 30 seconds
 
-      return () => clearInterval(interval);
-    }
-  }, [campaign?.status]);
 
-  // Validation functions
-  const validateCampaign = async () => {
-    setValidating(true);
-    try {
-      const response = await fetch(`/api/campaigns/${campaignId}/validate`, {
-        method: 'POST'
-      });
-      const data = await response.json();
 
-      if (data.success) {
-        setValidationStatus({
-          status: data.validation.valid ? 'valid' : 'invalid',
-          errors: data.validation.errors || [],
-          lastChecked: new Date()
-        });
 
-        if (data.validation.valid) {
-          toast.success('Campaign validation passed');
-        } else {
-          toast.error(`Validation failed: ${data.validation.errors.length} issues found`);
-        }
-      } else {
-        toast.error('Failed to validate campaign');
-      }
-    } catch (error) {
-      console.error('Validation error:', error);
-      toast.error('Failed to validate campaign');
-    } finally {
-      setValidating(false);
-    }
-  };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'valid':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'invalid':
-        return <AlertTriangle className="h-4 w-4 text-red-600" />;
-      case 'pending':
-        return <Clock className="h-4 w-4 text-yellow-600" />;
-      default:
-        return <Clock className="h-4 w-4 text-gray-400" />;
-    }
-  };
-
-  // const getStatusColor = (status) => {
-  //   switch (status) {
-  //     case 'valid':
-  //       return 'bg-green-50 text-green-700 border-green-200';
-  //     case 'invalid':
-  //       return 'bg-red-50 text-red-700 border-red-200';
-  //     case 'pending':
-  //       return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-  //     default:
-  //       return 'bg-gray-50 text-gray-700 border-gray-200';
-  //   }
-  // };
 
   // Handle single/double click functionality
   const handleProspectClick = (prospectData, event) => {
@@ -501,39 +416,7 @@ const handleDeleteProspect = async (prospectId) => {
     }
   };
 
-  // Activate pending prospects
-  const handleActivatePendingProspects = async () => {
-    const pendingCount = prospects.filter(p => p.status === 'pending').length;
-    if (pendingCount === 0) {
-      toast('No pending prospects to activate');
-      return;
-    }
 
-    setActivatingPending(true);
-    try {
-      const response = await fetch(`/api/campaigns/${campaignId}/prospects/activate-pending`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          toast.success(`✅ Activated ${data.activated} pending prospects`);
-          await fetchProspects(); // Refresh the prospects list
-        } else {
-          toast.error(data.error || 'Failed to activate prospects');
-        }
-      } else {
-        toast.error('Failed to activate prospects');
-      }
-    } catch (error) {
-      console.error('Failed to activate prospects:', error);
-      toast.error('Error activating prospects');
-    } finally {
-      setActivatingPending(false);
-    }
-  };
 
   const handleUpdateProspect = async () => {
       try {
@@ -664,106 +547,14 @@ const handleDeleteProspect = async (prospectId) => {
 
   return (
     <div className="space-y-6">
-      {/* Campaign Status & Validation Banner */}
-      {campaign && (
-        <div className="space-y-3">
-          {/* Campaign Status */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                {campaign.status === 'active' && <Zap className="h-5 w-5 text-green-600" />}
-                {campaign.status === 'scheduled' && <Clock className="h-5 w-5 text-blue-600" />}
-                {campaign.status === 'pending_scheduled' && <AlertTriangle className="h-5 w-5 text-yellow-600" />}
-                {campaign.status === 'draft' && <Settings className="h-5 w-5 text-gray-600" />}
-                <span className="font-medium text-gray-900">Campaign Status:</span>
-                <Badge className={`capitalize ${
-                  campaign.status === 'active' ? 'bg-green-100 text-green-800' :
-                  campaign.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
-                  campaign.status === 'pending_scheduled' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-gray-100 text-gray-800'
-                }`}>
-                  {campaign.status.replace('_', ' ')}
-                </Badge>
-              </div>
-              {campaign.scheduling?.startDateTime && (
-                <span className="text-sm text-gray-600">
-                  Scheduled for: {new Date(campaign.scheduling.startDateTime).toLocaleString()}
-                </span>
-              )}
-            </div>
-            <Button
-              onClick={validateCampaign}
-              disabled={validating}
-              variant="outline"
-              size="sm"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${validating ? 'animate-spin' : ''}`} />
-              Validate
-            </Button>
-          </div>
 
-          {/* Validation Status & Warnings */}
-          {validationStatus.status === 'invalid' && validationStatus.errors.length > 0 && (
-            <Alert className="border-red-200 bg-red-50">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-              <AlertDescription>
-                <div className="space-y-2">
-                  <p className="font-medium text-red-800">Campaign validation failed:</p>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-red-700">
-                    {validationStatus.errors.map((error, index) => (
-                      <li key={index}>
-                        {error.message}
-                        {error.code === 'NO_PROSPECTS' && (
-                          <Button
-                            onClick={() => setShowAddProspect(true)}
-                            variant="link"
-                            size="sm"
-                            className="ml-2 p-0 h-auto text-red-600 underline"
-                          >
-                            Add prospects now
-                          </Button>
-                        )}
-                        {error.code === 'NO_MAILBOX' && (
-                          <Button
-                            onClick={() => window.open(`/campaigns/${campaignId}?tab=options`, '_blank')}
-                            variant="link"
-                            size="sm"
-                            className="ml-2 p-0 h-auto text-red-600 underline"
-                          >
-                            Configure mailbox
-                          </Button>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Success Status */}
-          {validationStatus.status === 'valid' && (
-            <Alert className="border-green-200 bg-green-50">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-800">
-                Campaign is ready to start! All validations passed.
-              </AlertDescription>
-            </Alert>
-          )}
-        </div>
-      )}
 
       {/* Header with Actions */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold text-gray-900">Prospects</h2>
-            {autoRefreshing && (
-              <div className="flex items-center gap-1 text-xs text-blue-600">
-                <RefreshCw className="h-3 w-3 animate-spin" />
-                <span>Auto-refreshing...</span>
-              </div>
-            )}
+
           </div>
           <div className="flex items-center gap-4 text-sm text-gray-600">
             <span>{prospects.length} total</span>
@@ -814,27 +605,7 @@ const handleDeleteProspect = async (prospectId) => {
             Export
           </Button>
 
-          {/* Activate Pending Button - only show if there are pending prospects */}
-          {prospects.filter(p => p.status === 'pending').length > 0 && (
-            <Button
-              onClick={handleActivatePendingProspects}
-              disabled={activatingPending}
-              className="bg-yellow-600 hover:bg-yellow-700"
-              size="sm"
-            >
-              {activatingPending ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Activating...
-                </>
-              ) : (
-                <>
-                  <Zap className="h-4 w-4 mr-2" />
-                  Activate {prospects.filter(p => p.status === 'pending').length} Pending
-                </>
-              )}
-            </Button>
-          )}
+
         </div>
       </div>
 

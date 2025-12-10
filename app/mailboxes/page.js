@@ -116,10 +116,10 @@ export default function MailboxesPage() {
       smtpHost: mailbox.smtpConfiguration?.host || 'smtpout.secureserver.net',
       smtpPort: mailbox.smtpConfiguration?.port || 587,
       smtpUser: mailbox.smtpConfiguration?.user || mailbox.fromEmail,
-      smtpPassword: '', // Don't populate password for security
+      smtpPassword: '',
       smtpSecure: mailbox.smtpConfiguration?.secure !== false
     });
-    setShowAddForm(false);
+    setShowAddForm(true);
   };
 
   const cancelEdit = () => {

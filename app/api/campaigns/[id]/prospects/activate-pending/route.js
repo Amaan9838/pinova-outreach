@@ -62,7 +62,10 @@ export async function POST(request, { params }) {
 
       return {
         updateOne: {
-          filter: { _id: prospect._id },
+          filter: { 
+            _id: prospect._id,
+            status: 'pending' // ONLY update if still pending
+          },
           update: {
             $set: {
               status: 'active',

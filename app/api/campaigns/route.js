@@ -195,8 +195,10 @@ export async function POST(request) {
               instagram: prospectData.instagram?.trim() || '',
               linkedin: prospectData.linkedin?.trim() || '',
               personalizationNote: prospectData.personalizationNote?.trim() || '',
-              customFields: prospectData.customFields || {},
-              source: 'campaign_import'
+              customFields: Array.isArray(prospectData.customFields) && prospectData.customFields.length > 0 
+                ? prospectData.customFields.filter(cf => cf.name && cf.value !== undefined)
+                : [],
+              source: 'manual'
             });
 
             await prospect.save();
@@ -213,34 +215,42 @@ export async function POST(request) {
 
           if (!campaignProspect) {
             // Create new CampaignProspect with context-aware initialization
-            const prospectData = {
+            const campaignProspectData = {
               campaign: campaign._id,
               prospect: prospect._id,
               sequenceStep: 1
             };
+            
+            // Add custom email content if provided
+            const personalizedData = {};
+            if (prospectData.customSubject) personalizedData.customSubject = prospectData.customSubject;
+            if (prospectData.customTemplate) personalizedData.customTemplate = prospectData.customTemplate;
+            if (Object.keys(personalizedData).length > 0) {
+              campaignProspectData.personalizedData = personalizedData;
+            }
 
             // Initialize status and scheduling based on campaign type
             if (initialStatus === 'active') {
               // Immediate start - activate prospects with staggered timing
-              prospectData.status = 'active';
+              campaignProspectData.status = 'active';
               const staggerDelay = index * 2 * 60 * 1000; // 2 minutes between prospects
-              prospectData.nextSendAt = new Date(Date.now() + staggerDelay);
-              prospectData.startedAt = new Date();
-              console.log(`Initialized active prospect ${prospect.email} with nextSendAt: ${prospectData.nextSendAt.toISOString()}`);
+              campaignProspectData.nextSendAt = new Date(Date.now() + staggerDelay);
+              campaignProspectData.startedAt = new Date();
+              console.log(`Initialized active prospect ${prospect.email} with nextSendAt: ${campaignProspectData.nextSendAt.toISOString()}`);
             } else if (initialStatus === 'scheduled' && campaign.scheduling?.startDateTime) {
               // Scheduled start - set prospects as pending but with future scheduling
-              prospectData.status = 'pending';
+              campaignProspectData.status = 'pending';
               const staggerDelay = index * 2 * 60 * 1000; // 2 minutes between prospects
-              prospectData.nextSendAt = new Date(campaign.scheduling.startDateTime.getTime() + staggerDelay);
-              console.log(`Scheduled prospect ${prospect.email} for: ${prospectData.nextSendAt.toISOString()}`);
+              campaignProspectData.nextSendAt = new Date(campaign.scheduling.startDateTime.getTime() + staggerDelay);
+              console.log(`Scheduled prospect ${prospect.email} for: ${campaignProspectData.nextSendAt.toISOString()}`);
             } else {
               // Draft or other status - keep as pending without scheduling
-              prospectData.status = 'pending';
-              prospectData.nextSendAt = null;
+              campaignProspectData.status = 'pending';
+              campaignProspectData.nextSendAt = null;
               console.log(`Created pending prospect ${prospect.email} - awaiting campaign scheduling`);
             }
 
-            campaignProspect = new CampaignProspect(prospectData);
+            campaignProspect = new CampaignProspect(campaignProspectData);
             await campaignProspect.save();
             createdCampaignProspects.push(campaignProspect);
             prospectCount++;

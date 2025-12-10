@@ -110,11 +110,16 @@ export async function POST(request, { params }) {
 
         if (!existingCampaignProspect) {
           // Create new CampaignProspect entry
+          const personalizedData = {};
+          if (prospectData.customsubject) personalizedData.customSubject = prospectData.customsubject;
+          if (prospectData.customtemplate) personalizedData.customTemplate = prospectData.customtemplate;
+          
           const campaignProspect = new CampaignProspect({
             campaign: id,
             prospect: prospect._id,
             sequenceStep: 1,
             status: 'pending',
+            personalizedData: Object.keys(personalizedData).length > 0 ? personalizedData : {},
             createdAt: new Date(),
             updatedAt: new Date()
           });

@@ -72,12 +72,22 @@ export async function POST(request, { params }) {
         });
 
         if (!existingCampaignProspect) {
+          // Prepare personalized data if custom fields exist
+          const personalizedData = {};
+          if (prospectData.customSubject) {
+            personalizedData.customSubject = prospectData.customSubject;
+          }
+          if (prospectData.customTemplate) {
+            personalizedData.customTemplate = prospectData.customTemplate;
+          }
+
           // Create new CampaignProspect entry
           const campaignProspect = new CampaignProspect({
             campaign: id,
             prospect: prospect._id,
             sequenceStep: 1,
             status: 'pending',
+            personalizedData: Object.keys(personalizedData).length > 0 ? personalizedData : {},
             createdAt: new Date(),
             updatedAt: new Date()
           });

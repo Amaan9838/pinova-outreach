@@ -75,13 +75,18 @@ export async function POST(request, { params }) {
         });
 
         if (!existingCampaignProspect) {
-          // Create CampaignProspect
+          // Create CampaignProspect with custom email content if provided
+          const personalizedData = {};
+          if (prospectData.customSubject) personalizedData.customSubject = prospectData.customSubject;
+          if (prospectData.customTemplate) personalizedData.customTemplate = prospectData.customTemplate;
+          
           const campaignProspect = new CampaignProspect({
             campaign: id,
             prospect: prospect._id,
             sequenceStep: 1,
             status: 'pending',
-            nextSendAt: undefined // Will be scheduled later
+            nextSendAt: undefined, // Will be scheduled later
+            personalizedData: Object.keys(personalizedData).length > 0 ? personalizedData : {}
           });
 
           await campaignProspect.save();

@@ -40,17 +40,13 @@ export default function NewCampaignPage() {
   const fileInputRef = useRef(null);
   
   // State
-  const [step, setStep] = useState(1);
+  const [step] = useState(1);
   const [loading, setLoading] = useState(false);
   const [aiGenerating, setAiGenerating] = useState(false);
   const [leadTab, setLeadTab] = useState('csv'); // csv, manual, existing
   
   const [campaignData, setCampaignData] = useState({
-    name: '',
-    goal: '',
-    subject: '',
-    body: '',
-    launchType: 'immediate' // immediate, scheduled, draft
+    name: ''
   });
   
   const [scheduleDate, setScheduleDate] = useState('');
@@ -105,7 +101,13 @@ export default function NewCampaignPage() {
         
         const emailIdx = headers.findIndex(h => h.includes('email'));
         const nameIdx = headers.findIndex(h => h.includes('first') || h.includes('name'));
+        const lastNameIdx = headers.findIndex(h => h.includes('last'));
         const companyIdx = headers.findIndex(h => h.includes('company') || h.includes('org'));
+        const customSubjectIdx = headers.findIndex(h => h === 'customsubject');
+        const customTemplateIdx = headers.findIndex(h => h === 'customtemplate');
+        
+        // Known standard fields to skip from customFields
+        const standardFields = ['email', 'firstname', 'first', 'name', 'lastname', 'last', 'company', 'org', 'customsubject', 'customtemplate'];
         
         if (emailIdx === -1) {
           toast.error('CSV must have an email column');
@@ -123,11 +125,37 @@ export default function NewCampaignPage() {
           // Skip duplicates
           if (leads.some(l => l.email.toLowerCase() === email.toLowerCase())) continue;
           
-          imported.push({
+          const prospectData = {
             email,
             firstName: values[nameIdx] || email.split('@')[0],
+            lastName: lastNameIdx !== -1 ? values[lastNameIdx] : '',
             company: values[companyIdx] || ''
+          };
+          
+          // Add custom email content if columns exist
+          if (customSubjectIdx !== -1 && values[customSubjectIdx]) {
+            prospectData.customSubject = values[customSubjectIdx];
+          }
+          if (customTemplateIdx !== -1 && values[customTemplateIdx]) {
+            prospectData.customTemplate = values[customTemplateIdx];
+          }
+          
+          // Parse extra columns as customFields
+          const customFields = [];
+          headers.forEach((header, idx) => {
+            if (!standardFields.includes(header) && values[idx]) {
+              customFields.push({
+                name: header,
+                value: values[idx],
+                type: 'text'
+              });
+            }
           });
+          if (customFields.length > 0) {
+            prospectData.customFields = customFields;
+          }
+          
+          imported.push(prospectData);
         }
 
         if (imported.length > 0) {
@@ -240,69 +268,31 @@ export default function NewCampaignPage() {
       toast.error('Enter a campaign name');
       return;
     }
-    if (campaignData.launchType !== 'draft' && leads.length === 0) {
-      toast.error('Add prospects first or save as draft');
-      return;
-    }
-    if (campaignData.launchType !== 'draft' && (!campaignData.subject.trim() || !campaignData.body.trim())) {
-      toast.error('Write your email first or save as draft');
-      return;
-    }
-    if (campaignData.launchType === 'scheduled' && !scheduleDate) {
-      toast.error('Select a schedule date');
-      return;
-    }
 
     setLoading(true);
     try {
-      // Determine status
-      let status = 'draft';
-      let scheduling = undefined;
-      
-      if (campaignData.launchType === 'immediate' && leads.length > 0) {
-        status = 'active';
-      } else if (campaignData.launchType === 'scheduled' && leads.length > 0) {
-        status = 'scheduled';
-        scheduling = {
-          startDateTime: new Date(`${scheduleDate}T${scheduleTime}`),
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-        };
-      }
-
       const res = await fetch('/api/campaigns', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: campaignData.name.trim(),
-          description: campaignData.goal,
+          description: '',
           persona: 'outreach',
-          status,
+          goal: 'outreach',
+          status: 'draft',
           sequence: [{
             stepNumber: 1,
-            subject: campaignData.subject || 'Hello {{firstName}}',
-            template: campaignData.body || 'Hi {{firstName}},'
+            subject: '',
+            template: ''
           }],
-          options: { trackOpens: true, trackClicks: true },
-          scheduling,
-          prospects: leads.map(l => ({
-            email: l.email,
-            firstName: l.firstName,
-            company: l.company || ''
-          }))
+          options: { trackOpens: true, trackClicks: true }
         })
       });
       
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       
-      if (status === 'active') {
-        toast.success(`🚀 Campaign launched with ${leads.length} prospects!`);
-      } else if (status === 'scheduled') {
-        toast.success(`📅 Campaign scheduled for ${scheduleDate}`);
-      } else {
-        toast.success('Campaign saved as draft');
-      }
-      
+      toast.success('Campaign created!');
       router.push(`/campaigns/${data.campaign._id}`);
     } catch (err) {
       toast.error(err.message || 'Failed to create campaign');
@@ -322,14 +312,10 @@ export default function NewCampaignPage() {
             Back
           </Button>
           
-          <div className="flex items-center gap-2">
-            <Badge variant={step === 1 ? "default" : "outline"}>1. Setup</Badge>
-            <ArrowRight className="h-4 w-4 text-gray-400" />
-            <Badge variant={step === 2 ? "default" : "outline"}>2. Email</Badge>
-          </div>
+          <div />
         </div>
 
-        {/* Step 1: Name + Leads */}
+        {/* Step 1: Name Only */}
         {step === 1 && (
           <Card className="border-0 shadow-xl">
             <CardHeader className="text-center pb-2">
@@ -342,154 +328,34 @@ export default function NewCampaignPage() {
             <CardContent className="space-y-6 pt-4">
               {/* Campaign Name */}
               <div>
-                <label className="block text-sm font-medium mb-2">Campaign Name *</label>
+                <label className="block text-sm font-medium mb-2">Campaign Name</label>
                 <Input
-                  placeholder="e.g., Q4 Real Estate Outreach"
+                  placeholder="e.g., Austin Real Estate Outreach"
                   value={campaignData.name}
                   onChange={(e) => setCampaignData(prev => ({ ...prev, name: e.target.value }))}
-                  className="h-12"
+                  className="h-14 text-lg"
+                  autoFocus
                 />
               </div>
 
-              {/* Add Leads */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Add Prospects</label>
-                
-                <Tabs value={leadTab} onValueChange={setLeadTab}>
-                  <TabsList className="grid w-full grid-cols-3 mb-4">
-                    <TabsTrigger value="csv" className="gap-1">
-                      <Upload className="h-4 w-4" /> CSV
-                    </TabsTrigger>
-                    <TabsTrigger value="manual" className="gap-1">
-                      <UserPlus className="h-4 w-4" /> Manual
-                    </TabsTrigger>
-                    <TabsTrigger value="existing" className="gap-1">
-                      <Database className="h-4 w-4" /> Existing
-                    </TabsTrigger>
-                  </TabsList>
-
-                  {/* CSV Upload */}
-                  <TabsContent value="csv">
-                    <div 
-                      onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center cursor-pointer hover:border-blue-400 transition-colors"
-                    >
-                      <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                      <p className="font-medium">Drop CSV or click to upload</p>
-                      <p className="text-sm text-gray-500">Must have email column</p>
-                    </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".csv"
-                      className="hidden"
-                      onChange={handleCSVUpload}
-                    />
-                  </TabsContent>
-
-                  {/* Manual Entry */}
-                  <TabsContent value="manual">
-                    <div className="space-y-3">
-                      <Input
-                        placeholder="Email *"
-                        value={manualLead.email}
-                        onChange={(e) => setManualLead(prev => ({ ...prev, email: e.target.value }))}
-                      />
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          placeholder="First Name"
-                          value={manualLead.firstName}
-                          onChange={(e) => setManualLead(prev => ({ ...prev, firstName: e.target.value }))}
-                        />
-                        <Input
-                          placeholder="Company"
-                          value={manualLead.company}
-                          onChange={(e) => setManualLead(prev => ({ ...prev, company: e.target.value }))}
-                        />
-                      </div>
-                      <Button onClick={addManualLead} className="w-full gap-2">
-                        <Plus className="h-4 w-4" /> Add Prospect
-                      </Button>
-                    </div>
-                  </TabsContent>
-
-                  {/* Existing Prospects */}
-                  <TabsContent value="existing">
-                    {loadingProspects ? (
-                      <div className="text-center py-8">
-                        <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                      </div>
-                    ) : existingProspects.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        No existing prospects found
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className="max-h-48 overflow-y-auto space-y-2 border rounded-lg p-2">
-                          {existingProspects.slice(0, 50).map(p => (
-                            <label key={p._id} className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded cursor-pointer">
-                              <Checkbox
-                                checked={selectedProspects.includes(p._id)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setSelectedProspects(prev => [...prev, p._id]);
-                                  } else {
-                                    setSelectedProspects(prev => prev.filter(id => id !== p._id));
-                                  }
-                                }}
-                              />
-                              <span className="text-sm">{p.firstName} - {p.email}</span>
-                            </label>
-                          ))}
-                        </div>
-                        <Button onClick={addSelectedExisting} disabled={selectedProspects.length === 0} className="w-full gap-2">
-                          <Plus className="h-4 w-4" /> Add {selectedProspects.length} Selected
-                        </Button>
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
-              </div>
-
-              {/* Added Leads List */}
-              {leads.length > 0 && (
-                <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <span className="font-medium text-green-700 dark:text-green-400">{leads.length} prospects added</span>
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={() => setLeads([])}>Clear all</Button>
-                  </div>
-                  <div className="max-h-32 overflow-y-auto space-y-1">
-                    {leads.slice(0, 10).map(l => (
-                      <div key={l.email} className="flex items-center justify-between text-sm">
-                        <span>{l.firstName} ({l.email})</span>
-                        <button onClick={() => removeLead(l.email)} className="text-red-500 hover:text-red-700">
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                    {leads.length > 10 && <p className="text-sm text-gray-500">...and {leads.length - 10} more</p>}
-                  </div>
-                </div>
-              )}
-
-              {/* Next Button */}
+              {/* Create Button */}
               <Button 
-                className="w-full h-12 text-lg gap-2"
-                onClick={() => setStep(2)}
-                disabled={!campaignData.name.trim()}
+                className="w-full h-14 text-lg gap-2 bg-blue-600 hover:bg-blue-700"
+                onClick={createCampaign}
+                disabled={loading || !campaignData.name.trim()}
               >
-                Next: Write Email
-                <ArrowRight className="h-5 w-5" />
+                {loading ? (
+                  <><Loader2 className="h-5 w-5 animate-spin" /> Creating...</>
+                ) : (
+                  <><Rocket className="h-5 w-5" /> Create Campaign</>
+                )}
               </Button>
             </CardContent>
           </Card>
         )}
 
-        {/* Step 2: Email + Launch */}
-        {step === 2 && (
+        {/* Step 2 removed */}
+        {false && step === 2 && (
           <Card className="border-0 shadow-xl">
             <CardHeader className="text-center pb-2">
               <div className="mx-auto w-16 h-16 bg-purple-100 dark:bg-purple-900 rounded-2xl flex items-center justify-center mb-4">
