@@ -217,7 +217,10 @@ export default function FieldMappingModal({
           
           // Special handling for customSubject and customTemplate - they go directly to mappedRow
           if (customFieldName === 'customSubject' || customFieldName === 'customTemplate') {
-            mappedRow[customFieldName] = cellValue;
+            // Convert literal \n to actual newlines for customTemplate
+            mappedRow[customFieldName] = customFieldName === 'customTemplate' 
+              ? cellValue.replace(/\\n/g, '\n') 
+              : cellValue;
           } else if (customField) {
             // Regular custom fields go to customFields array
             customFieldsData.push({
