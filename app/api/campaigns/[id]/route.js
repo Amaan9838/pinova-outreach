@@ -100,10 +100,17 @@ export async function PATCH(request, { params }) {
      // Process and validate sequence data
   const processedSequence = updates.sequence.map((step, index) => {
     const stepNumber = parseInt(step.stepNumber) || (index + 1);
+    
+    // Normalize line breaks in template - convert all to \n
+    let normalizedTemplate = step.template || 'Add your email template here...';
+    if (normalizedTemplate.trim()) {
+      normalizedTemplate = normalizedTemplate.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    }
+    
     return {
-      ...(step._id && { _id: step._id }), // Preserve existing _id if it exists
+      ...(step._id && { _id: step._id }),
       stepNumber: stepNumber,
-      template: step.template && step.template.trim() ? step.template : 'Add your email template here...',
+      template: normalizedTemplate,
       subject: step.subject && step.subject.trim() ? step.subject : 'Email Subject',
       waitHours: stepNumber === 1 ? 0 : (parseInt(step.waitHours) || 0),
       waitMinutes: stepNumber === 1 ? 0 : (parseInt(step.waitMinutes) || 0),

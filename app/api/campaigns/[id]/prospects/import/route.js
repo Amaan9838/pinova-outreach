@@ -112,7 +112,10 @@ export async function POST(request, { params }) {
           // Create new CampaignProspect entry
           const personalizedData = {};
           if (prospectData.customsubject) personalizedData.customSubject = prospectData.customsubject;
-          if (prospectData.customtemplate) personalizedData.customTemplate = prospectData.customtemplate;
+          if (prospectData.customtemplate) {
+            // Convert literal \n to actual newlines
+            personalizedData.customTemplate = prospectData.customtemplate.replace(/\\n/g, '\n');
+          }
           
           const campaignProspect = new CampaignProspect({
             campaign: id,

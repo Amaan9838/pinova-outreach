@@ -78,7 +78,10 @@ export async function POST(request, { params }) {
           // Create CampaignProspect with custom email content if provided
           const personalizedData = {};
           if (prospectData.customSubject) personalizedData.customSubject = prospectData.customSubject;
-          if (prospectData.customTemplate) personalizedData.customTemplate = prospectData.customTemplate;
+          if (prospectData.customTemplate) {
+            // Convert literal \n to actual newlines
+            personalizedData.customTemplate = prospectData.customTemplate.replace(/\\n/g, '\n');
+          }
           
           const campaignProspect = new CampaignProspect({
             campaign: id,
