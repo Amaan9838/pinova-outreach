@@ -1,3 +1,24 @@
 firstName,lastName,email,company,customSubject,customTemplate
-Webitzee,Team,webitzee@gmail.com,Webitzee Inc,Quick question about {{company}},Hi {{firstName}}\n\nI noticed {{company}} has been doing great work in the digital space.\n\nI wanted to reach out because we have a solution that could help you scale even faster.\n\nWould you be open to a 10-minute call this week?\n\nBest\n[Your Name]
+Webitzee,Team,webitzee@gmail.com,Webitzee Inc,Quick question about {{company}},"Hi {{firstName}},
+
+I noticed {{company}} has been doing great work in the digital space.
+
+I wanted to reach out because we have a solution that could help you scale even faster.
+
+Would you be open to a 10-minute call this week?
+
+Best,
+
+Ayushmaan"
 MT,Website,mtwebsite1@gmail.com,MT Digital,Special offer for {{company}},Hi {{firstName}}\n\nI've been following {{company}}'s growth and I'm impressed.\n\nWe're offering an exclusive opportunity that could 3x your lead generation in the next 30 days.\n\nAre you available for a quick chat tomorrow?\n\nBest regards\n[Your Name]
+Chiraayu,Delta,singhchiraayu@gmail.com,,Special offer for {{company}},"Hi {{firstName}},
+
+I noticed {{company}} has been doing great work in the digital space.
+
+I wanted to reach out because we have a solution that could help you scale even faster.
+
+Would you be open to a 10-minute call this week?
+
+Best,
+
+Ayushmaan"
