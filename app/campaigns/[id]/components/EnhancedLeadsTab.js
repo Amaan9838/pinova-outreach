@@ -317,16 +317,13 @@ const handleDeleteProspect = async (prospectId) => {
   };
 
   const fetchAvailableProspects = async (search = '') => {
-    setIsLoadingProspects(true);
     try {
       const response = await fetch(`/api/campaigns/${campaignId}/prospects/existing?search=${encodeURIComponent(search)}`);
       
-      // Check if response is ok and has content
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
-      // Check if response has content before parsing JSON
       const text = await response.text();
       if (!text.trim()) {
         throw new Error('Empty response from server');
@@ -349,26 +346,24 @@ const handleDeleteProspect = async (prospectId) => {
         toast.error('Error loading available prospects: ' + error.message);
       }
       setAvailableProspects([]);
-    } finally {
-      setIsLoadingProspects(false);
     }
   };
 
   // Debounced search for available prospects
   const debouncedFetchAvailableProspects = useCallback(
     debounce((searchTerm) => {
-      fetchAvailableProspects(searchTerm);
+      setIsLoadingProspects(true);
+      fetchAvailableProspects(searchTerm).finally(() => setIsLoadingProspects(false));
     }, 500),
     [campaignId]
   );
 
   useEffect(() => {
     if (showAddExisting) {
-      // Initial load without search term
+      setIsLoadingProspects(true);
       if (searchAvailableTerm === '') {
-        fetchAvailableProspects('');
+        fetchAvailableProspects('').finally(() => setIsLoadingProspects(false));
       } else {
-        // Use debounced search for typed queries
         debouncedFetchAvailableProspects(searchAvailableTerm);
       }
     }
@@ -1047,6 +1042,7 @@ const handleDeleteProspect = async (prospectId) => {
           <div className="p-6 flex-1 flex flex-col">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Add Existing Prospects</h3>
             
+            {/* Search Input - Always rendered, never unmounted */}
             <div className="mb-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -1055,11 +1051,11 @@ const handleDeleteProspect = async (prospectId) => {
                   value={searchAvailableTerm}
                   onChange={(e) => setSearchAvailableTerm(e.target.value)}
                   className="pl-10 w-full max-w-md"
-                  disabled={isLoadingProspects}
                 />
               </div>
             </div>
             
+            {/* Results Area - Conditional content below input */}
             <div className="flex-1 overflow-hidden border rounded-lg bg-white">
               {isLoadingProspects ? (
                 <div className="flex items-center justify-center h-64">

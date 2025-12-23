@@ -29,6 +29,32 @@ export default function SequencesTab({
   const [templateManagementOpen, setTemplateManagementOpen] = useState(false);
   const [variableManagementOpen, setVariableManagementOpen] = useState(false);
   const [deleteStepDialog, setDeleteStepDialog] = useState({ open: false, stepIndex: null });
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [saving, setSaving] = useState(false);
+  
+  // Manual save function
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/campaigns/${campaignId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sequence: steps })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save sequence');
+      }
+      
+      setHasUnsavedChanges(false);
+      toast.success('Sequence saved successfully');
+    } catch (error) {
+      console.error('Error saving sequence:', error);
+      toast.error('Failed to save sequence');
+    } finally {
+      setSaving(false);
+    }
+  };
   
   // Use ref to store timeout IDs for debouncing
   const saveTimeoutRef = useRef(null);
@@ -256,22 +282,10 @@ export default function SequencesTab({
                         const copy = [...steps];
                         copy[editingIndex] = { ...copy[editingIndex], subject: e.target.value };
                         setSteps(copy);
+                        setHasUnsavedChanges(true);
                       }}
                       onBlur={async () => {
-                        // Auto-save on blur
-                        try {
-                          const response = await fetch(`/api/campaigns/${campaignId}`, {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ sequence: steps })
-                          });
-                          
-                          if (!response.ok) {
-                            throw new Error('Failed to save sequence');
-                          }
-                        } catch (error) {
-                          console.error('Error auto-saving sequence:', error);
-                        }
+                        // Removed auto-save - user must click Save button
                       }}
                       placeholder={editingIndex > 0 ? `Re: ${steps[0]?.subject || 'Follow-up'}` : "Enter your initial email subject line..."}
                       className="text-base"
@@ -279,6 +293,15 @@ export default function SequencesTab({
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    onClick={handleSave}
+                    disabled={saving || !hasUnsavedChanges}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {saving ? 'Saving...' : hasUnsavedChanges ? '💾 Save Changes' : '✓ Saved'}
+                  </Button>
                   <Button variant="outline" size="sm" onClick={() => setTestEmailModalOpen(true)}>
                     👁 Preview
                   </Button>
@@ -302,6 +325,7 @@ export default function SequencesTab({
                   const copy = [...steps];
                   copy[editingIndex] = { ...copy[editingIndex], template: value };
                   setSteps(copy);
+                  setHasUnsavedChanges(true);
                 }}
                 placeholder={`Write your email content here...
 

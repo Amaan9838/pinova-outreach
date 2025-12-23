@@ -272,20 +272,7 @@ export default function OptionsTab({
             </Select>
           </div>
 
-          {/* Daily Limit */}
-          <div className="space-y-2">
-            <Label htmlFor="dailyLimit">Daily Email Limit</Label>
-            <Input
-              id="dailyLimit"
-              type="number"
-              min="1"
-              max="500"
-              value={settings.dailyLimit}
-              onChange={(e) => setSettings(prev => ({ ...prev, dailyLimit: parseInt(e.target.value) || 50 }))}
-              className="w-32"
-            />
-            <p className="text-xs text-gray-500">Maximum emails to send per day</p>
-          </div>
+          {/* Daily Limit - REMOVED: Use Schedule tab instead */}
 
           {/* Timezone */}
           <div className="space-y-2">

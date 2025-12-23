@@ -440,7 +440,11 @@ export default function ScheduleTab({ campaign, campaignId, onCampaignUpdate }) 
                     mode="single"
                     selected={scheduleSettings.startDate}
                     onSelect={(date) => setScheduleSettings(prev => ({ ...prev, startDate: date }))}
-                    disabled={(date) => date < new Date()}
+                    disabled={(date) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return date < today;
+                    }}
                     initialFocus
                   />
                 </PopoverContent>
@@ -589,7 +593,7 @@ export default function ScheduleTab({ campaign, campaignId, onCampaignUpdate }) 
         <CardContent className="space-y-4">
           {/* Daily Send Cap */}
           <div className="space-y-2">
-            <Label>Daily Send Limit</Label>
+            <Label>Campaign Daily Send Limit (Optional)</Label>
             <Input
               type="number"
               min="1"
@@ -601,7 +605,7 @@ export default function ScheduleTab({ campaign, campaignId, onCampaignUpdate }) 
               }))}
             />
             <p className="text-sm text-gray-500">
-              Maximum emails to send per day across all prospects
+              Maximum emails to send per day for this campaign. Note: Individual mailbox limits (set in Mailboxes page) take priority.
             </p>
           </div>
 

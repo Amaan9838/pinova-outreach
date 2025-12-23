@@ -203,15 +203,21 @@ export async function GET(request, { params }) {
       });
     }
     
-    // Get AI analysis
+    // Get AI analysis with correct data
     let analysis = null;
     try {
+      const campaignData = campaign.toObject();
       analysis = await aiService.analyzeCampaignPerformance({
-        ...campaign.toObject(),
-        stepMetrics
+        name: campaignData.name,
+        persona: campaignData.persona,
+        status: campaignData.status,
+        startedAt: campaignData.startedAt,
+        sequence: campaignData.sequence,
+        stats: campaignData.stats || { sent: 0, delivered: 0, opened: 0, clicked: 0, replied: 0, bounced: 0 }
       });
     } catch (aiError) {
-      console.error('AI analysis failed:', aiError);
+      // Silently fail - AI is optional feature
+      analysis = null;
     }
     
     return NextResponse.json({

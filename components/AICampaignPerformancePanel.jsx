@@ -65,9 +65,11 @@ export function AICampaignPerformancePanel({ campaignId, campaignData }) {
       const data = await res.json();
       if (data.success) {
         setAnalysis(data.data);
+      } else {
+        setAnalysis({ error: true });
       }
     } catch (error) {
-      console.error('Failed to fetch analysis:', error);
+      setAnalysis({ error: true });
     } finally {
       setLoading(false);
     }
@@ -135,6 +137,31 @@ export function AICampaignPerformancePanel({ campaignId, campaignData }) {
 
   const analysisData = analysis?.analysis;
   const stepMetrics = analysis?.stepMetrics || [];
+
+  // Show error state if AI is unavailable
+  if (analysis?.error) {
+    return (
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-slate-50/50 to-slate-100/50">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Brain className="h-5 w-5 text-slate-400" />
+            <CardTitle className="text-lg text-slate-600">AI Performance Analysis</CardTitle>
+            <Badge variant="outline" className="bg-white/50 text-slate-500">
+              <AlertTriangle className="h-3 w-3 mr-1" />
+              Unavailable
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-slate-500">
+            <AlertTriangle className="h-12 w-12 mx-auto mb-3 text-slate-300" />
+            <p className="font-medium">AI Analysis Unavailable</p>
+            <p className="text-sm mt-2">Configure GEMINI_API_KEY in .env to enable AI features</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50/50 to-blue-50/50">
