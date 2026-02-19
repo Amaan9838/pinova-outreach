@@ -121,7 +121,7 @@ const ReplyCategorySchema = new mongoose.Schema({
 
 // Indexes
 ReplyCategorySchema.index({ userId: 1, isSystem: 1 });
-ReplyCategorySchema.index({ slug: 1 });
+// Note: slug index is auto-created by unique:true on the slug field
 
 // Pre-save: generate slug from name if not provided
 ReplyCategorySchema.pre('save', function(next) {

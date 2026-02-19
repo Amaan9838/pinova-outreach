@@ -120,7 +120,7 @@ const EmailFlowSchema = new mongoose.Schema({
 });
 
 // Indexes
-EmailFlowSchema.index({ campaign: 1 });
+// Note: campaign index is auto-created by index:true/unique:true on the campaign field
 EmailFlowSchema.index({ isActive: 1 });
 
 // Pre-save validation

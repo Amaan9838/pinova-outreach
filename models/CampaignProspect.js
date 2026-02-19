@@ -10,14 +10,14 @@ const CampaignProspectSchema = new mongoose.Schema({
   campaign: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Campaign',
-    required: true,
-    index: true
+    required: true
+    // index covered by composite indexes below
   },
   prospect: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Prospect',
-    required: true,
-    index: true
+    required: true
+    // index covered by composite indexes below
   },
   
   // Campaign progression
