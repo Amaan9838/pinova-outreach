@@ -19,8 +19,19 @@ const CampaignProspectSchema = new mongoose.Schema({
     required: true
     // index covered by composite indexes below
   },
-  
-  // Campaign progression
+
+  // ── Per-lead override: set per-row when importing a CSV with custom subject/body ──
+  // These take priority over the flow node's template when the email is sent.
+  customSubject: {
+    type: String,
+    default: null
+  },
+  customBody: {
+    type: String,
+    default: null
+  },
+
+
   sequenceStep: {
     type: Number,
     default: 1,

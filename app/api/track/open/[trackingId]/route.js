@@ -2,6 +2,7 @@ import dbConnect from '../../../../../lib/mongodb.js';
 import Message from '../../../../../models/Message.js';
 import Campaign from '../../../../../models/Campaign.js';
 import CampaignProspect from '../../../../../models/CampaignProspect.js';
+import { FlowEngine } from '../../../../../lib/flowEngine.js';
 
 export const runtime = 'nodejs'; // Run in Node.js, not Edge
 export const dynamic = 'force-dynamic'; // Force dynamic execution
@@ -59,11 +60,30 @@ export async function GET(request, { params }) {
             $inc: { emailsOpened: 1 },
             $set: { 
               openedAt: new Date(),
-              lastOpenedAt: new Date(), // Track last open for AI follow-ups
-              awaitingReply: true // Flag for AI follow-up system
+              lastOpenedAt: new Date(),
+              awaitingReply: true
             }
           }
         );
+
+        // ── Wire 4: Tell the FlowEngine an open happened ──────────────────────
+        // This allows the flow to branch: opened → Email B, not-opened → Email C
+        try {
+          const cp = await CampaignProspect.findOne({
+            campaign: message.campaignId,
+            prospect: message.prospectId,
+          }).populate({ path: 'campaign', select: 'useVisualFlow emailFlow' });
+
+          if (cp?.campaign?.useVisualFlow) {
+            console.log(`[OpenTracker] Firing FlowEngine 'email_opened' for CampaignProspect ${cp._id}`);
+            // Fire-and-forget — don't block the pixel response
+            FlowEngine.executeTrigger(cp._id.toString(), 'email_opened', {
+              openedAt: new Date(),
+            }).catch(err => console.error('[OpenTracker] FlowEngine error:', err.message));
+          }
+        } catch (feErr) {
+          console.error('[OpenTracker] Could not trigger FlowEngine:', feErr.message);
+        }
       } else {
         console.log('Email already marked as opened');
       }

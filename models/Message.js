@@ -18,7 +18,7 @@ const MessageSchema = new mongoose.Schema({
   },
   stepNumber: {
     type: Number,
-    required: true,
+    // optional — FlowEngine messages use sequenceStep instead
   },
   messageId: {
     type: String,
@@ -99,7 +99,20 @@ const MessageSchema = new mongoose.Schema({
   type: String, // For individual emails without prospects
   },
   headerMessageId: {
-  type: String, // The Message-ID header used for threading
+    type: String, // The Message-ID header used for threading
+  },
+  // RFC 2822 References header — array of previous Message-IDs in this thread
+  references: [{
+    type: String,
+  }],
+  // Which flow sequence step created this message
+  sequenceStep: {
+    type: Number,
+  },
+  // True if this message was sent by the 'send_response' action node (not initial outreach)
+  isResponse: {
+    type: Boolean,
+    default: false,
   },
   createdAt: {
      type: Date,

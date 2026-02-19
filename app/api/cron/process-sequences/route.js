@@ -1,6 +1,13 @@
 import { SequencerService } from '../../../../lib/sequencer.js';
 
 export async function POST(request) {
+  // Guard: only allow Vercel cron runner or internal calls with the secret
+  const authHeader = request.headers.get('authorization');
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     console.log('=== EMAIL SEQUENCE PROCESSING START ===');
     

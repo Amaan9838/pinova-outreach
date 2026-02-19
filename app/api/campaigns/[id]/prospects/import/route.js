@@ -110,19 +110,15 @@ export async function POST(request, { params }) {
 
         if (!existingCampaignProspect) {
           // Create new CampaignProspect entry
-          const personalizedData = {};
-          if (prospectData.customsubject) personalizedData.customSubject = prospectData.customsubject;
-          if (prospectData.customtemplate) {
-            // Convert literal \n to actual newlines
-            personalizedData.customTemplate = prospectData.customtemplate.replace(/\\n/g, '\n');
-          }
-          
+          // CSV columns 'customsubject' and 'custombody' (or 'customtemplate' for backward compat)
+          // map directly to the top-level schema fields so executeEmailNode uses them
           const campaignProspect = new CampaignProspect({
             campaign: id,
             prospect: prospect._id,
             sequenceStep: 1,
             status: 'pending',
-            personalizedData: Object.keys(personalizedData).length > 0 ? personalizedData : {},
+            customSubject: prospectData.customsubject || null,
+            customBody:    prospectData.custombody || prospectData.customtemplate || null,
             createdAt: new Date(),
             updatedAt: new Date()
           });
