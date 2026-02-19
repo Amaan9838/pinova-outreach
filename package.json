@@ -33,6 +33,7 @@
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@xyflow/react": "^12.10.0",
     "autoprefixer": "^10.0.1",
     "aws-sdk": "^2.1500.0",
     "axios": "^1.6.0",

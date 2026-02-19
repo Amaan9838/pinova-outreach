@@ -120,6 +120,38 @@ const CampaignProspectSchema = new mongoose.Schema({
     type: Date
   },
   
+  // Visual Flow Tracking
+  currentFlowNodeId: {
+    type: String,
+    description: 'Current position in visual flow (node ID)'
+  },
+  flowHistory: [{
+    nodeId: String,
+    enteredAt: Date,
+    exitedAt: Date,
+    trigger: String, // 'sent', 'opened', 'clicked', 'replied', 'timeout'
+    data: mongoose.Schema.Types.Mixed
+  }],
+  
+  // Reply Categorization
+  replyCategory: {
+    type: String,
+    description: 'AI-categorized reply type (curious, interested, objection, not-now, custom)'
+  },
+  replyCategoryConfidence: {
+    type: Number,
+    min: 0,
+    max: 1
+  },
+  replyCategorizedAt: {
+    type: Date
+  },
+  replyCategoryOverriddenBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    description: 'If category was manually overridden'
+  },
+  
   // Additional metadata
   notes: {
     type: String,

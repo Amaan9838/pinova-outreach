@@ -31,7 +31,8 @@ import {
   Calendar, 
   Settings, 
   ArrowLeft,
-  LayoutDashboard
+  LayoutDashboard,
+  GitBranch
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -297,14 +298,21 @@ export default function CampaignDetailsPage({ params }) {
       <div className="container max-w-[1600px] mx-auto p-4 md:p-6 lg:p-8 space-y-6">
         
         {/* Navigation Wrapper */}
-        <div className="flex items-center gap-2 mb-2">
-           <Button 
-             variant="ghost" 
-             className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-             onClick={() => router.push('/campaigns')}
-           >
-             <ArrowLeft className="h-4 w-4 mr-2" /> Back to Campaigns
-           </Button>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <Button 
+            variant="ghost" 
+            className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+            onClick={() => router.push('/campaigns')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" /> Back to Campaigns
+          </Button>
+          <Button
+            onClick={() => router.push(`/campaigns/${params.id}/flow-builder`)}
+            className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg shadow-purple-500/25 border-0 gap-2"
+          >
+            <GitBranch className="h-4 w-4" />
+            Flow Builder
+          </Button>
         </div>
 
         {/* Campaign Header */}

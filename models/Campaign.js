@@ -104,6 +104,23 @@ const CampaignSchema = new mongoose.Schema({
     default: 'draft'
   },
 
+  // Visual Flow Builder Integration
+  emailFlow: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'EmailFlow',
+    description: 'Reference to visual flow for this campaign'
+  },
+  useVisualFlow: {
+    type: Boolean,
+    default: false,
+    description: 'If true, use visual flow instead of linear sequence'
+  },
+  flowTemplate: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'FlowTemplate',
+    description: 'Template flow was created from (for tracking)'
+  },
+
   // Scheduling Configuration
   scheduling: {
     startDateTime: {
