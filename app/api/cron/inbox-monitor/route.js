@@ -1,18 +1,9 @@
 import { NextResponse } from 'next/server';
 import { InboxMonitorService } from '../../../../lib/inbox-monitor.js';
 
-const CRON_SECRET = process.env.CRON_SECRET;
-
 export const maxDuration = 300;
 
-export async function GET(req) {
-  const isDev = process.env.NODE_ENV !== 'production';
-  const authHeader = req.headers.get('authorization');
-
-  if (!isDev && CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
+export async function GET() {
   try {
     const startedAt = Date.now();
     await InboxMonitorService.checkReplies();

@@ -20,23 +20,9 @@ import Campaign from '../../../../models/Campaign.js';
 import { CampaignProspectService } from '../../../../lib/services/CampaignProspectService.js';
 import { processLead, repairCorruptedLeads } from '../../../../lib/outreachEngine.js';
 
-// Use Vercel cron secret to protect this endpoint (PRD §9.6)
-const CRON_SECRET = process.env.CRON_SECRET;
-
 export const maxDuration = 300; // Vercel Pro: max 5 minutes
 
-export async function GET(req) {
-  // Authenticate cron request
-  const isDev = process.env.NODE_ENV !== 'production';
-  const authHeader = req.headers.get('authorization');
-  if (!isDev && CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
-    console.warn('[outreach-engine-cron] Unauthorized attempt');
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  if (isDev) {
-    console.log('[outreach-engine-cron] Dev mode — skipping auth check');
-  }
-
+export async function GET() {
   const startTime = Date.now();
   console.log(`[outreach-engine-cron] Starting run at ${new Date().toISOString()}`);
 
