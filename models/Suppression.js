@@ -33,6 +33,4 @@ const SuppressionSchema = new mongoose.Schema({
   }
 });
 
-SuppressionSchema.index({ email: 1 });
-
 export default mongoose.models.Suppression || mongoose.model('Suppression', SuppressionSchema);

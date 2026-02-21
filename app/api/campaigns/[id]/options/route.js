@@ -57,10 +57,15 @@ export async function PUT(request, { params }) {
       campaign.options.trackClicks = options.trackClicks ?? campaign.options.trackClicks ?? true;
       campaign.options.unsubscribeLink = options.unsubscribeLink ?? campaign.options.unsubscribeLink ?? true;
       campaign.options.dailyLimit = parseInt(options.dailyLimit) || campaign.options.dailyLimit || 50;
-      // Update scheduling timezone instead of options timezone
+      // ✅ CRITICAL FIX: Update BOTH legacy scheduling AND v2 timezone
       if (options.timezone) {
+        // Legacy: for backward compatibility
         campaign.scheduling = campaign.scheduling || {};
         campaign.scheduling.timezone = options.timezone;
+        
+        // V2 NATIVE: So V2 engine uses the correct timezone!
+        campaign.v2Timezone = options.timezone;
+        console.log(`[options] Synced timezone to v2: ${options.timezone}`);
       }
       campaign.options.notes = options.notes ?? campaign.options.notes ?? '';
       
@@ -220,8 +225,8 @@ export async function GET(request, { params }) {
       notes: ''
     };
 
-    // Get timezone from scheduling instead of options
-    options.timezone = campaign.scheduling?.timezone || 'UTC';
+    // Canonical timezone for both legacy + v2 callers.
+    options.timezone = campaign.scheduling?.timezone || campaign.v2Timezone || 'America/New_York';
 
     const followUpSettings = campaign.followUpSettings || {
       enabled: false,

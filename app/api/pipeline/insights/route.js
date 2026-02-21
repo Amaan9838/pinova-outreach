@@ -4,7 +4,7 @@ import Pipeline from '@/models/Pipeline';
 import Campaign from '@/models/Campaign';
 import CampaignProspect from '@/models/CampaignProspect';
 import Message from '@/models/Message';
-import { aiService } from '@/lib/services/vertexAI';
+// AI insights via vertexAI removed — using rule-based insights (see generateFallbackInsights)
 
 /**
  * GET /api/pipeline/insights - Get AI-generated daily insights
@@ -58,20 +58,8 @@ export async function GET(request) {
       score: l.leadScore
     }));
     
-    // Generate AI insights
-    let insights = [];
-    try {
-      insights = await aiService.generateDailyInsights({
-        campaigns,
-        pipelineStats,
-        recentReplies: formattedReplies,
-        stalledLeads: formattedStalled
-      });
-    } catch (aiError) {
-      console.error('AI insights generation failed:', aiError);
-      // Fallback to rule-based insights
-      insights = generateFallbackInsights(pipelineStats, formattedReplies, formattedStalled);
-    }
+    // Rule-based insights (vertexAI removed)
+    const insights = generateFallbackInsights(pipelineStats, formattedReplies, formattedStalled);
     
     // Get priority actions
     const priorityActions = await getPriorityActions();

@@ -19,7 +19,8 @@ export function CampaignControls({ campaign, onCampaignUpdate }) {
       return;
     }
     
-    if (!campaign?.sequence?.length) {
+    // v2 campaigns can send from lead-level emailSteps or AI angles without legacy sequence.
+    if (!campaign?.useV2Engine && !campaign?.sequence?.length) {
       toast.error('Please configure email sequence first');
       return;
     }

@@ -16,10 +16,6 @@ const MessageSchema = new mongoose.Schema({
     ref: 'Mailbox',
     required: true,
   },
-  stepNumber: {
-    type: Number,
-    // optional — FlowEngine messages use sequenceStep instead
-  },
   messageId: {
     type: String,
     unique: true,
@@ -43,7 +39,7 @@ const MessageSchema = new mongoose.Schema({
   },
   trackingId: {
     type: String,
-    unique: true,
+    sparse: true,
   },
   events: [{
     type: {

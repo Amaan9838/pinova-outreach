@@ -1,51 +1,11 @@
 import mongoose from 'mongoose';
 
-const SequenceStepSchema = new mongoose.Schema({
-  stepNumber: {
-    type: Number,
-    required: true,
-  },
-  template: {
-    type: String,
-    required: false,
-    default: 'Add your email template here...',
-    validate: {
-      validator: function(v) {
-        return v === null || v === undefined || typeof v === 'string';
-      },
-      message: 'Template must be a string'
-    }
-  },
-  subject: {
-    type: String,
-    required: false,
-    default: 'Email Subject',
-    validate: {
-      validator: function(v) {
-        return v === null || v === undefined || typeof v === 'string';
-      },
-      message: 'Subject must be a string'
-    }
-  },
-
-  conditions: {
-    ifOpened: {
-      type: String,
-      enum: ['continue', 'stop', 'skip_next'],
-      default: 'continue',
-    },
-    ifReplied: {
-      type: String,
-      enum: ['continue', 'stop'],
-      default: 'stop',
-    },
-    ifBounced: {
-      type: String,
-      enum: ['stop', 'retry'],
-      default: 'stop',
-    },
-  },
-}, { strict: false });
+// ─────────────────────────────────────────────────────────────────────────────
+// Campaign Schema
+// NOTE: Fields prefixed `v2` belong exclusively to Outreach Engine v2.
+//       Legacy fields (options.dailyLimit, scheduling.staggerSettings etc.) are
+//       preserved for backward-compat with non-v2 campaigns.
+// ─────────────────────────────────────────────────────────────────────────────
 
 
 const CampaignSchema = new mongoose.Schema({
@@ -60,11 +20,7 @@ const CampaignSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  mailbox: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Mailbox',
-    required: false
-  },
+  // NOTE: mailbox top-level field removed — use options.selectedMailbox (canonical)
   options: {
     selectedMailbox: {
       type: mongoose.Schema.Types.ObjectId,
@@ -98,28 +54,20 @@ const CampaignSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+
+  // AI reply knowledge base — freeform text describing the product, benefits, and objections.
+  // The v2 engine injects this into the AI prompt when generating reply responses.
+  knowledgeBase: {
+    type: String,
+    default: null
+  },
   status: {
     type: String,
     enum: ['draft', 'pending_scheduled', 'scheduled', 'active', 'paused', 'completed', 'failed', 'cancelled'],
     default: 'draft'
   },
 
-  // Visual Flow Builder Integration
-  emailFlow: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'EmailFlow',
-    description: 'Reference to visual flow for this campaign'
-  },
-  useVisualFlow: {
-    type: Boolean,
-    default: false,
-    description: 'If true, use visual flow instead of linear sequence'
-  },
-  flowTemplate: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'FlowTemplate',
-    description: 'Template flow was created from (for tracking)'
-  },
+
 
   // Scheduling Configuration
   scheduling: {
@@ -199,61 +147,10 @@ const CampaignSchema = new mongoose.Schema({
       type: Date
     }
   },
-  sequence: [SequenceStepSchema],
-  // NOTE: Prospects are now stored in separate CampaignProspect collection
-  // This field is kept for backward compatibility but should not be used
-  prospects: {
-    type: [mongoose.Schema.Types.Mixed],
-    default: [],
-    select: false // Hide from queries by default
-  },
   mailboxes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Mailbox',
   }],
-  // Follow-up Settings
-  followUpSettings: {
-    enabled: {
-      type: Boolean,
-      default: false,
-    },
-    maxFollowUps: {
-      type: Number,
-      default: 3,
-    },
-    followUpDelay: {
-      type: Number,
-      default: 3,
-    },
-    followUpTemplates: [{
-      id: Number,
-      subject: String,
-      content: String,
-      delay: Number,
-    }],
-    conditions: {
-      noReply: {
-        type: Boolean,
-        default: true,
-      },
-      noOpen: {
-        type: Boolean,
-        default: false,
-      },
-      bounced: {
-        type: Boolean,
-        default: false,
-      },
-    },
-    stopOnReply: {
-      type: Boolean,
-      default: true,
-    },
-    stopOnOpen: {
-      type: Boolean,
-      default: false,
-    },
-  },
 
   stats: {
     sent: {
@@ -312,7 +209,47 @@ const CampaignSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now,
-  }
+  },
+
+  // ─── Outreach Engine v2 Fields (PRD §0, §3, §5, §9, §12) ───────────────────
+  // Feature flag — v2 engine only processes campaigns with useV2Engine = true
+  useV2Engine: {
+    type: Boolean,
+    default: false
+  },
+
+  // §3.1, §9.2 — IANA timezone (e.g. "America/New_York")
+  v2Timezone: {
+    type: String,
+    default: 'America/New_York'
+  },
+
+  // §3.3 — Business hours window (hours in campaign timezone)
+  v2BusinessHours: {
+    startHour: { type: Number, default: 9 },
+    endHour:   { type: Number, default: 17 }
+  },
+
+  // §3.4, §9.4 — Per-mailbox rate limits
+  v2Limits: {
+    dailySendLimit:  { type: Number, default: 40 },
+    hourlySendLimit: { type: Number, default: 10 },
+    minGapMinutes:   { type: Number, default: 3 }
+  },
+
+  // §3.5, §3.7, §3.8 — Delay and cooling config
+  v2Delays: {
+    baseDelayHours:       { type: Number, default: 24 },
+    escalationMultiplier: { type: Number, default: 1.5 },
+    coolingPeriodDays:    { type: Number, default: 30 },
+    maxAttemptsPerCycle:  { type: Number, default: 6 }
+  },
+
+  // §5.1–5.3 — Angle rotation (minimum 3 required before v2 activation)
+  v2Angles: [{
+    key:         { type: String, required: true },
+    description: { type: String, required: true }
+  }]
 });
 
 // Instance methods for scheduling
@@ -459,8 +396,11 @@ CampaignSchema.pre('save', function(next) {
   next();
 });
 
+// ─ v2 engine fields are defined inline in the main schema (see options below) ─
+
 // Indexes for performance
 CampaignSchema.index({ status: 1, 'scheduling.startDateTime': 1 });
 CampaignSchema.index({ 'validation.nextRetryAt': 1, status: 1 });
+CampaignSchema.index({ useV2Engine: 1, status: 1 });
 
 export default mongoose.models.Campaign || mongoose.model('Campaign', CampaignSchema);

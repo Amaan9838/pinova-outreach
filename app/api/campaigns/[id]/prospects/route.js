@@ -229,7 +229,8 @@ export async function GET(request, { params }) {
       emailsOpened: cp.emailsOpened || 0,
       emailsClicked: cp.emailsClicked || 0,
       emailsReplied: cp.emailsReplied || 0,
-      lastSentAt: cp.lastSentAt
+      lastSentAt: cp.lastSentAt,
+      emailSteps: cp.emailSteps || []
     }));
 
     return Response.json({

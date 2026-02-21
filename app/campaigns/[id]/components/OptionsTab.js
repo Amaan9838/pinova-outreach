@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Mail, Zap, Play, Pause, Trash2, Settings, Save } from 'lucide-react';
+import { Settings, Save } from 'lucide-react';
 
 export default function OptionsTab({
   campaign,
@@ -25,7 +25,7 @@ export default function OptionsTab({
     trackOpens: true,
     trackClicks: true,
     unsubscribeLink: true,
-
+    timezone: 'America/New_York',
     notes: '',
     // Follow-up settings
     followUpEnabled: false,
@@ -47,7 +47,7 @@ export default function OptionsTab({
         trackOpens: campaign.options?.trackOpens ?? true,
         trackClicks: campaign.options?.trackClicks ?? true,
         unsubscribeLink: campaign.options?.unsubscribeLink ?? true,
-
+        timezone: campaign.scheduling?.timezone || campaign.v2Timezone || 'America/New_York',
         notes: campaign.options?.notes || '',
         // Follow-up settings from campaign
         followUpEnabled: campaign.followUpSettings?.enabled ?? false,
@@ -55,7 +55,7 @@ export default function OptionsTab({
         stopOnOpen: campaign.followUpSettings?.stopOnOpen ?? false
       });
     }
-  }, [campaign?._id, campaign?.options, campaign?.mailbox]);
+  }, [campaign?._id, campaign?.options, campaign?.mailbox, campaign?.scheduling, campaign?.v2Timezone]);
 
   const loadCampaignOptions = async () => {
     if (!campaign?._id) return;
@@ -117,7 +117,7 @@ export default function OptionsTab({
           trackOpens: settings.trackOpens,
           trackClicks: settings.trackClicks,
           unsubscribeLink: settings.unsubscribeLink,
-
+          timezone: settings.timezone,
           notes: settings.notes || '',
           // Follow-up settings
           followUpSettings: {
@@ -170,58 +170,6 @@ export default function OptionsTab({
   };
   return (
     <div className="space-y-6">
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5" />
-            Quick Actions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
-            <Button onClick={sendTestEmail} className="flex items-center gap-2">
-              <Mail className="h-4 w-4" />
-              Send Test Email
-            </Button>
-            <Button 
-              onClick={processSequencesManually} 
-              variant="outline"
-              className="flex items-center gap-2 text-blue-600 border-blue-200 hover:bg-blue-50"
-            >
-              <Zap className="h-4 w-4" />
-              Process Sequences Now
-            </Button>
-            {campaign.status === 'active' && (
-              <Button 
-                onClick={pauseCampaign} 
-                variant="outline"
-                className="flex items-center gap-2 text-yellow-600 border-yellow-200 hover:bg-yellow-50"
-              >
-                <Pause className="h-4 w-4" />
-                Pause Campaign
-              </Button>
-            )}
-            {campaign.status === 'paused' && (
-              <Button 
-                onClick={resumeCampaign}
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-              >
-                <Play className="h-4 w-4" />
-                Resume Campaign
-              </Button>
-            )}
-            <Button 
-              onClick={deleteCampaign} 
-              variant="outline"
-              className="flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete Campaign
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Campaign Settings */}
       <Card>
@@ -342,7 +290,6 @@ export default function OptionsTab({
           {/* Follow-up Settings */}
           <div className="space-y-4">
             <h4 className="font-medium text-gray-900">Follow-up Settings</h4>
-            
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="followUpEnabled">Enable Follow-ups</Label>
@@ -356,57 +303,12 @@ export default function OptionsTab({
             </div>
 
             {settings.followUpEnabled && (
-              <>
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800 font-medium mb-1">Follow-up Configuration</p>
-                  <p className="text-xs text-blue-600">
-                    Follow-up timing and number of emails are controlled by your <strong>Sequence steps</strong>. 
-                    Create additional steps in the Sequences tab to add more follow-ups with custom delays.
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  <h5 className="text-sm font-medium text-gray-900">Stop Follow-ups When:</h5>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="stopOnReply">Prospect Replies</Label>
-                      <p className="text-xs text-gray-500">Stop sending follow-ups when prospect responds</p>
-                    </div>
-                    <Switch
-                      id="stopOnReply"
-                      checked={settings.stopOnReply}
-                      onCheckedChange={(checked) => setSettings(prev => ({ ...prev, stopOnReply: checked }))}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="stopOnOpen">Prospect Opens Email</Label>
-                      <p className="text-xs text-gray-500">Stop sending follow-ups when prospect opens email</p>
-                    </div>
-                    <Switch
-                      id="stopOnOpen"
-                      checked={settings.stopOnOpen}
-                      onCheckedChange={(checked) => setSettings(prev => ({ ...prev, stopOnOpen: checked }))}
-                    />
-                  </div>
-                </div>
-
-                {/* Cron Information */}
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h5 className="text-sm font-medium text-gray-900 mb-2">Automation Setup</h5>
-                  <p className="text-sm text-gray-600 mb-3">
-                    Follow-ups are processed automatically via cron jobs. Set up the following URL to run every hour:
-                  </p>
-                  <div className="bg-white p-3 rounded border font-mono text-sm break-all">
-                    {typeof window !== 'undefined' ? window.location.origin : ''}/api/cron/process-followups
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    This endpoint processes all campaigns and sends follow-up emails based on your settings.
-                  </p>
-                </div>
-              </>
+              <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                <p className="text-sm text-purple-800 font-medium mb-1">v2 Engine controls follow-ups</p>
+                <p className="text-xs text-purple-600">
+                  Follow-up timing, escalation delays, and max attempts are configured in the <strong>v2 Engine tab</strong>. The engine will automatically send follow-ups based on your angle rotation and delay settings.
+                </p>
+              </div>
             )}
           </div>
 

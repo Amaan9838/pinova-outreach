@@ -23,7 +23,14 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import { toast } from 'sonner';
+
+function toCalendarDateInTimezone(utcDate, timeZone) {
+  const dateOnly = formatInTimeZone(utcDate, timeZone, 'yyyy-MM-dd');
+  const [year, month, day] = dateOnly.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
 
 export default function ScheduleTab({ campaign, campaignId, onCampaignUpdate }) {
   const [scheduleSettings, setScheduleSettings] = useState({
@@ -66,12 +73,15 @@ export default function ScheduleTab({ campaign, campaignId, onCampaignUpdate }) 
   useEffect(() => {
     if (campaign?.scheduling) {
       const scheduling = campaign.scheduling;
+      const resolvedTimezone = scheduling.timezone || campaign?.v2Timezone || 'UTC';
+      const scheduledStartUtc = scheduling.startDateTime ? new Date(scheduling.startDateTime) : null;
       setScheduleSettings(prev => ({
         ...prev,
-        startDate: scheduling.startDateTime ? new Date(scheduling.startDateTime) : null,
-        startTime: scheduling.startDateTime ? 
-          format(new Date(scheduling.startDateTime), 'HH:mm') : '09:00',
-        timezone: scheduling.timezone || 'UTC',
+        startDate: scheduledStartUtc ? toCalendarDateInTimezone(scheduledStartUtc, resolvedTimezone) : null,
+        startTime: scheduledStartUtc
+          ? formatInTimeZone(scheduledStartUtc, resolvedTimezone, 'HH:mm')
+          : '09:00',
+        timezone: resolvedTimezone,
         businessHours: scheduling.businessHours || prev.businessHours,
         dailySendCap: scheduling.dailySendCap || 50,
         staggerSettings: scheduling.staggerSettings || prev.staggerSettings,
@@ -212,16 +222,14 @@ export default function ScheduleTab({ campaign, campaignId, onCampaignUpdate }) 
 
     setLoading(true);
     try {
-      // Combine date and time
-      const [hours, minutes] = scheduleSettings.startTime.split(':');
-      const startDateTime = new Date(scheduleSettings.startDate);
-      startDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      const startDate = format(scheduleSettings.startDate, 'yyyy-MM-dd');
 
       const response = await fetch(`/api/campaigns/${campaignId}/schedule`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          startDateTime: startDateTime.toISOString(),
+          startDate,
+          startTime: scheduleSettings.startTime,
           timezone: scheduleSettings.timezone,
           businessHours: scheduleSettings.businessHours,
           staggerSettings: scheduleSettings.staggerSettings,

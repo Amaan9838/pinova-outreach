@@ -2,7 +2,6 @@ import dbConnect from '../../../../../lib/mongodb.js';
 import Message from '../../../../../models/Message.js';
 import Campaign from '../../../../../models/Campaign.js';
 import CampaignProspect from '../../../../../models/CampaignProspect.js';
-import { FlowEngine } from '../../../../../lib/flowEngine.js';
 
 export const runtime = 'nodejs'; // Run in Node.js, not Edge
 export const dynamic = 'force-dynamic'; // Force dynamic execution
@@ -22,6 +21,7 @@ export async function GET(request, { params }) {
     
     if (message) {
       console.log(`Found message for tracking ID ${trackingId}`);
+      message.events = Array.isArray(message.events) ? message.events : [];
       
       // Check if this is the first open
       const hasOpenEvent = message.events.some(event => event.type === 'opened');
@@ -50,7 +50,9 @@ export async function GET(request, { params }) {
           console.log(`Updated campaign ${campaign.name} open stats to ${campaign.stats.opened}`);
         }
 
-        // Update CampaignProspect stats for pipeline tracking
+        // Update CampaignProspect stats
+        // v2: Only set lastOpenedAt — NO state transition here (PRD §7.7)
+        // State changes happen exclusively in outreachEngine.js → processLead()
         await CampaignProspect.updateOne(
           { 
             campaign: message.campaignId, 
@@ -60,30 +62,12 @@ export async function GET(request, { params }) {
             $inc: { emailsOpened: 1 },
             $set: { 
               openedAt: new Date(),
-              lastOpenedAt: new Date(),
-              awaitingReply: true
+              lastOpenedAt: new Date()
+              // NOTE: do NOT set awaitingReply, v2State, or nextActionAt here.
+              // The engine reads lastOpenedAt on the next cron tick.
             }
           }
         );
-
-        // ── Wire 4: Tell the FlowEngine an open happened ──────────────────────
-        // This allows the flow to branch: opened → Email B, not-opened → Email C
-        try {
-          const cp = await CampaignProspect.findOne({
-            campaign: message.campaignId,
-            prospect: message.prospectId,
-          }).populate({ path: 'campaign', select: 'useVisualFlow emailFlow' });
-
-          if (cp?.campaign?.useVisualFlow) {
-            console.log(`[OpenTracker] Firing FlowEngine 'email_opened' for CampaignProspect ${cp._id}`);
-            // Fire-and-forget — don't block the pixel response
-            FlowEngine.executeTrigger(cp._id.toString(), 'email_opened', {
-              openedAt: new Date(),
-            }).catch(err => console.error('[OpenTracker] FlowEngine error:', err.message));
-          }
-        } catch (feErr) {
-          console.error('[OpenTracker] Could not trigger FlowEngine:', feErr.message);
-        }
       } else {
         console.log('Email already marked as opened');
       }

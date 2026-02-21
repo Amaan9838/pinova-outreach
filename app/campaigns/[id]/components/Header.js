@@ -54,7 +54,13 @@ export default function Header({
           <div className="flex items-center gap-6 mt-3 ml-11 text-sm text-gray-500">
             <span>{campaign.prospects?.length || 0} prospects</span>
             <span>•</span>
-            <span>{campaign.sequence?.length || 0} steps</span>
+            {campaign.useV2Engine ? (
+              <span className="flex items-center gap-1 text-purple-600 font-medium">
+                <Zap className="h-3.5 w-3.5" /> v2 Engine
+              </span>
+            ) : (
+              <span>{campaign.sequence?.length || 0} steps</span>
+            )}
             <span>•</span>
             <span>Created {new Date(campaign.createdAt).toLocaleDateString()}</span>
           </div>

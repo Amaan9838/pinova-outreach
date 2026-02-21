@@ -1,6 +1,7 @@
 import dbConnect from '../../../../lib/mongodb.js';
 import Campaign from '../../../../models/Campaign.js';
 import CampaignProspect from '../../../../models/CampaignProspect.js';
+import { CampaignProspectService } from '../../../../lib/services/CampaignProspectService.js';
 // Ensure referenced models are registered before populate
 import '../../../../models/Prospect.js';
 import '../../../../models/MailboxFixed.js';
@@ -162,7 +163,9 @@ export async function PATCH(request, { params }) {
       campaign.options.dailyLimit = updates.dailyLimit;
     }
     if (updates.timezone !== undefined) {
-      campaign.options.timezone = updates.timezone;
+      campaign.scheduling = campaign.scheduling || {};
+      campaign.scheduling.timezone = updates.timezone;
+      campaign.v2Timezone = updates.timezone;
     }
     if (updates.notes !== undefined) {
       campaign.options.notes = updates.notes;
@@ -187,12 +190,18 @@ export async function PATCH(request, { params }) {
     const savedCampaign = await campaign.save();
     // console.log('After save - checking database:', JSON.stringify(savedCampaign.sequence, null, 2));
 
-    // If status changed to active and we have campaign prospects, update their status
+    // Keep prospects synchronized with campaign state transitions.
     if (updates.status === 'active') {
-      await CampaignProspect.updateMany(
-        { campaign: id, status: 'pending' },
-        { status: 'active', nextSendAt: new Date() }
-      );
+      if (savedCampaign.useV2Engine) {
+        await CampaignProspectService.syncProspectsWithCampaignStatus(id, 'active');
+      } else {
+        await CampaignProspect.updateMany(
+          { campaign: id, status: 'pending' },
+          { status: 'active', nextSendAt: new Date() }
+        );
+      }
+    } else if (['paused', 'cancelled', 'draft'].includes(updates.status)) {
+      await CampaignProspectService.syncProspectsWithCampaignStatus(id, updates.status);
     }
 
     return Response.json({

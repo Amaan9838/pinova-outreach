@@ -22,6 +22,9 @@ import CampaignControls from '@/components/CampaignControls';
 import OptionsTab from './components/OptionsTab';
 import TemplateModal from './components/TemplateModal';
 import { Skeleton } from '@/components/ui/skeleton';
+// ── v2 Engine components (PRD §10) ────────────────────────────────────────────
+import V2EngineTab from './components/V2EngineTab';
+import V2EngineLogsTab from './components/V2EngineLogsTab';
 // Import utilities
 import { getStatusColor, getMessageStatusColor, computeDailySeries, computeMessageStats } from './utils/campaignUtils';
 import { 
@@ -31,10 +34,12 @@ import {
   Calendar, 
   Settings, 
   ArrowLeft,
-  LayoutDashboard,
-  GitBranch
+  Zap,
+  Activity
 } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
+
 
 export default function CampaignDetailsPage({ params }) {
   const router = useRouter();
@@ -118,18 +123,20 @@ export default function CampaignDetailsPage({ params }) {
 
   const processSequencesManually = async () => {
     try {
-      const response = await fetch('/api/cron/process-sequences');
+      toast.loading('Triggering engine tick…', { id: 'cron' });
+      const response = await fetch('/api/cron/outreach-engine');
       const data = await response.json();
-      if (data.success) {
-        alert('Sequences processed! Refresh to see updates.');
+      toast.dismiss('cron');
+      if (response.ok) {
+        toast.success(`Engine tick done — processed: ${data.processed ?? 0}, errors: ${data.errors ?? 0}`);
         fetchCampaignDetails();
-        fetchMessages();
       } else {
-        alert('Error processing sequences: ' + data.error);
+        toast.error('Engine tick error: ' + (data.error || response.statusText));
       }
     } catch (error) {
-      console.error('Failed to process sequences:', error);
-      alert('Failed to process sequences');
+      toast.dismiss('cron');
+      console.error('[processNow] Failed:', error);
+      toast.error('Failed to trigger engine: ' + error.message);
     }
   };
 
@@ -214,19 +221,24 @@ export default function CampaignDetailsPage({ params }) {
 
   const startCampaign = async () => {
     try {
+      console.log(`[startCampaign] Calling /api/campaigns/${params.id}/start`);
       const response = await fetch(`/api/campaigns/${params.id}/start`, {
         method: 'POST'
       });
       const data = await response.json();
+      console.log('[startCampaign] Response:', response.status, data);
       if (data.success) {
-        toast.success('Campaign started successfully!');
+        toast.success('Campaign started! Engine will process leads on next tick.');
         fetchCampaignDetails();
       } else {
-        toast.error('Failed to start campaign: ' + data.error);
+        // Show the full validation errors if present
+        const detail = data.errors?.map(e => e.message).join('\n') || data.error;
+        console.error('[startCampaign] Validation failed:', data);
+        toast.error(detail, { duration: 8000 });
       }
     } catch (error) {
-      console.error('Failed to start campaign:', error);
-      toast.error('Failed to start campaign');
+      console.error('[startCampaign] Network error:', error);
+      toast.error('Network error: ' + error.message);
     }
   };
 
@@ -297,21 +309,14 @@ export default function CampaignDetailsPage({ params }) {
 
       <div className="container max-w-[1600px] mx-auto p-4 md:p-6 lg:p-8 space-y-6">
         
-        {/* Navigation Wrapper */}
-        <div className="flex items-center justify-between gap-2 mb-2">
+        {/* Navigation */}
+        <div className="flex items-center gap-2 mb-2">
           <Button 
             variant="ghost" 
             className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
             onClick={() => router.push('/campaigns')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" /> Back to Campaigns
-          </Button>
-          <Button
-            onClick={() => router.push(`/campaigns/${params.id}/flow-builder`)}
-            className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg shadow-purple-500/25 border-0 gap-2"
-          >
-            <GitBranch className="h-4 w-4" />
-            Flow Builder
           </Button>
         </div>
 
@@ -384,6 +389,24 @@ export default function CampaignDetailsPage({ params }) {
               >
                 <Users className="h-4 w-4 mr-2" /> Leads
               </TabsTrigger>
+              {/* v2 Engine tabs — always available so operator can configure before activating */}
+              <TabsTrigger
+                value="v2-engine"
+                className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-violet-600 dark:data-[state=active]:text-violet-400 data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 h-auto transition-all text-slate-500 gap-1.5"
+              >
+                <Zap className="h-4 w-4" />
+                v2 Engine
+                {campaign?.useV2Engine && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block ml-0.5" />
+                )}
+              </TabsTrigger>
+              <TabsTrigger
+                value="v2-logs"
+                className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-violet-600 dark:data-[state=active]:text-violet-400 data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 h-auto transition-all text-slate-500 gap-1.5"
+              >
+                <Activity className="h-4 w-4" /> Logs
+              </TabsTrigger>
+
               <TabsTrigger 
                 value="sequences"
                 className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 h-auto transition-all text-slate-500"
@@ -444,6 +467,22 @@ export default function CampaignDetailsPage({ params }) {
                   campaignId={params.id}
                 />
               </div>
+            </TabsContent>
+
+            {/* ── v2 Engine Config tab (PRD §10.3) ─────────────────────────────── */}
+            <TabsContent value="v2-engine" className="mt-0 focus-visible:outline-none">
+              <V2EngineTab
+                campaign={campaign}
+                campaignId={params.id}
+                onCampaignUpdate={(updated) => {
+                  setCampaign(prev => ({ ...prev, ...updated }));
+                }}
+              />
+            </TabsContent>
+
+            {/* ── v2 Engine Logs tab (PRD §10.7) ──────────────────────────────── */}
+            <TabsContent value="v2-logs" className="mt-0 focus-visible:outline-none">
+              <V2EngineLogsTab campaignId={params.id} />
             </TabsContent>
 
             <TabsContent value="sequences" className="mt-0 focus-visible:outline-none">

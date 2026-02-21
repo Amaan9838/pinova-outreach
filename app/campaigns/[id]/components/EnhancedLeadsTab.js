@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "sonner";
 import { Plus, Upload, Download, Search, Filter, Eye, Edit, Trash2, Users } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import EnhancedCSVImport from '@/components/EnhancedCSVImport';
+import LeadsCSVImportModal from './LeadsCSVImportModal';
+import LeadStepsDrawer from './LeadStepsDrawer';
 import MultiEmailInput from '@/components/MultiEmailInput';
 
 export default function EnhancedLeadsTab({ campaign, campaignId, getStatusColor }) {
@@ -32,6 +33,7 @@ export default function EnhancedLeadsTab({ campaign, campaignId, getStatusColor 
   const [deleteProspectDialog, setDeleteProspectDialog] = useState({ open: false, prospectId: null, prospectName: '' });
   const [selectedProspectIds, setSelectedProspectIds] = useState([]);
   const [clickTimeout, setClickTimeout] = useState(null);
+  const [stepsDrawer, setStepsDrawer] = useState({ open: false, prospectId: null, leadName: '' });
 
 
 
@@ -589,7 +591,7 @@ const handleDeleteProspect = async (prospectId) => {
             size="sm"
           >
             <Upload className="h-4 w-4 mr-2" />
-            Import CSV
+            Import CSV ✨
           </Button>
           <Button
             onClick={handleExportProspects}
@@ -646,6 +648,9 @@ const handleDeleteProspect = async (prospectId) => {
                   Current Step
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email Steps
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -688,6 +693,28 @@ const handleDeleteProspect = async (prospectId) => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     Step {prospectData.currentStep || 1}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setStepsDrawer({
+                          open: true,
+                          prospectId: prospectData._id,
+                          leadName: `${prospectData.firstName || ''} ${prospectData.lastName || ''}`.trim()
+                        });
+                      }}
+                      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                        (prospectData.emailSteps?.length || 0) > 0
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                          : 'bg-gray-50 text-gray-400 border border-gray-200 hover:bg-blue-50 hover:text-blue-500 hover:border-blue-200'
+                      }`}
+                    >
+                      {(prospectData.emailSteps?.length || 0) > 0
+                        ? <>{prospectData.emailSteps.length} step{prospectData.emailSteps.length !== 1 ? 's' : ''} ✏️</>
+                        : <>+ add steps</>
+                      }
+                    </button>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(prospectData.status)}`}>
@@ -1018,14 +1045,7 @@ const handleDeleteProspect = async (prospectId) => {
         </DialogContent>
       </Dialog>
 
-      {/* Enhanced CSV Import Modal */}
-      <EnhancedCSVImport
-        isOpen={showImportModal}
-        onClose={() => setShowImportModal(false)}
-        onImport={handleCSVImport}
-        title="Import Campaign Prospects"
-        description="Upload prospect data with advanced field mapping, custom variables, and multiple email support"
-      />
+      {/* LeadsCSVImportModal rendered at bottom of file */}
 
 
       {/* Add Existing Prospects Modal */}
@@ -1547,6 +1567,22 @@ const handleDeleteProspect = async (prospectId) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* CSV Import Modal — per-lead step preview */}
+      <LeadsCSVImportModal
+        open={showImportModal}
+        onOpenChange={setShowImportModal}
+        campaignId={campaignId}
+        onImported={fetchProspects}
+      />
+
+      {/* Per-lead email steps viewer/editor */}
+      <LeadStepsDrawer
+        open={stepsDrawer.open}
+        onOpenChange={(v) => setStepsDrawer(prev => ({ ...prev, open: v }))}
+        campaignId={campaignId}
+        prospectId={stepsDrawer.prospectId}
+        leadName={stepsDrawer.leadName}
+      />
     </div>
   );
 }

@@ -1,3 +1,9 @@
+// Fix: Node.js 24 on Windows defaults DNS to 127.0.0.1 which has no DNS server.
+// This causes "querySrv ECONNREFUSED" for mongodb+srv:// connections.
+// Must be set here (earliest possible point) before any module loads.
+const dns = require('dns');
+dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {

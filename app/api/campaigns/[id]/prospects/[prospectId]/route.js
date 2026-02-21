@@ -4,6 +4,41 @@ import Prospect from '../../../../../../models/Prospect.js';
 import Campaign from '../../../../../../models/Campaign.js';
 import { NextResponse } from 'next/server';
 
+export async function GET(request, { params }) {
+  try {
+    await dbConnect();
+    const { id, prospectId } = params;
+
+    const [prospect, campaignProspect] = await Promise.all([
+      Prospect.findById(prospectId).lean(),
+      CampaignProspect.findOne({ campaign: id, prospect: prospectId }).lean()
+    ]);
+
+    if (!prospect || !campaignProspect) {
+      return NextResponse.json({ success: false, error: 'Lead not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      lead: {
+        ...prospect,
+        status:       campaignProspect.status,
+        v2State:      campaignProspect.v2State,
+        emailSteps:   campaignProspect.emailSteps || [],
+        customSubject:campaignProspect.customSubject,
+        customBody:   campaignProspect.customBody,
+        attemptCount: campaignProspect.attemptCount,
+        nextActionAt: campaignProspect.nextActionAt,
+        repliedAt:    campaignProspect.repliedAt,
+        replyCategory:campaignProspect.replyCategory
+      }
+    });
+  } catch (error) {
+    console.error('GET lead error:', error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
 export async function PATCH(request, { params }) {
   try {
     await dbConnect();
@@ -20,7 +55,7 @@ export async function PATCH(request, { params }) {
       );
     }
 
-    // Update prospect data
+    // Update prospect contact fields
     const updateData = {
       firstName: body.firstName?.trim() || prospect.firstName,
       lastName: body.lastName?.trim() || prospect.lastName,
@@ -36,27 +71,35 @@ export async function PATCH(request, { params }) {
       personalizationNote: body.personalizationNote?.trim() || prospect.personalizationNote,
     };
 
-    // Handle additional emails
     if (body.additionalEmails && Array.isArray(body.additionalEmails)) {
       updateData.additionalEmails = body.additionalEmails;
     }
-
-    // Handle custom fields
     if (body.customFields && Array.isArray(body.customFields)) {
       updateData.customFields = body.customFields;
     }
 
-    // Update the prospect
     const updatedProspect = await Prospect.findByIdAndUpdate(
       prospectId,
       updateData,
       { new: true, runValidators: true }
     );
 
+    // Also update emailSteps on CampaignProspect if provided
+    let updatedSteps = null;
+    if (body.emailSteps !== undefined) {
+      const cp = await CampaignProspect.findOneAndUpdate(
+        { campaign: id, prospect: prospectId },
+        { $set: { emailSteps: body.emailSteps } },
+        { new: true }
+      );
+      updatedSteps = cp?.emailSteps || [];
+    }
+
     return NextResponse.json({
       success: true,
-      message: 'Prospect updated successfully',
-      prospect: updatedProspect
+      message: 'Lead updated successfully',
+      prospect: updatedProspect,
+      ...(updatedSteps !== null && { emailSteps: updatedSteps })
     });
 
   } catch (error) {

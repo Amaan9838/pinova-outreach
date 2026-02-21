@@ -26,6 +26,7 @@ export async function GET(request, { params }) {
     
     if (message) {
       console.log(`Found message for tracking ID ${trackingId}`);
+      message.events = Array.isArray(message.events) ? message.events : [];
       
       // Check if this is a new click (first click only for unique count)
       const hasClickEvent = message.events.some(event => event.type === 'clicked');
