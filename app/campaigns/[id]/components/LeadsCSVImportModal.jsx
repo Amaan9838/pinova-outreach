@@ -12,24 +12,29 @@ import {
 const MAX_STEPS = 7;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// ─── CSV parser (handles quoted fields) ────────────────────────────────────
-function parseCSVLine(line) {
-  const vals = []; let cur = ''; let inQ = false;
-  for (const ch of line) {
-    if (ch === '"') { inQ = !inQ; }
-    else if (ch === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
-    else cur += ch;
+// ─── CSV parser — handles quoted fields containing commas AND newlines ────────
+function parseCSVToRows(csv) {
+  const rows = [];
+  let field = '', row = [], inQuotes = false;
+  for (let i = 0; i < csv.length; i++) {
+    const ch = csv[i], next = csv[i + 1];
+    if (ch === '"' && inQuotes && next === '"') { field += '"'; i++; }
+    else if (ch === '"') { inQuotes = !inQuotes; }
+    else if (ch === ',' && !inQuotes) { row.push(field.trim()); field = ''; }
+    else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      if (ch === '\r' && next === '\n') i++;
+      row.push(field.trim()); rows.push(row); row = []; field = '';
+    } else { field += ch; }
   }
-  vals.push(cur.trim());
-  return vals;
+  if (field || row.length > 0) { row.push(field.trim()); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim() !== ''));
 }
 
 function parseCSV(raw) {
-  const lines = raw.trim().split('\n').filter(l => l.trim());
-  if (lines.length < 2) return { headers: [], rows: [], error: 'CSV must have a header + at least one row' };
-  const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/\s+/g, ''));
-  const rows = lines.slice(1).map(l => {
-    const vals = parseCSVLine(l);
+  const allRows = parseCSVToRows(raw);
+  if (allRows.length < 2) return { headers: [], rows: [], error: 'CSV must have a header + at least one row' };
+  const headers = allRows[0].map(h => h.toLowerCase().replace(/\s+/g, ''));
+  const rows = allRows.slice(1).map(vals => {
     const obj = {};
     headers.forEach((h, i) => { obj[h] = (vals[i] || '').trim(); });
     return obj;

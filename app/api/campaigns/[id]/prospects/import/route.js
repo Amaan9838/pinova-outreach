@@ -7,26 +7,47 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_STEPS = 7;
 
 /**
- * Parse a CSV line respecting quoted fields containing commas.
- * Simple implementation: handles "value, with comma" style quoting.
+ * Fully robust CSV parser. Handles quoted fields containing newlines and commas.
+ * Returns an array of rows (each row is an array of strings).
  */
-function parseCSVLine(line) {
-  const values = [];
-  let current = '';
+function parseCSV(csv) {
+  const rows = [];
+  let currentField = '';
+  let currentRow = [];
   let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
+  
+  for (let i = 0; i < csv.length; i++) {
+    const char = csv[i];
+    const nextChar = csv[i + 1];
+
+    if (char === '"' && inQuotes && nextChar === '"') {
+      currentField += '"';
+      i++; // Skip the double quote escape
+    } else if (char === '"') {
       inQuotes = !inQuotes;
-    } else if (ch === ',' && !inQuotes) {
-      values.push(current.trim());
-      current = '';
+    } else if (char === ',' && !inQuotes) {
+      currentRow.push(currentField.trim());
+      currentField = '';
+    } else if ((char === '\n' || char === '\r') && !inQuotes) {
+      if (char === '\r' && nextChar === '\n') {
+        i++; // skip \n
+      }
+      currentRow.push(currentField.trim());
+      rows.push(currentRow);
+      currentRow = [];
+      currentField = '';
     } else {
-      current += ch;
+      currentField += char;
     }
   }
-  values.push(current.trim());
-  return values;
+  
+  if (currentField || currentRow.length > 0) {
+    currentRow.push(currentField.trim());
+    rows.push(currentRow);
+  }
+
+  // Filter out any rows that are completely empty
+  return rows.filter(row => row.some(col => col.trim() !== ''));
 }
 
 /**
@@ -60,16 +81,16 @@ export async function POST(request, { params }) {
       return Response.json({ success: false, error: 'CSV data is required' }, { status: 400 });
     }
 
-    const lines = csvData.trim().split('\n').filter(l => l.trim());
-    if (lines.length < 2) {
+    const parsedRows = parseCSV(csvData);
+    if (parsedRows.length < 2) {
       return Response.json(
         { success: false, error: 'CSV must have a header row and at least one data row' },
         { status: 400 }
       );
     }
 
-    const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/\s+/g, ''));
-    const dataLines = lines.slice(1);
+    const headers = parsedRows[0].map(h => h.toLowerCase().replace(/\s+/g, ''));
+    const dataLines = parsedRows.slice(1);
 
     // ── Header-level validation ─────────────────────────────────────────────
     const requiredHeaders = ['firstname', 'lastname', 'email'];
@@ -103,10 +124,9 @@ export async function POST(request, { params }) {
     let imported = 0;
 
     for (let i = 0; i < dataLines.length; i++) {
-      const line = dataLines[i];
-      if (!line.trim()) continue;
+      const values = dataLines[i];
+      if (!values || values.length === 0) continue;
 
-      const values = parseCSVLine(line);
       const rowNum = i + 2; // 1-based, accounting for header
 
       if (values.length !== headers.length) {
@@ -206,7 +226,7 @@ export async function POST(request, { params }) {
     return Response.json({
       success: true,
       imported,
-      total:     dataLines.filter(l => l.trim()).length,
+      total:     dataLines.length,
       errors:    rowErrors.length > 0 ? rowErrors : undefined,
       prospects: importedProspects,   // used by frontend for step preview
       message:   `Imported ${imported} leads${rowErrors.length > 0 ? ` (${rowErrors.length} skipped)` : ''}`
