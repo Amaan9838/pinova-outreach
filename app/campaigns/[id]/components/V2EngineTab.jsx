@@ -131,8 +131,8 @@ export default function V2EngineTab({ campaign, campaignId, onCampaignUpdate }) 
     endHour:   campaign?.v2BusinessHours?.endHour   ?? 17,
   });
   const [limits, setLimits] = useState({
-    dailySendLimit:  campaign?.v2Limits?.dailySendLimit  ?? 40,
-    hourlySendLimit: campaign?.v2Limits?.hourlySendLimit ?? 10,
+    dailySendLimit:  campaign?.v2Limits?.dailySendLimit  ?? 100,
+    hourlySendLimit: campaign?.v2Limits?.hourlySendLimit ?? 50,
     minGapMinutes:   campaign?.v2Limits?.minGapMinutes   ?? 3,
   });
   const [delays, setDelays] = useState({
@@ -262,7 +262,7 @@ export default function V2EngineTab({ campaign, campaignId, onCampaignUpdate }) 
   const validAngles = angles.filter(a => a.key && a.description);
   const anglesReady = validAngles.length >= 3;
   const delayValid = delays.baseDelayHours >= 24;
-  const limitWarning = limits.dailySendLimit > 80;
+  const limitWarning = limits.dailySendLimit > 150;
   const canSave = delayValid;
 
   // ── Save ───────────────────────────────────────────────────────────────────
@@ -417,29 +417,29 @@ export default function V2EngineTab({ campaign, campaignId, onCampaignUpdate }) 
           {limitWarning && (
             <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 text-xs">
               <AlertTriangle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
-              Daily limit above 80 may impact deliverability (PRD §10.12).
+              Daily limit above 150 may impact deliverability for new domains.
             </div>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Daily Send Limit</Label>
               <Input
-                type="number" min={5} max={100}
+                type="number" min={5} max={200}
                 value={limits.dailySendLimit}
                 onChange={e => setLimits(p => ({ ...p, dailySendLimit: +e.target.value }))}
                 className="h-9 text-sm"
               />
-              <p className="text-xs text-slate-400">Max 100 (PRD §9.4)</p>
+              <p className="text-xs text-slate-400">Max 200</p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Hourly Send Limit</Label>
               <Input
-                type="number" min={1} max={20}
+                type="number" min={1} max={100}
                 value={limits.hourlySendLimit}
                 onChange={e => setLimits(p => ({ ...p, hourlySendLimit: +e.target.value }))}
                 className="h-9 text-sm"
               />
-              <p className="text-xs text-slate-400">Max 20 (PRD §9.4)</p>
+              <p className="text-xs text-slate-400">Max 100</p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Min Gap (minutes)</Label>
