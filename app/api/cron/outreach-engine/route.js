@@ -21,6 +21,7 @@ import { CampaignProspectService } from '../../../../lib/services/CampaignProspe
 import { processLead, repairCorruptedLeads } from '../../../../lib/outreachEngine.js';
 
 export const maxDuration = 300; // Vercel Pro: max 5 minutes
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const startTime = Date.now();
