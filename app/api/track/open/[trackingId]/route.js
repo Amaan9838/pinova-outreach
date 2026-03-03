@@ -14,7 +14,45 @@ export async function GET(request, { params }) {
     // Remove .gif extension if present for ID lookup
     const trackingId = params.trackingId.replace(/\.gif$/, '');
     
-    console.log(`Tracking open for ID: ${trackingId}`);
+    const userAgent = request.headers.get('user-agent') || '';
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '';
+    
+    console.log(`Tracking open for ID: ${trackingId}, UA: ${userAgent.substring(0, 80)}`);
+    
+    // Detect email client preview loads (Gmail, Outlook, Apple Mail, etc.)
+    // These user-agents indicate preview/preload, not actual user open
+    const previewIndicators = [
+      'googlebot',  // Google preview
+      'bingbot',    // Bing preview
+      'slurp',      // Yahoo preview
+      'facebook',   // Facebook link preview
+      'twitter',    // Twitter card preview
+      'linkedinbot', // LinkedIn preview
+      'whatsapp',   // WhatsApp preview
+      'skypeuri',   // Skype preview
+      'telegrambot', // Telegram preview
+      'Mozilla/5.0 (compatible; AmazonBot', // Amazon preview
+    ];
+    
+    const isPreview = previewIndicators.some(indicator => 
+      userAgent.toLowerCase().includes(indicator.toLowerCase())
+    );
+    
+    if (isPreview) {
+      console.log(`Ignoring preview load from: ${userAgent.substring(0, 80)}`);
+      // Return pixel but don't record as opened
+      const pixel = Buffer.from([
+        0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0xFF, 0xFF, 0xFF, 0x21, 0xF9, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00, 0x2C, 0x00, 0x00, 0x00, 0x00,
+        0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x44, 0x01, 0x00, 0x3B
+      ]);
+      return new Response(pixel, {
+        headers: {
+          'Content-Type': 'image/gif',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        }
+      });
+    }
     
     // Find message by tracking ID
     const message = await Message.findOne({ trackingId });
