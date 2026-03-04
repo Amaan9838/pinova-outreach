@@ -158,6 +158,12 @@ const CampaignProspectSchema = new mongoose.Schema({
   threadHeaderMessageId: {
     type: String,
     default: null
+  },
+
+  // §7.3 — Email threading: subject of first sent email so follow-ups can use "Re: <subject>"
+  threadSubject: {
+    type: String,
+    default: null
   }
 
 }, {
