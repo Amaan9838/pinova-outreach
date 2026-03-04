@@ -7,6 +7,10 @@
 // Runs every 5 minutes via Vercel cron.
 // Picks up leads where nextActionAt <= now AND campaign.useV2Engine = true.
 //
+// PACING: Sends are spaced with a 30s (±10s jitter) delay between emails
+// to mimic human-like sending patterns and protect deliverability.
+// ~9 emails per 5-minute cron run.
+//
 // PRD Reference: §3.2 (Cron Execution Model), §11 (Observability)
 //
 // DO NOT add scheduling logic here.
@@ -23,6 +27,18 @@ import { processLead, repairCorruptedLeads } from '../../../../lib/outreachEngin
 export const maxDuration = 300; // Vercel Pro: max 5 minutes
 export const dynamic = 'force-dynamic';
 
+// ── Pacing helpers ──────────────────────────────────────────────────────────
+const SEND_DELAY_BASE_MS = 30_000;       // 30 seconds base delay between sends
+const SEND_DELAY_JITTER_MS = 10_000;     // ±10 seconds random jitter
+const MAX_RUNTIME_MS = 270_000;          // 4.5 minutes usable (leave 30s buffer)
+const TIMEOUT_BUFFER_MS = 30_000;        // Stop if less than 30s remaining
+
+// Dynamic batch cap: how many emails can we fit in the time window
+const DYNAMIC_BATCH = Math.floor(MAX_RUNTIME_MS / SEND_DELAY_BASE_MS);
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const jitteredDelay = () => SEND_DELAY_BASE_MS + Math.floor((Math.random() * 2 - 1) * SEND_DELAY_JITTER_MS);
+
 export async function GET() {
   const startTime = Date.now();
   console.log(`[outreach-engine-cron] Starting run at ${new Date().toISOString()}`);
@@ -31,7 +47,6 @@ export async function GET() {
     await connectDB();
 
     const now = new Date();
-    const BATCH_SIZE = 50; // Process max 50 leads per tick to avoid timeout
 
     // Auto-activate scheduled v2 campaigns whose start time has arrived.
     const schedulableCampaigns = await Campaign.find({
@@ -95,19 +110,23 @@ export async function GET() {
     })
     .select('_id')
     .sort({ nextActionAt: 1 }) // Oldest-first for fairness
-    .limit(BATCH_SIZE)
+    .limit(DYNAMIC_BATCH)
     .lean();
 
-    console.log(`[outreach-engine-cron] Found ${dueLeads.length} leads to process`);
+    console.log(`[outreach-engine-cron] Found ${dueLeads.length} leads to process (batch cap: ${DYNAMIC_BATCH})`);
 
     let processed = 0;
     let errors = 0;
 
-    // ── Process each lead sequentially (PRD §3.4 — no bulk bursts) ──────────
-    for (const lead of dueLeads) {
-      // Safety: bail if approaching Vercel timeout (leave 30s buffer)
-      if (Date.now() - startTime > 270000) {
-        console.warn('[outreach-engine-cron] Approaching timeout, stopping early');
+    // ── Process leads with human-like pacing (no burst) ─────────────────────
+    // Each send is followed by a ~30s sleep (±10s jitter) to avoid looking
+    // like a bot to email providers. This is the industry-standard approach.
+    for (let i = 0; i < dueLeads.length; i++) {
+      const lead = dueLeads[i];
+
+      // Safety: bail if approaching Vercel timeout
+      if (Date.now() - startTime > MAX_RUNTIME_MS) {
+        console.warn(`[outreach-engine-cron] Timeout approaching, stopping after ${processed} sends`);
         break;
       }
 
@@ -117,6 +136,18 @@ export async function GET() {
       } catch (err) {
         errors++;
         console.error(`[outreach-engine-cron] Error processing lead ${lead._id}:`, err.message);
+      }
+
+      // Inter-send pacing: sleep between sends (skip after the last one)
+      if (i < dueLeads.length - 1) {
+        const delay = jitteredDelay();
+        const remaining = MAX_RUNTIME_MS - (Date.now() - startTime);
+        if (remaining < TIMEOUT_BUFFER_MS) {
+          console.log(`[outreach-engine-cron] Not enough time for next send, stopping`);
+          break;
+        }
+        console.log(`[outreach-engine-cron] Pacing: sleeping ${Math.round(delay / 1000)}s before next send`);
+        await sleep(delay);
       }
     }
 
