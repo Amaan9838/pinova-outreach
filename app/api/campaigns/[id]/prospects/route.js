@@ -225,6 +225,8 @@ export async function GET(request, { params }) {
       status: cp.status,
       currentStep: cp.sequenceStep || 1,
       nextSendAt: cp.nextSendAt,
+      nextActionAt: cp.nextActionAt, // V2 engine timing
+      v2State: cp.v2State,           // V2 engine state
       emailsSent: cp.emailsSent || 0,
       emailsOpened: cp.emailsOpened || 0,
       emailsClicked: cp.emailsClicked || 0,

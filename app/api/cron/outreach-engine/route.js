@@ -7,9 +7,9 @@
 // Runs every 5 minutes via Vercel cron.
 // Picks up leads where nextActionAt <= now AND campaign.useV2Engine = true.
 //
-// PACING: Sends are spaced with a 30s (±10s jitter) delay between emails
-// to mimic human-like sending patterns and protect deliverability.
-// ~9 emails per 5-minute cron run.
+// NO IN-CRON SLEEPING: Processes all due leads immediately (up to 100/run).
+// Deliverability is protected by staggered nextActionAt at enrollment time
+// and per-mailbox daily send limits (checkMailboxRateLimits).
 //
 // PRD Reference: §3.2 (Cron Execution Model), §11 (Observability)
 //
@@ -27,17 +27,12 @@ import { processLead, repairCorruptedLeads } from '../../../../lib/outreachEngin
 export const maxDuration = 300; // Vercel Pro: max 5 minutes
 export const dynamic = 'force-dynamic';
 
-// ── Pacing helpers ──────────────────────────────────────────────────────────
-const SEND_DELAY_BASE_MS = 30_000;       // 30 seconds base delay between sends
-const SEND_DELAY_JITTER_MS = 10_000;     // ±10 seconds random jitter
+// ── Runtime limits ──────────────────────────────────────────────────────────
 const MAX_RUNTIME_MS = 270_000;          // 4.5 minutes usable (leave 30s buffer)
-const TIMEOUT_BUFFER_MS = 30_000;        // Stop if less than 30s remaining
 
-// Dynamic batch cap: how many emails can we fit in the time window
-const DYNAMIC_BATCH = Math.floor(MAX_RUNTIME_MS / SEND_DELAY_BASE_MS);
+// Batch cap: max leads to process per cron run
+const DYNAMIC_BATCH = 100; // Process up to 100 leads per run (no sleeping = fast)
 
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const jitteredDelay = () => SEND_DELAY_BASE_MS + Math.floor((Math.random() * 2 - 1) * SEND_DELAY_JITTER_MS);
 
 export async function GET() {
   const startTime = Date.now();
@@ -118,9 +113,12 @@ export async function GET() {
     let processed = 0;
     let errors = 0;
 
-    // ── Process leads with human-like pacing (no burst) ─────────────────────
-    // Each send is followed by a ~30s sleep (±10s jitter) to avoid looking
-    // like a bot to email providers. This is the industry-standard approach.
+    // ── Process leads — no in-cron sleeping ───────────────────────────────────
+    // Deliverability is protected by:
+    //   1. Staggered nextActionAt at enrollment (leads don't all come due at once)
+    //   2. Per-mailbox daily send limits (checkMailboxRateLimits in processLead)
+    //   3. Business hour enforcement (leads outside hours get rescheduled)
+    // Sleeping inside a serverless function wastes execution time.
     for (let i = 0; i < dueLeads.length; i++) {
       const lead = dueLeads[i];
 
@@ -136,18 +134,6 @@ export async function GET() {
       } catch (err) {
         errors++;
         console.error(`[outreach-engine-cron] Error processing lead ${lead._id}:`, err.message);
-      }
-
-      // Inter-send pacing: sleep between sends (skip after the last one)
-      if (i < dueLeads.length - 1) {
-        const delay = jitteredDelay();
-        const remaining = MAX_RUNTIME_MS - (Date.now() - startTime);
-        if (remaining < TIMEOUT_BUFFER_MS) {
-          console.log(`[outreach-engine-cron] Not enough time for next send, stopping`);
-          break;
-        }
-        console.log(`[outreach-engine-cron] Pacing: sleeping ${Math.round(delay / 1000)}s before next send`);
-        await sleep(delay);
       }
     }
 

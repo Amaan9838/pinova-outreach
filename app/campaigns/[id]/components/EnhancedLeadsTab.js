@@ -558,7 +558,10 @@ const handleDeleteProspect = async (prospectId) => {
             <span>•</span>
             <span className="text-green-600">{prospects.filter(p => p.status === 'active').length} active</span>
             <span>•</span>
-            <span className="text-blue-600">{prospects.filter(p => p.nextSendAt && new Date(p.nextSendAt) <= new Date()).length} ready to send</span>
+            <span className="text-blue-600">{prospects.filter(p => {
+              const nextTime = p.nextActionAt || p.nextSendAt;
+              return nextTime && new Date(nextTime) <= new Date();
+            }).length} ready to send</span>
             {campaign?.status === 'pending_scheduled' && prospects.length === 0 && (
               <Badge variant="outline" className="text-yellow-600 border-yellow-300">
                 <AlertTriangle className="h-3 w-3 mr-1" />
@@ -722,10 +725,45 @@ const handleDeleteProspect = async (prospectId) => {
                     </span>
                   </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-  {prospectData.nextSendAt 
-    ? new Date(prospectData.nextSendAt).toLocaleString() 
-    : (prospectData.status === 'active' ? 'Ready Now' : prospectData.status === 'completed' ? 'Completed' : '-')
-  }
+  {(() => {
+    // V2 uses nextActionAt; legacy uses nextSendAt
+    const nextTime = prospectData.nextActionAt || prospectData.nextSendAt;
+    if (!nextTime) {
+      return prospectData.status === 'active' ? 'Ready Now' : prospectData.status === 'completed' ? 'Completed' : '-';
+    }
+    const d = new Date(nextTime);
+    const now = new Date();
+    const diffMs = d - now;
+    const isPast = diffMs < 0;
+
+    // Format with timezone abbreviation so user always knows which TZ
+    const formatted = d.toLocaleString(undefined, {
+      month: 'short', day: 'numeric',
+      hour: 'numeric', minute: '2-digit',
+      timeZoneName: 'short'
+    });
+
+    // Relative time label
+    let relative = '';
+    if (isPast) {
+      relative = 'due now';
+    } else if (diffMs < 3600_000) {
+      relative = `in ${Math.round(diffMs / 60_000)}m`;
+    } else if (diffMs < 86400_000) {
+      relative = `in ${Math.round(diffMs / 3600_000)}h`;
+    } else {
+      relative = `in ${Math.round(diffMs / 86400_000)}d`;
+    }
+
+    return (
+      <div>
+        <div>{formatted}</div>
+        <div className={`text-xs ${isPast ? 'text-green-600 font-medium' : 'text-gray-400'}`}>
+          {relative}
+        </div>
+      </div>
+    );
+  })()}
 </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center gap-2">
