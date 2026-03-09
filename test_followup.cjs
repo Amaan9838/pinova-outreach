@@ -17,7 +17,6 @@ require('dotenv').config({ path: __dirname + '/.env' });
 const { MongoClient, ObjectId } = require('mongodb');
 
 // ─── CONFIG: Change these if you want to test a different lead ───────────
-const CAMPAIGN_ID = '69a80e78f5366ce2334bda1f';
 const LEAD_EMAIL  = 'mtwebsite1@gmail.com';
 const CRON_URL    = process.env.NEXT_PUBLIC_APP_URL
   ? `${process.env.NEXT_PUBLIC_APP_URL}/api/cron/outreach-engine`
@@ -34,7 +33,21 @@ async function main() {
   const db = client.db();
   console.log('✅ Connected to MongoDB');
 
-  // Step 2: Find the lead
+  // Step 2: Find the latest test campaign automatically
+  const campaign = await db.collection('campaigns').findOne(
+    { name: { $regex: /^🧪 Threading Test/ } },
+    { sort: { createdAt: -1 } }
+  );
+  
+  if (!campaign) {
+    console.log(`❌ No test campaign found. Run 'node create_test_campaign.cjs' first.`);
+    await client.close();
+    return;
+  }
+  
+  console.log(`✅ Found latest test campaign: ${campaign._id} ("${campaign.name}")`);
+
+  // Step 3: Find the lead
   const prospect = await db.collection('prospects').findOne({ email: LEAD_EMAIL });
   if (!prospect) {
     console.log(`❌ No prospect found with email: ${LEAD_EMAIL}`);
@@ -43,12 +56,12 @@ async function main() {
   }
 
   const lead = await db.collection('campaignprospects').findOne({
-    campaign: new ObjectId(CAMPAIGN_ID),
+    campaign: campaign._id,
     prospect: prospect._id
   });
 
   if (!lead) {
-    console.log(`❌ No lead found for campaign ${CAMPAIGN_ID} + email ${LEAD_EMAIL}`);
+    console.log(`❌ No lead found for campaign ${campaign._id} + email ${LEAD_EMAIL}`);
     await client.close();
     return;
   }
@@ -60,7 +73,7 @@ async function main() {
   console.log(`   Thread subject: ${lead.threadSubject || 'NOT SET'}`);
   console.log(`   Thread messageId: ${lead.threadHeaderMessageId || 'NOT SET'}`);
 
-  // Step 3: Set nextActionAt to RIGHT NOW (minus 1 minute to be safe)
+  // Step 4: Set nextActionAt to RIGHT NOW (minus 1 minute to be safe)
   const rightNow = new Date(Date.now() - 60 * 1000); // 1 minute ago
   const result = await db.collection('campaignprospects').updateOne(
     { _id: lead._id },

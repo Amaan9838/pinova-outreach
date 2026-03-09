@@ -404,14 +404,14 @@ export default function V2EngineTab({ campaign, campaignId, onCampaignUpdate }) 
         </CardContent>
       </Card>
 
-      {/* Section B: Rate Limits */}
+      {/* Section B: Sending Limits */}
       <Card className="border-slate-200/60 dark:border-slate-800/60 bg-white/50 dark:bg-slate-900/30 shadow-sm">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-emerald-500" />
-            <CardTitle className="text-sm font-semibold">Deliverability Limits</CardTitle>
+            <CardTitle className="text-sm font-semibold">Sending Limits</CardTitle>
           </div>
-          <CardDescription className="text-xs">Per-mailbox rate limits to protect domain reputation (PRD §3.4)</CardDescription>
+          <CardDescription className="text-xs">Per-mailbox rate limits to protect domain reputation.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {limitWarning && (
@@ -429,7 +429,7 @@ export default function V2EngineTab({ campaign, campaignId, onCampaignUpdate }) 
                 onChange={e => setLimits(p => ({ ...p, dailySendLimit: +e.target.value }))}
                 className="h-9 text-sm"
               />
-              <p className="text-xs text-slate-400">Max 200</p>
+              <p className="text-xs text-slate-400">Max 200 emails per day</p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Hourly Send Limit</Label>
@@ -439,42 +439,63 @@ export default function V2EngineTab({ campaign, campaignId, onCampaignUpdate }) 
                 onChange={e => setLimits(p => ({ ...p, hourlySendLimit: +e.target.value }))}
                 className="h-9 text-sm"
               />
-              <p className="text-xs text-slate-400">Max 100</p>
+              <p className="text-xs text-slate-400">Max 100 emails per hour</p>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Min Gap (minutes)</Label>
+              <div className="flex items-center gap-1">
+                <Label className="text-xs font-medium">Min Gap (minutes)</Label>
+                <div title="Wait time between emails to seem natural" className="cursor-help text-slate-400">
+                  <Info className="h-3 w-3" />
+                </div>
+              </div>
               <Input
                 type="number" min={2} max={60}
                 value={limits.minGapMinutes}
                 onChange={e => setLimits(p => ({ ...p, minGapMinutes: +e.target.value }))}
                 className="h-9 text-sm"
               />
-              <p className="text-xs text-slate-400">Anti-burst (PRD §3.10)</p>
+              <p className="text-xs text-slate-400">Anti-spam delay between sends</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
 
-          <Separator className="my-2" />
-
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      {/* Section C: Follow-up Timing */}
+      <Card className="border-slate-200/60 dark:border-slate-800/60 bg-white/50 dark:bg-slate-900/30 shadow-sm">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <Layers className="h-4 w-4 text-violet-500" />
+            <CardTitle className="text-sm font-semibold">Follow-up Timing</CardTitle>
+          </div>
+          <CardDescription className="text-xs">Configure how long to wait between automated follow-up attempts.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Base Delay (hours)</Label>
+              <Label className="text-xs font-medium">Wait Before 1st Follow-up</Label>
               <Input
                 type="number" min={24} max={168}
                 value={delays.baseDelayHours}
                 onChange={e => setDelays(p => ({ ...p, baseDelayHours: +e.target.value }))}
                 className={`h-9 text-sm ${!delayValid ? 'border-red-400' : ''}`}
               />
+              <p className="text-xs text-slate-400">In hours (e.g., 48 is 2 days)</p>
               {!delayValid && <p className="text-xs text-red-500">Must be ≥ 24h</p>}
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Escalation ×</Label>
+              <div className="flex items-center gap-1">
+                <Label className="text-xs font-medium">Delay Multiplier</Label>
+                <div title="If set to 1.5, each subsequent follow-up waits 50% longer than the last attempt" className="cursor-help text-slate-400">
+                  <Info className="h-3 w-3" />
+                </div>
+              </div>
               <Input
                 type="number" min={1} max={3} step={0.1}
                 value={delays.escalationMultiplier}
                 onChange={e => setDelays(p => ({ ...p, escalationMultiplier: +e.target.value }))}
                 className="h-9 text-sm"
               />
-              <p className="text-xs text-slate-400">Delay multiplier</p>
+              <p className="text-xs text-slate-400">E.g., 1.5 = 50% longer each time</p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Max Attempts</Label>
@@ -484,21 +505,28 @@ export default function V2EngineTab({ campaign, campaignId, onCampaignUpdate }) 
                 onChange={e => setDelays(p => ({ ...p, maxAttemptsPerCycle: +e.target.value }))}
                 className="h-9 text-sm"
               />
+              <p className="text-xs text-slate-400">Total emails in sequence</p>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Cooling (days)</Label>
+              <div className="flex items-center gap-1">
+                <Label className="text-xs font-medium">Rest Period (days)</Label>
+                <div title="How long to pause contacting the lead after max attempts are reached" className="cursor-help text-slate-400">
+                  <Info className="h-3 w-3" />
+                </div>
+              </div>
               <Input
                 type="number" min={7} max={90}
                 value={delays.coolingPeriodDays}
                 onChange={e => setDelays(p => ({ ...p, coolingPeriodDays: +e.target.value }))}
                 className="h-9 text-sm"
               />
+              <p className="text-xs text-slate-400">Pause duration after max emails</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Section C: Angle Configuration */}
+      {/* Section D: Angle Configuration */}
       <Card className="border-slate-200/60 dark:border-slate-800/60 bg-white/50 dark:bg-slate-900/30 shadow-sm">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -573,7 +601,7 @@ export default function V2EngineTab({ campaign, campaignId, onCampaignUpdate }) 
         </CardContent>
       </Card>
 
-      {/* Section D: AI Knowledge Base */}
+      {/* Section E: AI Knowledge Base */}
       <Card className="border-slate-200/60 dark:border-slate-800/60 bg-white/50 dark:bg-slate-900/30 shadow-sm">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">

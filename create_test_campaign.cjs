@@ -15,6 +15,10 @@ if (!process.env.MONGODB_URI) {
   require('dotenv').config(); // fallback to .env
 }
 
+// Fix DNS for MongoDB Atlas SRV lookups
+const dns = require('dns');
+dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+
 const { MongoClient, ObjectId } = require('mongodb');
 
 const TARGET_EMAIL = 'mtwebsite1@gmail.com'; // The test recipient
@@ -26,16 +30,13 @@ async function main() {
 
   const db = client.db();
 
-  // 1. Find Amaan's mailbox
+  // 1. Find hello@pinova.in mailbox
   const mailbox = await db.collection('mailboxes').findOne({
-    $or: [
-      { fromName: { $regex: /amaan/i } },
-      { fromEmail: { $regex: /amaan/i } }
-    ]
+    fromEmail: 'hello@pinova.in'
   });
 
   if (!mailbox) {
-    console.error('❌ Could not find Amaan mailbox. Available mailboxes:');
+    console.error('❌ Could not find hello@pinova.in mailbox. Available mailboxes:');
     const all = await db.collection('mailboxes').find({}, { projection: { fromName: 1, fromEmail: 1 } }).toArray();
     all.forEach(m => console.log(`  - ${m.fromName} <${m.fromEmail}>`));
     process.exit(1);
@@ -69,72 +70,50 @@ async function main() {
     name: `🧪 Threading Test - ${new Date().toLocaleDateString()}`,
     status: 'active',
     useV2Engine: true,
-    mailbox: mailbox._id,
+    mailbox: mailbox._id, // Keep for backward compat
+    options: {
+      selectedMailbox: mailbox._id,
+      trackOpens: true,
+      trackClicks: true,
+      unsubscribeLink: true,
+      dailyLimit: 50
+    },
+    persona: 'Startup Founder',
+    goal: 'Book a product demo',
     userId: mailbox.userId,
     startedAt: new Date(),
     createdAt: new Date(),
     updatedAt: new Date(),
     
-    // V2 engine flow data with initial email + 1 follow-up
-    flowData: {
-      nodes: [
-        {
-          id: 'start-1',
-          type: 'start',
-          data: { label: 'Start' },
-          position: { x: 250, y: 0 }
-        },
-        {
-          id: 'email-1',
-          type: 'email',
-          data: {
-            label: 'Initial Email',
-            subject: 'Quick question about {{company}}',
-            body: 'Hi {{firstName}},\n\nI came across {{company}} and was impressed by what you\'re building.\n\nWould you be open to a quick chat this week?\n\nBest,\nAmaan',
-            useAI: false
-          },
-          position: { x: 250, y: 100 }
-        },
-        {
-          id: 'delay-1',
-          type: 'delay',
-          data: {
-            label: 'Wait 1 day',
-            delayDays: 1,
-            delayHours: 0
-          },
-          position: { x: 250, y: 200 }
-        },
-        {
-          id: 'email-2',
-          type: 'email',
-          data: {
-            label: 'Follow-up',
-            subject: 'Re: Quick question about {{company}}',
-            body: 'Hi {{firstName}},\n\nJust following up on my previous email. I\'d love to connect if you have a few minutes.\n\nLet me know!\n\nBest,\nAmaan',
-            useAI: false
-          },
-          position: { x: 250, y: 300 }
-        }
-      ],
-      edges: [
-        { id: 'e1', source: 'start-1', target: 'email-1' },
-        { id: 'e2', source: 'email-1', target: 'delay-1' },
-        { id: 'e3', source: 'delay-1', target: 'email-2' }
-      ]
+    // V2 engine relies solely on mathematical delays and a sequence array, completely replacing flowData
+    v2Delays: {
+      baseDelayHours: 24,
+      escalationMultiplier: 1.0,
+      coolingPeriodDays: 30,
+      maxAttemptsPerCycle: 6
     },
+
+    // The sequence holds the actual content templates
+    sequence: [
+      {
+        id: new ObjectId().toString(),
+        step: 1,
+        subject: 'Quick question about {{company}}',
+        body: 'Hi {{firstName}},\n\nI came across {{company}} and was impressed by what you\'re building.\n\nWould you be open to a quick chat this week?\n\nBest,\n[Sender Name]'
+      },
+      {
+        id: new ObjectId().toString(),
+        step: 2,
+        subject: 'Re: Quick question about {{company}}',
+        body: 'Hi {{firstName}},\n\nJust following up on my previous email. I\'d love to connect if you have a few minutes.\n\nLet me know!\n\nBest,\n[Sender Name]'
+      }
+    ],
 
     scheduling: {
       timezone: 'Asia/Kolkata',
       businessHoursStart: '09:00',
       businessHoursEnd: '18:00',
       businessDays: [1, 2, 3, 4, 5]
-    },
-
-    settings: {
-      dailySendLimit: 50,
-      trackOpens: true,
-      trackClicks: true
     }
   };
 
@@ -148,6 +127,8 @@ async function main() {
     _id: leadId,
     campaign: campaignId,
     prospect: prospect._id,
+    sequenceStep: 1, // Legacy UI support
+    emailSteps: campaign.sequence, // Legacy UI support for the "X steps" pill
     status: 'active',
     v2State: 'new',
     nextActionAt: new Date(), // Due NOW
