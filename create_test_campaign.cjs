@@ -30,13 +30,13 @@ async function main() {
 
   const db = client.db();
 
-  // 1. Find hello@pinova.in mailbox
+  // 1. Find ethanwelbby@gmail.com mailbox
   const mailbox = await db.collection('mailboxes').findOne({
-    fromEmail: 'hello@pinova.in'
+    fromEmail: 'ethanwelbby@gmail.com'
   });
 
   if (!mailbox) {
-    console.error('❌ Could not find hello@pinova.in mailbox. Available mailboxes:');
+    console.error('❌ Could not find ethanwelbby@gmail.com mailbox. Available mailboxes:');
     const all = await db.collection('mailboxes').find({}, { projection: { fromName: 1, fromEmail: 1 } }).toArray();
     all.forEach(m => console.log(`  - ${m.fromName} <${m.fromEmail}>`));
     process.exit(1);
