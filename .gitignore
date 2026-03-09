@@ -15,6 +15,7 @@ node_modules/
 .env.production.local
 
 /pinova-mcp-server
+/emails-leads
 
 # Logs
 npm-debug.log*
