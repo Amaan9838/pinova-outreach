@@ -43,7 +43,7 @@ export async function GET(request, { params }) {
     const populatedProspects = campaignProspects.map(cp => ({
       _id: cp._id,
       prospectId: cp.prospect._id,
-      currentStep: cp.sequenceStep || 1,
+      currentStep: (cp.attemptCount || 0) + 1,
       status: cp.status || 'pending',
       // Include all prospect details
       ...cp.prospect,

@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pulse — Company Visibility Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── RESET ─────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit}
+
+/* ─── TOKENS ─────────────────────────────────────────────────── */
+:root{
+  --bg:#f5f5f3;
+  --surface:#ffffff;
+  --s2:#f0f0ee;
+  --s3:#e8e8e5;
+  --s4:#ddddd9;
+  --border:#e2e2de;
+  --border-md:#ccccc8;
+  --text-1:#111110;
+  --text-2:#5c5c58;
+  --text-3:#9b9b96;
+  --text-4:#c4c4bf;
+  --green:#2a9d5c;
+  --green-bg:#edf7f2;
+  --green-border:#b6e4ce;
+  --amber:#c9820a;
+  --amber-bg:#fdf6e3;
+  --amber-border:#f0d08a;
+  --blue:#2563eb;
+  --blue-bg:#eff3fe;
+  --blue-border:#b8cef9;
+  --red:#c0392b;
+  --red-bg:#fdf0ef;
+  --red-border:#f2b8b4;
+  --purple:#7c3aed;
+  --purple-bg:#f3f0fe;
+  --purple-border:#c9b8f9;
+  --r:10px;
+  --r-sm:6px;
+  --r-xs:4px;
+  --sh:0 1px 2px rgba(0,0,0,.05),0 0 0 1px rgba(0,0,0,.04);
+  --sh-md:0 4px 16px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.05),0 0 0 1px rgba(0,0,0,.03);
+  --sh-lg:0 12px 40px rgba(0,0,0,.13),0 4px 10px rgba(0,0,0,.06),0 0 0 1px rgba(0,0,0,.04);
+  --sidebar-w:220px;
+  --topbar-h:52px;
+  --font:'Instrument Sans',-apple-system,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --transition:0.16s cubic-bezier(.4,0,.2,1);
+}
+
+body{font-family:var(--font);background:var(--bg);color:var(--text-1);font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* ─── TOPBAR ─────────────────────────────────────────────────── */
+.topbar{
+  position:fixed;top:0;left:var(--sidebar-w);right:0;z-index:40;
+  height:var(--topbar-h);
+  background:rgba(245,245,243,.9);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+  transition:left var(--transition);
+}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-title{font-size:14px;font-weight:600;color:var(--text-1);letter-spacing:-.3px}
+.topbar-crumb{font-size:12px;color:var(--text-3)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.topbar-date{font-family:var(--mono);font-size:11px;color:var(--text-4);padding-right:4px}
+.t-btn{
+  height:28px;padding:0 10px;border-radius:var(--r-sm);
+  border:1px solid var(--border);background:var(--surface);
+  font-size:12px;font-weight:500;color:var(--text-2);
+  display:flex;align-items:center;gap:5px;transition:all var(--transition);
+}
+.t-btn:hover{border-color:var(--border-md);color:var(--text-1)}
+.t-btn.accent{background:var(--text-1);color:#fff;border-color:var(--text-1)}
+.t-btn.accent:hover{opacity:.85}
+.t-modal-btn{
+  height:28px;padding:0 10px;border-radius:var(--r-sm);
+  border:1px solid var(--border);background:var(--surface);
+  font-size:11.5px;font-weight:500;color:var(--text-2);
+  display:flex;align-items:center;gap:5px;transition:all var(--transition);
+}
+.t-modal-btn:hover{border-color:var(--border-md);color:var(--text-1)}
+.t-modal-btn.open{background:var(--text-1);color:#fff;border-color:var(--text-1)}
+.tmb-pip{width:5px;height:5px;border-radius:50%}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--text-1);color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center}
+
+/* ─── SIDEBAR ─────────────────────────────────────────────────── */
+.sidebar{
+  position:fixed;top:0;left:0;bottom:0;
+  width:var(--sidebar-w);z-index:50;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  transition:transform var(--transition);
+}
+.sb-logo{
+  height:var(--topbar-h);
+  display:flex;align-items:center;gap:8px;
+  padding:0 18px;border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.sb-mark{width:22px;height:22px;background:var(--text-1);border-radius:5px;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:4px}
+.sb-mark span{background:#fff;border-radius:1px}
+.sb-brand{font-size:14px;font-weight:600;color:var(--text-1);letter-spacing:-.3px}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 10px}
+.sb-section-label{font-size:10px;font-weight:500;color:var(--text-4);letter-spacing:.07em;text-transform:uppercase;padding:14px 8px 6px}
+.sb-link{
+  display:flex;align-items:center;gap:9px;
+  padding:7px 8px;border-radius:var(--r-sm);
+  font-size:13px;font-weight:500;color:var(--text-2);
+  border:none;background:none;width:100%;text-align:left;
+  transition:all var(--transition);position:relative;
+  cursor:pointer;
+}
+.sb-link:hover{background:var(--s2);color:var(--text-1)}
+.sb-link.active{background:var(--s2);color:var(--text-1)}
+.sb-link.active::before{content:'';position:absolute;left:-10px;top:50%;transform:translateY(-50%);width:3px;height:14px;background:var(--text-1);border-radius:0 2px 2px 0}
+.sb-icon{width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;opacity:.7}
+.sb-link.active .sb-icon,.sb-link:hover .sb-icon{opacity:1}
+.sb-badge{margin-left:auto;font-size:10px;font-weight:500;font-family:var(--mono);background:var(--s3);color:var(--text-3);padding:1px 6px;border-radius:99px}
+.sb-badge.green{background:var(--green-bg);color:var(--green)}
+.sb-footer{padding:12px 10px;border-top:1px solid var(--border);flex-shrink:0}
+.sb-user{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:var(--r-sm);cursor:pointer;transition:background var(--transition)}
+.sb-user:hover{background:var(--s2)}
+.sb-avatar{width:26px;height:26px;border-radius:50%;background:var(--text-1);color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-uname{font-size:12.5px;font-weight:500;color:var(--text-1)}
+.sb-urole{font-size:11px;color:var(--text-3)}
+
+/* ─── MAIN CONTENT ─────────────────────────────────────────────── */
+.main-wrap{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);min-height:calc(100vh - var(--topbar-h))}
+.page-content{display:none;padding:28px 26px;max-width:1260px}
+.page-content.active{display:block;animation:fadeUp .2s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── PAGE HEADER ─────────────────────────────────────────────── */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:12px;flex-wrap:wrap}
+.ph-left h1{font-size:20px;font-weight:600;color:var(--text-1);letter-spacing:-.5px}
+.ph-left p{font-size:12.5px;color:var(--text-3);margin-top:3px}
+.ph-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* ─── METRICS GRID ─────────────────────────────────────────────── */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+.metrics.three{grid-template-columns:repeat(3,1fr)}
+.metrics.five{grid-template-columns:repeat(5,1fr)}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh);cursor:pointer;transition:all var(--transition);overflow:hidden;position:relative}
+.mc:hover{box-shadow:var(--sh-md);border-color:var(--border-md);transform:translateY(-1px)}
+.mc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.mc-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.ic-b{background:var(--blue-bg)} .ic-g{background:var(--green-bg)} .ic-a{background:var(--amber-bg)} .ic-r{background:var(--red-bg)} .ic-p{background:var(--purple-bg)} .ic-n{background:var(--s2)}
+.mc-trend{font-size:10.5px;font-weight:500;font-family:var(--mono);padding:2px 6px;border-radius:var(--r-xs)}
+.tr-up{background:var(--green-bg);color:var(--green)} .tr-dn{background:var(--red-bg);color:var(--red)} .tr-neu{background:var(--s2);color:var(--text-3)}
+.mc-num{font-size:24px;font-weight:600;color:var(--text-1);letter-spacing:-1px;line-height:1}
+.mc-label{font-size:11.5px;color:var(--text-3);margin-top:4px;font-weight:400}
+
+/* ─── CARD ─────────────────────────────────────────────────── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.card-head{padding:14px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-head-l{display:flex;align-items:center;gap:8px}
+.ch-title{font-size:13px;font-weight:600;color:var(--text-1)}
+.ch-count{font-size:10px;font-weight:500;font-family:var(--mono);background:var(--s2);color:var(--text-3);padding:1px 6px;border-radius:99px}
+.ch-live{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.card-act{font-size:12px;color:var(--text-3);background:none;border:none;font-family:var(--font);font-weight:500;transition:color var(--transition)}
+.card-act:hover{color:var(--text-1)}
+
+/* ─── GRID LAYOUTS ─────────────────────────────────────────────── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid-main{display:grid;grid-template-columns:1fr 1fr 280px;gap:12px;margin-bottom:14px}
+.grid-bottom{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid-linkedin{display:grid;grid-template-columns:1fr 260px;gap:12px}
+
+/* ─── FEED ─────────────────────────────────────────────────── */
+.feed-item{display:flex;align-items:flex-start;gap:10px;padding:9px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background var(--transition)}
+.feed-item:last-child{border-bottom:none}
+.feed-item:hover{background:var(--s2)}
+.feed-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.fd-c{background:var(--blue)} .fd-l{background:var(--green)} .fd-k{background:var(--amber)} .fd-t{background:var(--text-3)}
+.feed-time{font-size:10.5px;font-family:var(--mono);color:var(--text-4);flex-shrink:0;min-width:36px;margin-top:1.5px}
+.feed-text{font-size:12.5px;color:var(--text-2);line-height:1.4}
+.feed-text b{color:var(--text-1);font-weight:500}
+
+/* ─── QUICK TASKS ─────────────────────────────────────────────── */
+.qtask{display:flex;align-items:center;gap:9px;padding:9px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background var(--transition)}
+.qtask:last-child{border-bottom:none}
+.qtask:hover{background:var(--s2)}
+.qchk{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--border-md);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .14s}
+.qchk.done{background:var(--text-1);border-color:var(--text-1)}
+.qchk.done::after{content:'';width:5px;height:3px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(-45deg) translateY(-.5px);display:block}
+.qt-text{font-size:12.5px;color:var(--text-2);flex:1;line-height:1.3}
+.qt-text.done{color:var(--text-4);text-decoration:line-through}
+.qt-badge{font-size:10px;font-weight:500;padding:1px 6px;border-radius:var(--r-xs);flex-shrink:0}
+.qb-p{background:var(--s2);color:var(--text-3)} .qb-a{background:var(--blue-bg);color:var(--blue)}
+
+/* ─── CHART ─────────────────────────────────────────────────── */
+.chart-pad{padding:14px 18px}
+.chart-wrap{position:relative;height:150px}
+.chart-wrap.tall{height:200px}
+
+/* ─── TABLE ─────────────────────────────────────────────────── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{font-size:11px;font-weight:500;color:var(--text-3);text-align:left;padding:10px 16px;border-bottom:1px solid var(--border);white-space:nowrap;user-select:none;cursor:pointer;letter-spacing:.02em}
+thead th:hover{color:var(--text-1)}
+.sort-ic{opacity:.4;font-size:10px;margin-left:3px}
+th.sorted .sort-ic{opacity:1}
+tbody tr{border-bottom:1px solid var(--border);transition:background var(--transition)}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--s2)}
+tbody td{padding:11px 16px;font-size:13px;color:var(--text-2);vertical-align:middle}
+tbody td b{color:var(--text-1);font-weight:500}
+
+/* ─── STATUS BADGES ─────────────────────────────────────────────── */
+.badge{font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.b-run{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.b-pau{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.b-com{background:var(--s2);color:var(--text-3);border:1px solid var(--border)}
+.b-pend{background:var(--s2);color:var(--text-3);border:1px solid var(--border)}
+.b-prog{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.b-done{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.b-cont{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.b-repl{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.b-foll{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.b-book{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.b-clos{background:var(--s2);color:var(--text-3);border:1px solid var(--border)}
+
+/* ─── PROGRESS BAR ─────────────────────────────────────────────── */
+.pbar-wrap{display:flex;align-items:center;gap:8px}
+.pbar-track{height:4px;background:var(--s3);border-radius:99px;overflow:hidden;min-width:60px}
+.pbar-fill{height:100%;border-radius:99px;background:var(--text-1);transition:width .4s}
+.pbar-pct{font-size:10.5px;font-family:var(--mono);color:var(--text-3);min-width:28px}
+
+/* ─── FILTER ROW ─────────────────────────────────────────────── */
+.filter-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.f-input{height:32px;padding:0 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);font-size:13px;color:var(--text-1);outline:none;min-width:180px;transition:border-color var(--transition)}
+.f-input::placeholder{color:var(--text-4)}
+.f-input:focus{border-color:var(--border-md)}
+.f-select{height:32px;padding:0 26px 0 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);font-size:12.5px;color:var(--text-2);outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23a0a09b' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;transition:border-color var(--transition)}
+.f-select:focus{border-color:var(--border-md)}
+
+/* ─── LINKEDIN SPECIFIC ─────────────────────────────────────────── */
+.followup-item{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background var(--transition)}
+.followup-item:last-child{border-bottom:none}
+.followup-item:hover{background:var(--s2)}
+.fu-avatar{width:28px;height:28px;border-radius:50%;background:var(--s3);color:var(--text-2);font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fu-name{font-size:12.5px;font-weight:500;color:var(--text-1)}
+.fu-day{font-size:11px;color:var(--text-3);margin-top:1px}
+.fu-due{margin-left:auto;font-size:10.5px;font-family:var(--mono);background:var(--amber-bg);color:var(--amber);padding:2px 6px;border-radius:var(--r-xs);flex-shrink:0}
+
+/* ─── CAMPAIGN STAT ROW ─────────────────────────────────────────── */
+.camp-stat-row{display:flex;align-items:center;gap:20px;padding:4px 0}
+.csr-item{text-align:center}
+.csr-n{font-size:20px;font-weight:600;color:var(--text-1);letter-spacing:-.8px;font-family:var(--mono)}
+.csr-l{font-size:11px;color:var(--text-3);margin-top:2px}
+
+/* ─── TEAM MEMBERS ─────────────────────────────────────────────── */
+.team-row{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border);transition:background var(--transition)}
+.team-row:last-child{border-bottom:none}
+.team-row:hover{background:var(--s2)}
+.t-ava{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.t-ava-1{background:#e8d5f5;color:#7c3aed} .t-ava-2{background:#d5e8f5;color:#2563eb} .t-ava-3{background:#d5f5e8;color:#2a9d5c} .t-ava-4{background:#f5e8d5;color:#c9820a} .t-ava-5{background:#f5d5d5;color:#c0392b}
+.t-name{font-size:13px;font-weight:500;color:var(--text-1)}
+.t-role{font-size:11px;color:var(--text-3)}
+.t-stats{margin-left:auto;display:flex;align-items:center;gap:14px}
+.ts-item{text-align:right}
+.ts-n{font-size:13px;font-weight:500;color:var(--text-1);font-family:var(--mono)}
+.ts-l{font-size:10.5px;color:var(--text-3)}
+.t-prog-wrap{width:56px}
+.t-pbar{height:3px;background:var(--s3);border-radius:99px;margin-top:4px;overflow:hidden}
+.t-pfill{height:100%;background:var(--text-1);border-radius:99px}
+
+/* ─── DIVIDER ─────────────────────────────────────────────────── */
+.divider{height:1px;background:var(--border);margin:16px 0}
+.mb-12{margin-bottom:12px} .mb-14{margin-bottom:14px} .mb-20{margin-bottom:20px}
+
+/* ─── EMPTY STATE ─────────────────────────────────────────────── */
+.empty{padding:28px;text-align:center;color:var(--text-3);font-size:12.5px}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL FRAMEWORK
+═══════════════════════════════════════════════════════════ */
+.m-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(8,8,8,.28);backdrop-filter:blur(4px);
+  display:flex;align-items:flex-start;justify-content:flex-end;
+  padding:12px 14px;
+  opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.m-overlay.open{opacity:1;pointer-events:all}
+.m-panel{
+  width:400px;max-width:calc(100vw - 28px);
+  height:calc(100vh - 24px);
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);box-shadow:var(--sh-lg);
+  display:flex;flex-direction:column;
+  transform:translateX(20px) scale(.98);
+  transition:transform .22s cubic-bezier(.22,1,.36,1);
+  overflow:hidden;
+}
+.m-overlay.open .m-panel{transform:translateX(0) scale(1)}
+.m-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.m-head-l{display:flex;align-items:center;gap:9px}
+.m-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.m-title{font-size:13.5px;font-weight:600;color:var(--text-1)}
+.m-sub{font-size:11px;color:var(--text-3);margin-top:1px}
+.m-close{width:26px;height:26px;border-radius:var(--r-sm);border:1px solid var(--border);background:none;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:15px;transition:all var(--transition)}
+.m-close:hover{background:var(--s2);color:var(--text-1);border-color:var(--border-md)}
+.m-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 16px}
+.m-tab{font-size:12px;font-weight:500;color:var(--text-3);padding:9px 11px;border:none;background:none;font-family:var(--font);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all var(--transition);cursor:pointer}
+.m-tab:hover{color:var(--text-1)}
+.m-tab.active{color:var(--text-1);border-bottom-color:var(--text-1)}
+.m-body{flex:1;overflow-y:auto;padding:0}
+.m-foot{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
+.m-inp{flex:1;height:32px;padding:0 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--s2);font-size:13px;color:var(--text-1);outline:none;transition:all var(--transition)}
+.m-inp::placeholder{color:var(--text-4)}
+.m-inp:focus{border-color:var(--border-md);background:var(--surface)}
+.m-add-btn{height:32px;padding:0 14px;border-radius:var(--r-sm);background:var(--text-1);color:#fff;border:none;font-size:12.5px;font-weight:500;font-family:var(--font);transition:opacity var(--transition)}
+.m-add-btn:hover{opacity:.8}
+
+/* TODO MODAL ITEMS */
+.todo-item{display:flex;align-items:flex-start;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);transition:background var(--transition)}
+.todo-item:last-child{border-bottom:none}
+.todo-item:hover{background:var(--s2)}
+.todo-chk{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border-md);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .14s;margin-top:1px;background:var(--surface)}
+.todo-chk:hover{border-color:var(--text-2)}
+.todo-chk.checked{background:var(--text-1);border-color:var(--text-1)}
+.todo-chk.checked::after{content:'';width:5.5px;height:3.5px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(-45deg) translateY(-.5px);display:block}
+.todo-body{flex:1}
+.todo-t{font-size:13px;color:var(--text-1);line-height:1.35}
+.todo-t.done{color:var(--text-4);text-decoration:line-through;text-decoration-color:var(--border-md)}
+.todo-meta{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap}
+.todo-owner{font-size:11px;color:var(--text-3)}
+.todo-due{font-size:10.5px;font-family:var(--mono);color:var(--text-3);background:var(--s2);padding:1px 5px;border-radius:3px}
+.todo-prio{font-size:10px;font-weight:500;padding:1px 6px;border-radius:3px}
+.tp-h{background:var(--red-bg);color:var(--red)} .tp-m{background:var(--amber-bg);color:var(--amber)} .tp-l{background:var(--s2);color:var(--text-3)}
+
+/* PROGRESS RING */
+.pring{width:34px;height:34px;flex-shrink:0}
+.pr-bg{fill:none;stroke:var(--s3);stroke-width:3}
+.pr-fill{fill:none;stroke:var(--text-1);stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1);transform:rotate(-90deg);transform-origin:50% 50%}
+.pr-txt{font-size:8.5px;font-family:var(--mono);font-weight:500;fill:var(--text-1);text-anchor:middle;dominant-baseline:central}
+
+/* scrollbar */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--s3);border-radius:99px}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────── */
+@media(max-width:1024px){
+  .grid-main{grid-template-columns:1fr 1fr}
+  .metrics.five{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:768px){
+  :root{--sidebar-w:0px}
+  .sidebar{transform:translateX(-220px)}
+  .sidebar.open{transform:translateX(0);--sidebar-w:220px}
+  .topbar{left:0;padding-left:12px}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .grid-main,.grid-bottom,.grid-2,.grid-3,.grid-linkedin{grid-template-columns:1fr}
+  .m-panel{width:100%;max-width:100%;border-radius:var(--r) var(--r) 0 0}
+  .m-overlay{align-items:flex-end;padding:0}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════ SIDEBAR ═══════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-mark"><span></span><span></span><span></span><span></span></div>
+    <span class="sb-brand">Pulse</span>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section-label">Workspace</div>
+
+    <button class="sb-link active" onclick="nav('dashboard',this)">
+      <span class="sb-icon">⬡</span> Dashboard
+    </button>
+
+    <div class="sb-section-label">Outreach</div>
+
+    <button class="sb-link" onclick="nav('email',this)">
+      <span class="sb-icon">✉</span> Email Campaigns
+      <span class="sb-badge green">3</span>
+    </button>
+    <button class="sb-link" onclick="nav('linkedin',this)">
+      <span class="sb-icon">◈</span> LinkedIn Outreach
+      <span class="sb-badge">14</span>
+    </button>
+    <button class="sb-link" onclick="nav('marketing',this)">
+      <span class="sb-icon">◎</span> Marketing
+    </button>
+
+    <div class="sb-section-label">Productivity</div>
+
+    <button class="sb-link" onclick="nav('tasks',this)">
+      <span class="sb-icon">◻</span> Tasks
+      <span class="sb-badge">6</span>
+    </button>
+
+    <div class="sb-section-label">Reports</div>
+    <button class="sb-link" onclick="nav('activity',this)">
+      <span class="sb-icon">◑</span> Activity Log
+    </button>
+  </nav>
+
+  <div class="sb-footer">
+    <div class="sb-user">
+      <div class="sb-avatar">FO</div>
+      <div>
+        <div class="sb-uname">Founder</div>
+        <div class="sb-urole">Admin</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════ TOPBAR ═══════ -->
+<header class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-title" id="topbarTitle">Dashboard</span>
+    <span class="topbar-crumb" id="topbarCrumb"></span>
+  </div>
+  <div class="topbar-right">
+    <span class="topbar-date" id="topDate"></span>
+    <button class="t-modal-btn" id="tbTodo" onclick="openModal('todo')">
+      <div class="tmb-pip" style="background:var(--amber)"></div>Tasks
+    </button>
+    <button class="t-modal-btn" id="tbActivity" onclick="openModal('activity')">
+      <div class="tmb-pip" style="background:var(--blue)"></div>Activity
+    </button>
+    <div class="avatar">FO</div>
+  </div>
+</header>
+
+<!-- ═══════ PAGES WRAPPER ═══════ -->
+<div class="main-wrap">
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ PAGE: DASHBOARD ━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="page-content active" id="page-dashboard">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>Command Center</h1>
+      <p>Your full operations at a glance · Today</p>
+    </div>
+    <div class="ph-actions">
+      <button class="t-btn" onclick="openModal('todo')">+ Add Task</button>
+      <button class="t-btn accent" onclick="openModal('activity')">View Activity</button>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="mc" onclick="openModal('todo')">
+      <div class="mc-top"><div class="mc-icon ic-b">📧</div><span class="mc-trend tr-up">+1</span></div>
+      <div class="mc-num">3</div><div class="mc-label">Active Campaigns</div>
+    </div>
+    <div class="mc" onclick="nav('linkedin',document.querySelector('[onclick*=linkedin]'))">
+      <div class="mc-top"><div class="mc-icon ic-g">👥</div><span class="mc-trend tr-up">+12%</span></div>
+      <div class="mc-num">45</div><div class="mc-label">Leads Added Today</div>
+    </div>
+    <div class="mc" onclick="nav('linkedin',document.querySelector('[onclick*=linkedin]'))">
+      <div class="mc-top"><div class="mc-icon ic-a">💬</div><span class="mc-trend tr-up">+8</span></div>
+      <div class="mc-num">72</div><div class="mc-label">Messages Sent Today</div>
+    </div>
+    <div class="mc" onclick="openModal('activity')">
+      <div class="mc-top"><div class="mc-icon ic-n">📞</div><span class="mc-trend tr-up">+2</span></div>
+      <div class="mc-num">4</div><div class="mc-label">Calls Booked Today</div>
+    </div>
+  </div>
+
+  <div class="grid-main mb-14">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-l"><span class="ch-title">Leads — 7 days</span></div>
+        <button class="card-act" onclick="nav('linkedin',document.querySelector('[onclick*=linkedin]'))">View →</button>
+      </div>
+      <div class="chart-pad"><div class="chart-wrap"><canvas id="c-leads"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-l"><span class="ch-title">Messages — 7 days</span></div>
+        <button class="card-act" onclick="nav('linkedin',document.querySelector('[onclick*=linkedin]'))">View →</button>
+      </div>
+      <div class="chart-pad"><div class="chart-wrap"><canvas id="c-msgs"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-l">
+          <span class="ch-title">Today's Tasks</span>
+          <span class="ch-count" id="d-taskcount">0</span>
+        </div>
+        <button class="card-act" onclick="openModal('todo')">Open →</button>
+      </div>
+      <div id="d-quicktasks"></div>
+    </div>
+  </div>
+
+  <div class="grid-bottom">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-l"><span class="ch-title">Activity Feed</span><div class="ch-live"></div></div>
+        <button class="card-act" onclick="openModal('activity')">View all →</button>
+      </div>
+      <div id="d-feed"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-l"><span class="ch-title">Campaigns</span><span class="ch-count">5</span></div>
+        <button class="card-act" onclick="nav('email',document.querySelector('[onclick*=email]'))">View all →</button>
+      </div>
+      <div id="d-campaigns"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ PAGE: EMAIL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="page-content" id="page-email">
+  <div class="ph">
+    <div class="ph-left"><h1>Email Campaigns</h1><p>Track outbound email performance and conversion.</p></div>
+    <div class="ph-actions">
+      <button class="t-btn accent">+ New Campaign</button>
+    </div>
+  </div>
+
+  <div class="metrics five">
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-b">📋</div><span class="mc-trend tr-neu">—</span></div><div class="mc-num">5</div><div class="mc-label">Total Campaigns</div></div>
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-g">👥</div><span class="mc-trend tr-up">+45</span></div><div class="mc-num">820</div><div class="mc-label">Total Leads</div></div>
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-a">📤</div><span class="mc-trend tr-up">+22%</span></div><div class="mc-num">143</div><div class="mc-label">Emails Sent Today</div></div>
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-p">↩</div><span class="mc-trend tr-up">+3</span></div><div class="mc-num">18</div><div class="mc-label">Replies Today</div></div>
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-n">📞</div><span class="mc-trend tr-up">+1</span></div><div class="mc-num">13</div><div class="mc-label">Calls Booked</div></div>
+  </div>
+
+  <div class="grid-2 mb-14">
+    <div class="card">
+      <div class="card-head"><div class="card-head-l"><span class="ch-title">Emails Sent — 7 days</span></div></div>
+      <div class="chart-pad"><div class="chart-wrap tall"><canvas id="c-email-sent"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-head-l"><span class="ch-title">Reply Rate Trend</span></div></div>
+      <div class="chart-pad"><div class="chart-wrap tall"><canvas id="c-email-replies"></canvas></div></div>
+    </div>
+  </div>
+
+  <div class="card mb-14">
+    <div class="card-head">
+      <div class="card-head-l"><span class="ch-title">All Campaigns</span></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input class="f-input" style="min-width:140px" type="text" placeholder="Search…" id="e-search" oninput="renderEmailTbl()">
+        <select class="f-select" id="e-owner" onchange="renderEmailTbl()"><option value="">All owners</option><option>Sam</option><option>Alex</option><option>Maria</option><option>Jordan</option></select>
+        <select class="f-select" id="e-status" onchange="renderEmailTbl()"><option value="">All statuses</option><option value="running">Running</option><option value="paused">Paused</option><option value="completed">Completed</option></select>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table><thead><tr>
+        <th onclick="sort('email','name',this)">Campaign<span class="sort-ic">↕</span></th>
+        <th onclick="sort('email','owner',this)">Owner<span class="sort-ic">↕</span></th>
+        <th onclick="sort('email','leads',this)">Leads<span class="sort-ic">↕</span></th>
+        <th>Status</th>
+        <th onclick="sort('email','sent',this)">Sent<span class="sort-ic">↕</span></th>
+        <th>Progress</th>
+        <th onclick="sort('email','replies',this)">Replies<span class="sort-ic">↕</span></th>
+        <th>Reply %</th>
+        <th onclick="sort('email','calls',this)">Calls<span class="sort-ic">↕</span></th>
+      </tr></thead><tbody id="email-tbody"></tbody></table>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div class="card-head-l"><span class="ch-title">Top Performers</span></div></div>
+      <div id="email-top-performers"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-head-l"><span class="ch-title">Team Activity</span></div></div>
+      <div id="email-team"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ PAGE: LINKEDIN ━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="page-content" id="page-linkedin">
+  <div class="ph">
+    <div class="ph-left"><h1>LinkedIn Outreach</h1><p>Monitor and manage social outreach across your team.</p></div>
+    <div class="ph-actions">
+      <button class="t-btn accent">+ Add Lead</button>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-b">🔗</div><span class="mc-trend tr-up">+8</span></div><div class="mc-num">184</div><div class="mc-label">Total Leads</div></div>
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-g">💬</div><span class="mc-trend tr-up">+8</span></div><div class="mc-num">72</div><div class="mc-label">Messages Today</div></div>
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-p">↩</div><span class="mc-trend tr-up">+3</span></div><div class="mc-num">19</div><div class="mc-label">Replies Today</div></div>
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-a">⏰</div><span class="mc-trend tr-dn">+2</span></div><div class="mc-num">14</div><div class="mc-label">Follow-ups Due</div></div>
+  </div>
+
+  <div class="card mb-14">
+    <div class="card-head"><div class="card-head-l"><span class="ch-title">Messages by day</span></div></div>
+    <div class="chart-pad"><div class="chart-wrap tall"><canvas id="c-li-msgs"></canvas></div></div>
+  </div>
+
+  <div class="grid-linkedin">
+    <div>
+      <div class="filter-row">
+        <input class="f-input" type="text" placeholder="Search leads…" id="li-search" oninput="renderLiTbl()">
+        <select class="f-select" id="li-owner" onchange="renderLiTbl()"><option value="">All owners</option><option>Alex</option><option>Sam</option><option>Maria</option><option>Jordan</option></select>
+        <select class="f-select" id="li-status" onchange="renderLiTbl()"><option value="">All statuses</option><option value="contacted">Contacted</option><option value="replied">Replied</option><option value="follow_up">Follow-up</option><option value="call_booked">Call Booked</option><option value="closed">Closed</option></select>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap">
+          <table><thead><tr>
+            <th onclick="sort('li','lead_name',this)">Name<span class="sort-ic">↕</span></th>
+            <th onclick="sort('li','owner',this)">Owner<span class="sort-ic">↕</span></th>
+            <th onclick="sort('li','messages_sent',this)">Msgs<span class="sort-ic">↕</span></th>
+            <th onclick="sort('li','replies',this)">Replies<span class="sort-ic">↕</span></th>
+            <th>Follow-up</th>
+            <th onclick="sort('li','status',this)">Status<span class="sort-ic">↕</span></th>
+          </tr></thead><tbody id="li-tbody"></tbody></table>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card mb-14">
+        <div class="card-head"><div class="card-head-l"><span class="ch-title">Follow-ups Due</span><span class="ch-count">14</span></div></div>
+        <div id="li-followups"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-head-l"><span class="ch-title">Status Breakdown</span></div></div>
+        <div class="chart-pad" style="padding-bottom:10px"><div class="chart-wrap" style="height:130px"><canvas id="c-li-status"></canvas></div></div>
+        <div id="li-status-legend" style="padding:0 18px 14px;display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ PAGE: MARKETING ━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="page-content" id="page-marketing">
+  <div class="ph">
+    <div class="ph-left"><h1>Marketing Campaigns</h1><p>Performance, reach and conversion across all channels.</p></div>
+    <div class="ph-actions">
+      <button class="t-btn accent">+ New Campaign</button>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-b">👁</div><span class="mc-trend tr-up">+18%</span></div><div class="mc-num">24.4k</div><div class="mc-label">Visitors This Week</div></div>
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-g">🎯</div><span class="mc-trend tr-up">+5%</span></div><div class="mc-num">7.6%</div><div class="mc-label">Conversion Rate</div></div>
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-a">💰</div><span class="mc-trend tr-up">↓$4</span></div><div class="mc-num">$38</div><div class="mc-label">Cost per Acquisition</div></div>
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-p">📣</div><span class="mc-trend tr-up">+2</span></div><div class="mc-num">6</div><div class="mc-label">Active Channels</div></div>
+  </div>
+
+  <div class="grid-2 mb-14">
+    <div class="card">
+      <div class="card-head"><div class="card-head-l"><span class="ch-title">Traffic Sources</span></div></div>
+      <div class="chart-pad"><div class="chart-wrap" style="height:180px"><canvas id="c-mkt-src"></canvas></div></div>
+      <div id="mkt-src-legend" style="padding:0 18px 14px;display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-head-l"><span class="ch-title">Conversions by Channel</span></div></div>
+      <div class="chart-pad"><div class="chart-wrap" style="height:180px"><canvas id="c-mkt-conv"></canvas></div></div>
+    </div>
+  </div>
+
+  <div class="card mb-14">
+    <div class="card-head">
+      <div class="card-head-l"><span class="ch-title">Campaign Performance</span><span class="ch-count">8</span></div>
+      <div style="display:flex;gap:8px">
+        <input class="f-input" style="min-width:130px" type="text" placeholder="Search…" id="mkt-search" oninput="renderMktTbl()">
+        <select class="f-select" id="mkt-channel" onchange="renderMktTbl()"><option value="">All channels</option><option value="Email">Email</option><option value="LinkedIn">LinkedIn</option><option value="Paid">Paid</option><option value="SEO">SEO</option><option value="Social">Social</option></select>
+        <select class="f-select" id="mkt-status" onchange="renderMktTbl()"><option value="">All statuses</option><option value="active">Active</option><option value="paused">Paused</option><option value="ended">Ended</option></select>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table><thead><tr>
+        <th onclick="sort('mkt','name',this)">Campaign<span class="sort-ic">↕</span></th>
+        <th>Channel</th>
+        <th onclick="sort('mkt','impressions',this)">Impressions<span class="sort-ic">↕</span></th>
+        <th onclick="sort('mkt','clicks',this)">Clicks<span class="sort-ic">↕</span></th>
+        <th>CTR</th>
+        <th onclick="sort('mkt','conversions',this)">Conversions<span class="sort-ic">↕</span></th>
+        <th onclick="sort('mkt','spend',this)">Spend<span class="sort-ic">↕</span></th>
+        <th>CAC</th>
+        <th>Status</th>
+      </tr></thead><tbody id="mkt-tbody"></tbody></table>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div class="card-head-l"><span class="ch-title">Weekly Visitors</span></div></div>
+      <div class="chart-pad"><div class="chart-wrap"><canvas id="c-mkt-visitors"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-head-l"><span class="ch-title">CPA Trend</span></div></div>
+      <div class="chart-pad"><div class="chart-wrap"><canvas id="c-mkt-cpa"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ PAGE: TASKS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="page-content" id="page-tasks">
+  <div class="ph">
+    <div class="ph-left"><h1>Team Tasks</h1><p>Visibility on what your team is working on.</p></div>
+    <div class="ph-actions"><button class="t-btn accent" onclick="openModal('todo')">+ Add Task</button></div>
+  </div>
+
+  <div class="metrics three">
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-n">⏳</div></div><div class="mc-num" id="tk-pend">0</div><div class="mc-label">Pending</div></div>
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-b">⚡</div></div><div class="mc-num" id="tk-prog">0</div><div class="mc-label">In Progress</div></div>
+    <div class="mc"><div class="mc-top"><div class="mc-icon ic-g">✓</div></div><div class="mc-num" id="tk-done">0</div><div class="mc-label">Completed</div></div>
+  </div>
+
+  <div class="filter-row">
+    <input class="f-input" type="text" placeholder="Search tasks…" id="tk-search" oninput="renderTaskTbl()">
+    <select class="f-select" id="tk-owner" onchange="renderTaskTbl()"><option value="">All owners</option><option>Alex</option><option>Sam</option><option>Maria</option><option>Jordan</option><option>Casey</option></select>
+    <select class="f-select" id="tk-status" onchange="renderTaskTbl()"><option value="">All statuses</option><option value="pending">Pending</option><option value="in_progress">In Progress</option><option value="completed">Completed</option></select>
+  </div>
+
+  <div class="card">
+    <div class="tbl-wrap">
+      <table><thead><tr>
+        <th onclick="sort('task','title',this)">Task<span class="sort-ic">↕</span></th>
+        <th onclick="sort('task','owner',this)">Owner<span class="sort-ic">↕</span></th>
+        <th>Priority</th>
+        <th>Status</th>
+        <th onclick="sort('task','created_at',this)">Created<span class="sort-ic">↕</span></th>
+        <th onclick="sort('task','due_date',this)">Due<span class="sort-ic">↕</span></th>
+      </tr></thead><tbody id="task-tbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ PAGE: ACTIVITY ━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="page-content" id="page-activity">
+  <div class="ph">
+    <div class="ph-left"><h1>Activity Log</h1><p>Full chronological history of team actions.</p></div>
+  </div>
+  <div class="card">
+    <div id="activity-full"></div>
+  </div>
+</div>
+
+</div><!-- /main-wrap -->
+
+<!-- ═══════ MODAL OVERLAY ═══════ -->
+<div class="m-overlay" id="mOverlay" onclick="overlayClick(event)">
+  <div class="m-panel">
+    <div class="m-head" id="mHead"></div>
+    <div class="m-tabs" id="mTabs" style="display:none"></div>
+    <div class="m-body" id="mBody"></div>
+    <div class="m-foot" id="mFoot" style="display:none"></div>
+  </div>
+</div>
+</body>
+</html>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const DB={tasks:[{id:1,title:'Review campaign performance',owner:'Sam',status:'in_progress',created_at:'Mar 13',due_date:'Mar 13',priority:'high'},{id:2,title:'Send 25 LinkedIn messages',owner:'Alex',status:'completed',created_at:'Mar 12',due_date:'Mar 13',priority:'med'},{id:3,title:'Follow up with yesterday replies',owner:'Maria',status:'pending',created_at:'Mar 13',due_date:'Mar 13',priority:'high'},{id:4,title:'Import 50 new leads',owner:'Jordan',status:'pending',created_at:'Mar 12',due_date:'Mar 13',priority:'med'},{id:5,title:'Build LinkedIn Lead List',owner:'Alex',status:'in_progress',created_at:'Mar 10',due_date:'Mar 14',priority:'high'},{id:6,title:'Optimize Email Copy',owner:'Sam',status:'pending',created_at:'Mar 12',due_date:'Mar 15',priority:'low'},{id:7,title:'A/B test subject lines',owner:'Casey',status:'completed',created_at:'Mar 11',due_date:'Mar 14',priority:'med'},{id:8,title:'Update CRM with new leads',owner:'Maria',status:'in_progress',created_at:'Mar 13',due_date:'Mar 16',priority:'low'},{id:9,title:'Write follow-up email templates',owner:'Sam',status:'pending',created_at:'Mar 10',due_date:'Mar 17',priority:'low'},{id:10,title:'Analyze LinkedIn reply rates',owner:'Jordan',status:'pending',created_at:'Mar 12',due_date:'Mar 18',priority:'med'}],activity:[{time:'08:42',user:'Sam',text:'added 45 leads to',bold:'Solo Agents Campaign',type:'c'},{time:'09:10',user:'Alex',text:'started LinkedIn batch',bold:'Batch #12',type:'l'},{time:'09:55',user:'Maria',text:'booked call with',bold:'John Smith',type:'k'},{time:'10:12',user:'Sam',text:'paused',bold:'Broker Owners Campaign',type:'c'},{time:'10:38',user:'Jordan',text:'completed task',bold:'Optimize Email Copy',type:'t'},{time:'11:05',user:'Alex',text:'sent 25 messages to',bold:'new batch',type:'l'},{time:'11:44',user:'Maria',text:'added 12 leads to',bold:'Team Leaders Campaign',type:'c'},{time:'12:02',user:'Sam',text:'booked call with',bold:'David Chen',type:'k'},{time:'12:30',user:'Casey',text:'completed A/B test on',bold:'Subject Line v3',type:'t'},{time:'13:15',user:'Jordan',text:'imported',bold:'50 new leads',type:'l'},{time:'13:40',user:'Alex',text:'replied to',bold:'Sarah Miller LinkedIn',type:'l'},{time:'14:05',user:'Sam',text:'resumed',bold:'Solo Agents Campaign',type:'c'}],campaigns:[{id:1,name:'Solo Agents',owner:'Sam',status:'running',leads:240,sent:120,replies:14,calls:3},{id:2,name:'Broker Owners',owner:'Sam',status:'paused',leads:180,sent:95,replies:8,calls:1},{id:3,name:'Team Leaders',owner:'Maria',status:'running',leads:150,sent:62,replies:5,calls:2},{id:4,name:'First-Time Buyers',owner:'Alex',status:'running',leads:130,sent:40,replies:3,calls:0},{id:5,name:'Luxury Market Blast',owner:'Jordan',status:'completed',leads:120,sent:120,replies:22,calls:7}],linkedin:[{id:1,lead_name:'John Smith',owner:'Alex',messages_sent:3,replies:1,follow_up_due_date:'Mar 13',status:'replied'},{id:2,lead_name:'David Chen',owner:'Alex',messages_sent:2,replies:0,follow_up_due_date:'Mar 13',status:'follow_up'},{id:3,lead_name:'Sarah Miller',owner:'Sam',messages_sent:4,replies:2,follow_up_due_date:'Mar 14',status:'call_booked'},{id:4,lead_name:'Robert Johnson',owner:'Maria',messages_sent:1,replies:0,follow_up_due_date:'Mar 13',status:'contacted'},{id:5,lead_name:'Emily Davis',owner:'Alex',messages_sent:5,replies:3,follow_up_due_date:'Mar 15',status:'replied'},{id:6,lead_name:'Michael Brown',owner:'Jordan',messages_sent:2,replies:1,follow_up_due_date:'Mar 13',status:'follow_up'},{id:7,lead_name:'Lisa Wilson',owner:'Sam',messages_sent:3,replies:0,follow_up_due_date:'Mar 16',status:'contacted'},{id:8,lead_name:'James Taylor',owner:'Alex',messages_sent:7,replies:4,follow_up_due_date:'Mar 17',status:'call_booked'},{id:9,lead_name:'Anna Martinez',owner:'Maria',messages_sent:2,replies:0,follow_up_due_date:'Mar 13',status:'contacted'},{id:10,lead_name:'Kevin Anderson',owner:'Jordan',messages_sent:1,replies:0,follow_up_due_date:'Mar 14',status:'contacted'},{id:11,lead_name:'Patricia Thomas',owner:'Sam',messages_sent:4,replies:2,follow_up_due_date:'Mar 13',status:'follow_up'},{id:12,lead_name:'Charles Jackson',owner:'Alex',messages_sent:3,replies:1,follow_up_due_date:'Mar 18',status:'replied'}],marketing:[{id:1,name:'Q1 Lead Gen Push',channel:'Email',impressions:12400,clicks:820,conversions:64,spend:1200,status:'active'},{id:2,name:'Solo Agent Blitz',channel:'LinkedIn',impressions:8200,clicks:612,conversions:38,spend:900,status:'active'},{id:3,name:'Google Search Brokers',channel:'Paid',impressions:31000,clicks:1240,conversions:92,spend:2800,status:'active'},{id:4,name:'Instagram Brand Awareness',channel:'Social',impressions:54000,clicks:1800,conversions:28,spend:1100,status:'paused'},{id:5,name:'SEO Content Cluster',channel:'SEO',impressions:18000,clicks:2100,conversions:140,spend:400,status:'active'},{id:6,name:'Retargeting Campaign',channel:'Paid',impressions:9800,clicks:720,conversions:55,spend:650,status:'active'},{id:7,name:'Newsletter Growth',channel:'Email',impressions:6200,clicks:480,conversions:30,spend:200,status:'ended'},{id:8,name:'LinkedIn Thought Leadership',channel:'LinkedIn',impressions:14000,clicks:980,conversions:45,spend:1400,status:'active'}]};
+const SS={email:{k:'',d:1},li:{k:'',d:1},task:{k:'',d:1},mkt:{k:'',d:1}};
+const pageTitles={dashboard:'Dashboard',email:'Email Campaigns',linkedin:'LinkedIn Outreach',marketing:'Marketing',tasks:'Tasks',activity:'Activity Log'};
+function nav(id,btn){document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.sb-link').forEach(b=>b.classList.remove('active'));document.getElementById('page-'+id).classList.add('active');if(btn)btn.classList.add('active');document.getElementById('topbarTitle').textContent=pageTitles[id]||id;if(id==='tasks')renderTaskTbl();if(id==='activity')renderActivityFull();}
+function initDate(){document.getElementById('topDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});}
+function renderDashFeed(){document.getElementById('d-feed').innerHTML=DB.activity.slice(0,5).map(a=>`<div class="feed-item" onclick="openModal('activity')"><div class="feed-dot fd-${a.type}"></div><span class="feed-time">${a.time}</span><span class="feed-text">${a.user} ${a.text} <b>${a.bold}</b></span></div>`).join('');}
+function renderDashCampaigns(){const stc={running:'b-run',paused:'b-pau',completed:'b-com'};const stl={running:'Running',paused:'Paused',completed:'Done'};const stbg={running:'var(--green)',paused:'var(--amber)',completed:'var(--text-4)'};document.getElementById('d-campaigns').innerHTML=DB.campaigns.map(c=>{const pct=Math.round(c.sent/c.leads*100);return`<div class="feed-item" onclick="nav('email',document.querySelector('[onclick*=email]'))"><div class="feed-dot" style="background:${stbg[c.status]}"></div><div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:500;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.name}</div><div style="font-size:11px;color:var(--text-3);margin-top:1px">${c.owner} · ${c.leads} leads</div></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><div class="pbar-wrap"><div class="pbar-track"><div class="pbar-fill" style="width:${pct}%"></div></div><span class="pbar-pct">${pct}%</span></div><span class="badge ${stc[c.status]}">${stl[c.status]}</span></div></div>`;}).join('');}
+function renderDashQuickTasks(){const today=DB.tasks.filter(t=>t.due_date==='Mar 13');const done=today.filter(t=>t.status==='completed').length;document.getElementById('d-taskcount').textContent=done+'/'+today.length;document.getElementById('d-quicktasks').innerHTML=today.slice(0,5).map(t=>`<div class="qtask" onclick="openModal('todo')"><div class="qchk ${t.status==='completed'?'done':''}"></div><span class="qt-text ${t.status==='completed'?'done':''}">${t.title}</span><span class="qt-badge ${t.status==='in_progress'?'qb-a':'qb-p'}">${t.status==='in_progress'?'Active':'—'}</span></div>`).join('');}
+function renderEmailTbl(){const q=document.getElementById('e-search')?.value.toLowerCase()||'';const ow=document.getElementById('e-owner')?.value||'';const st=document.getElementById('e-status')?.value||'';const sc=SS.email;let data=[...DB.campaigns].filter(r=>(!q||r.name.toLowerCase().includes(q))&&(!ow||r.owner===ow)&&(!st||r.status===st));if(sc.k)data.sort((a,b)=>(a[sc.k]>b[sc.k]?1:a[sc.k]<b[sc.k]?-1:0)*sc.d);const stc={running:'b-run',paused:'b-pau',completed:'b-com'};const stl={running:'Running',paused:'Paused',completed:'Done'};document.getElementById('email-tbody').innerHTML=data.map(r=>{const pct=Math.round(r.sent/r.leads*100);const rr=Math.round(r.replies/r.sent*100);return`<tr><td><b>${r.name}</b></td><td>${r.owner}</td><td>${r.leads}</td><td><span class="badge ${stc[r.status]}">${stl[r.status]}</span></td><td>${r.sent}</td><td><div class="pbar-wrap"><div class="pbar-track"><div class="pbar-fill" style="width:${pct}%"></div></div><span class="pbar-pct">${pct}%</span></div></td><td>${r.replies}</td><td style="font-family:var(--mono);font-size:12px">${rr}%</td><td>${r.calls}</td></tr>`;}).join('')||'<tr><td colspan="9" class="empty">No campaigns found</td></tr>';}
+function renderEmailTeam(){const avaCls=['t-ava-1','t-ava-2','t-ava-3','t-ava-4','t-ava-5'];document.getElementById('email-team').innerHTML=['Sam','Alex','Maria','Jordan','Casey'].map((o,i)=>{const camp=DB.campaigns.filter(c=>c.owner===o);const total=camp.reduce((s,c)=>s+c.sent,0);const rep=camp.reduce((s,c)=>s+c.replies,0);return`<div class="team-row"><div class="t-ava ${avaCls[i]}">${o.slice(0,2).toUpperCase()}</div><div><div class="t-name">${o}</div><div class="t-role">${camp.length} campaign${camp.length!==1?'s':''}</div></div><div class="t-stats"><div class="ts-item"><div class="ts-n">${total}</div><div class="ts-l">sent</div></div><div class="ts-item"><div class="ts-n">${rep}</div><div class="ts-l">replies</div></div></div></div>`;}).join('');}
+function renderEmailTop(){const stc={running:'b-run',paused:'b-pau',completed:'b-com'};document.getElementById('email-top-performers').innerHTML=[...DB.campaigns].sort((a,b)=>b.replies-a.replies).slice(0,4).map(c=>{const rr=Math.round(c.replies/c.sent*100);return`<div class="team-row"><div style="flex:1;min-width:0"><div class="t-name">${c.name}</div><div class="t-role">${c.owner} · ${c.leads} leads</div></div><div class="t-stats"><div class="ts-item"><div class="ts-n">${rr}%</div><div class="ts-l">reply rate</div></div><div class="ts-item"><div class="ts-n">${c.calls}</div><div class="ts-l">calls</div></div><span class="badge ${stc[c.status]}" style="font-size:10px">${c.status}</span></div></div>`;}).join('');}
+function renderLiTbl(){const q=document.getElementById('li-search')?.value.toLowerCase()||'';const ow=document.getElementById('li-owner')?.value||'';const st=document.getElementById('li-status')?.value||'';const sc=SS.li;let data=[...DB.linkedin].filter(r=>(!q||r.lead_name.toLowerCase().includes(q))&&(!ow||r.owner===ow)&&(!st||r.status===st));if(sc.k)data.sort((a,b)=>(a[sc.k]>b[sc.k]?1:a[sc.k]<b[sc.k]?-1:0)*sc.d);const sb={contacted:'b-cont',replied:'b-repl',follow_up:'b-foll',call_booked:'b-book',closed:'b-clos'};const sl={contacted:'Contacted',replied:'Replied',follow_up:'Follow-up',call_booked:'Call Booked',closed:'Closed'};document.getElementById('li-tbody').innerHTML=data.map(r=>`<tr><td><b>${r.lead_name}</b></td><td>${r.owner}</td><td style="font-family:var(--mono)">${r.messages_sent}</td><td style="font-family:var(--mono)">${r.replies}</td><td style="font-size:12px;color:var(--text-3);font-family:var(--mono)">${r.follow_up_due_date}</td><td><span class="badge ${sb[r.status]}">${sl[r.status]}</span></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No leads found</td></tr>';}
+function renderLiFollowups(){const due=DB.linkedin.filter(r=>r.follow_up_due_date==='Mar 13'||r.status==='follow_up');document.getElementById('li-followups').innerHTML=due.map(r=>`<div class="followup-item"><div class="fu-avatar">${r.lead_name.split(' ').map(w=>w[0]).join('')}</div><div><div class="fu-name">${r.lead_name}</div><div class="fu-day">${r.owner}</div></div><span class="fu-due">Due ${r.follow_up_due_date}</span></div>`).join('');}
+function renderMktTbl(){const q=document.getElementById('mkt-search')?.value.toLowerCase()||'';const ch=document.getElementById('mkt-channel')?.value||'';const st=document.getElementById('mkt-status')?.value||'';const sc=SS.mkt;let data=[...DB.marketing].filter(r=>(!q||r.name.toLowerCase().includes(q))&&(!ch||r.channel===ch)&&(!st||r.status===st));if(sc.k)data.sort((a,b)=>(a[sc.k]>b[sc.k]?1:a[sc.k]<b[sc.k]?-1:0)*sc.d);const stc={active:'b-run',paused:'b-pau',ended:'b-com'};const stl={active:'Active',paused:'Paused',ended:'Ended'};document.getElementById('mkt-tbody').innerHTML=data.map(r=>{const ctr=(r.clicks/r.impressions*100).toFixed(1);const cac=r.conversions>0?'$'+(r.spend/r.conversions).toFixed(0):'—';return`<tr><td><b>${r.name}</b></td><td><span style="font-size:11px;font-weight:500;padding:2px 7px;border-radius:4px;background:var(--s2);color:var(--text-2)">${r.channel}</span></td><td style="font-family:var(--mono)">${r.impressions.toLocaleString()}</td><td style="font-family:var(--mono)">${r.clicks.toLocaleString()}</td><td style="font-family:var(--mono)">${ctr}%</td><td style="font-family:var(--mono)">${r.conversions}</td><td style="font-family:var(--mono)">$${r.spend.toLocaleString()}</td><td style="font-family:var(--mono)">${cac}</td><td><span class="badge ${stc[r.status]}">${stl[r.status]}</span></td></tr>`;}).join('')||'<tr><td colspan="9" class="empty">No campaigns found</td></tr>';}
+function renderTaskTbl(){const q=document.getElementById('tk-search')?.value.toLowerCase()||'';const ow=document.getElementById('tk-owner')?.value||'';const st=document.getElementById('tk-status')?.value||'';const sc=SS.task;let data=[...DB.tasks].filter(r=>(!q||r.title.toLowerCase().includes(q))&&(!ow||r.owner===ow)&&(!st||r.status===st));if(sc.k)data.sort((a,b)=>(a[sc.k]>b[sc.k]?1:a[sc.k]<b[sc.k]?-1:0)*sc.d);const stc={pending:'b-pend',in_progress:'b-prog',completed:'b-done'};const stl={pending:'Pending',in_progress:'In Progress',completed:'Done'};const pc={high:'tp-h',med:'tp-m',low:'tp-l'};document.getElementById('task-tbody').innerHTML=data.map(r=>`<tr><td><b>${r.title}</b></td><td>${r.owner}</td><td><span class="badge ${pc[r.priority]}" style="padding:2px 6px;border-radius:3px;font-size:10px">${r.priority.charAt(0).toUpperCase()+r.priority.slice(1)}</span></td><td><span class="badge ${stc[r.status]}">${stl[r.status]}</span></td><td style="font-size:12px;color:var(--text-3);font-family:var(--mono)">${r.created_at}</td><td style="font-size:12px;color:var(--text-3);font-family:var(--mono)">${r.due_date}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">No tasks found</td></tr>';document.getElementById('tk-pend').textContent=DB.tasks.filter(t=>t.status==='pending').length;document.getElementById('tk-prog').textContent=DB.tasks.filter(t=>t.status==='in_progress').length;document.getElementById('tk-done').textContent=DB.tasks.filter(t=>t.status==='completed').length;}
+function renderActivityFull(){const cl={c:'fd-c',l:'fd-l',k:'fd-k',t:'fd-t'};document.getElementById('activity-full').innerHTML=DB.activity.map(a=>`<div class="feed-item" style="padding:12px 20px"><div class="feed-dot ${cl[a.type]}"></div><span class="feed-time">${a.time}</span><span class="feed-text">${a.user} ${a.text} <b>${a.bold}</b></span></div>`).join('');}
+function sort(tbl,key,th){const sc=SS[tbl];sc.d=sc.k===key?-sc.d:1;sc.k=key;th.closest('table').querySelectorAll('th').forEach(t=>{t.classList.remove('sorted');const ic=t.querySelector('.sort-ic');if(ic)ic.textContent='↕'});th.classList.add('sorted');const ic=th.querySelector('.sort-ic');if(ic)ic.textContent=sc.d===1?'↑':'↓';({email:renderEmailTbl,li:renderLiTbl,task:renderTaskTbl,mkt:renderMktTbl}[tbl]||function(){})();}
+let activeModal=null,activeTab=0;
+const MODALS={todo:{title:"Today's Tasks",sub:()=>`${DB.tasks.filter(t=>t.status!=='completed').length} remaining · ${DB.tasks.filter(t=>t.status==='completed').length} done`,icon:'✓',iconCls:'ic-a',tabs:['All','Pending','In Progress','Done'],foot:true,fph:'Add a task…',fbtn:'Add',render:renderTodoModal},activity:{title:'Activity Feed',sub:'Live team actions',icon:'⚡',iconCls:'ic-b',tabs:null,foot:false,render:renderActivityModal}};
+function openModal(id){activeModal=id;activeTab=0;const cfg=MODALS[id];document.getElementById('mHead').innerHTML=`<div class="m-head-l"><div class="m-icon ${cfg.iconCls}">${cfg.icon}</div><div><div class="m-title">${cfg.title}</div><div class="m-sub" id="m-sub-txt">${typeof cfg.sub==='function'?cfg.sub():cfg.sub}</div></div></div><button class="m-close" onclick="closeModal()">✕</button>`;const tabsEl=document.getElementById('mTabs');if(cfg.tabs){tabsEl.style.display='flex';tabsEl.innerHTML=cfg.tabs.map((t,i)=>`<button class="m-tab ${i===0?'active':''}" onclick="switchMTab(${i},this)">${t}</button>`).join('');}else tabsEl.style.display='none';const footEl=document.getElementById('mFoot');if(cfg.foot){footEl.style.display='flex';footEl.innerHTML=`<input class="m-inp" id="m-inp" placeholder="${cfg.fph}" onkeydown="if(event.key==='Enter')mFootAction()"><button class="m-add-btn" onclick="mFootAction()">${cfg.fbtn}</button>`;}else footEl.style.display='none';cfg.render(0);document.getElementById('mOverlay').classList.add('open');document.body.style.overflow='hidden';document.querySelectorAll('.t-modal-btn').forEach(b=>b.classList.remove('open'));document.getElementById('tb'+id.charAt(0).toUpperCase()+id.slice(1))?.classList.add('open');}
+function closeModal(){document.getElementById('mOverlay').classList.remove('open');document.body.style.overflow='';document.querySelectorAll('.t-modal-btn').forEach(b=>b.classList.remove('open'));activeModal=null;}
+function overlayClick(e){if(e.target===document.getElementById('mOverlay'))closeModal();}
+function switchMTab(idx,el){activeTab=idx;document.querySelectorAll('.m-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');MODALS[activeModal].render(idx);}
+function mFootAction(){const inp=document.getElementById('m-inp');const v=inp.value.trim();if(!v)return;DB.tasks.unshift({id:Date.now(),title:v,owner:'Me',status:'pending',created_at:'Mar 13',due_date:'Mar 13',priority:'med'});inp.value='';MODALS[activeModal].render(activeTab);renderDashQuickTasks();const sub=document.getElementById('m-sub-txt');if(sub)sub.textContent=MODALS[activeModal].sub();}
+function renderTodoModal(tabIdx){const fl=[null,'pending','in_progress','completed'];const tasks=fl[tabIdx]?DB.tasks.filter(t=>t.status===fl[tabIdx]):DB.tasks;const done=DB.tasks.filter(t=>t.status==='completed').length;const total=DB.tasks.length;const pct=Math.round(done/total*100);const circ=2*Math.PI*14;const off=circ-(pct/100)*circ;const pc={high:'tp-h',med:'tp-m',low:'tp-l'};const pl={high:'High',med:'Med',low:'Low'};document.getElementById('mBody').innerHTML=`<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--s2)"><svg class="pring" viewBox="0 0 32 32"><circle class="pr-bg" cx="16" cy="16" r="14"/><circle class="pr-fill" cx="16" cy="16" r="14" stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"/><text class="pr-txt" x="16" y="16">${pct}%</text></svg><div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--text-1)">${done} of ${total} complete</div><div style="font-size:11px;color:var(--text-3);margin-top:1px">${total-done} tasks remaining</div></div></div>${tasks.length?tasks.map(t=>`<div class="todo-item" id="td-${t.id}"><div class="todo-chk ${t.status==='completed'?'checked':''}" onclick="toggleTodo(${t.id})"></div><div class="todo-body"><div class="todo-t ${t.status==='completed'?'done':''}">${t.title}</div><div class="todo-meta"><span class="todo-owner">${t.owner}</span><span class="todo-due">Due ${t.due_date}</span><span class="todo-prio ${pc[t.priority]}">${pl[t.priority]}</span></div></div></div>`).join(''):'<div class="empty">No tasks in this category</div>'}`;}
+function toggleTodo(id){const t=DB.tasks.find(x=>x.id===id);if(!t)return;t.status=t.status==='completed'?'pending':'completed';MODALS[activeModal].render(activeTab);renderDashQuickTasks();const sub=document.getElementById('m-sub-txt');if(sub)sub.textContent=MODALS[activeModal].sub();}
+function renderActivityModal(){const cl={c:'fd-c',l:'fd-l',k:'fd-k',t:'fd-t'};document.getElementById('mBody').innerHTML=`<div>${DB.activity.map(a=>`<div class="feed-item" style="padding:10px 16px"><div class="feed-dot ${cl[a.type]}"></div><span class="feed-time">${a.time}</span><span class="feed-text">${a.user} ${a.text} <b>${a.bold}</b></span></div>`).join('')}</div>`;}
+const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const baseOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#9b9b96'}},y:{grid:{color:'#e8e8e5'},ticks:{font:{size:10},color:'#9b9b96'},beginAtZero:true}}};
+function mkLine(id,data,color){const el=document.getElementById(id);if(!el)return;new Chart(el,{type:'line',data:{labels:days,datasets:[{data,fill:true,borderColor:color,backgroundColor:color+'18',borderWidth:1.5,pointBackgroundColor:color,pointRadius:3,pointHoverRadius:5,tension:.4}]},options:baseOpts});}
+function mkBar(id,labels,data,colors){const el=document.getElementById(id);if(!el)return;new Chart(el,{type:'bar',data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:4,borderSkipped:false}]},options:{...baseOpts,scales:{...baseOpts.scales,x:{...baseOpts.scales.x,ticks:{font:{size:10},color:'#9b9b96',maxRotation:40}}}}});}
+function mkDoughnut(id,labels,data,colors){const el=document.getElementById(id);if(!el)return;new Chart(el,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'66%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed}`}}}}});}
+function initCharts(){mkLine('c-leads',[32,41,28,55,49,38,45],'#2a9d5c');mkLine('c-msgs',[58,65,48,72,80,60,72],'#2563eb');mkBar('c-email-sent',days,[95,112,88,130,143,105,118],Array(7).fill('#2563eb'));mkLine('c-email-replies',[8,11,7,14,18,9,12],'#7c3aed');mkLine('c-li-msgs',[58,65,48,72,80,60,72],'#2563eb');mkDoughnut('c-li-status',['Contacted','Replied','Follow-up','Call Booked','Closed'],[5,4,3,2,1],['#2563eb','#7c3aed','#c9820a','#2a9d5c','#9b9b96']);const lsC=['#2563eb','#7c3aed','#c9820a','#2a9d5c','#9b9b96'];const lsL=['Contacted','Replied','Follow-up','Call Booked','Closed'];const lsD=[5,4,3,2,1];document.getElementById('li-status-legend').innerHTML=lsL.map((l,i)=>`<span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-3)"><span style="width:8px;height:8px;border-radius:2px;background:${lsC[i]};display:inline-block"></span>${l} ${lsD[i]}</span>`).join('');mkDoughnut('c-mkt-src',['Organic','Paid','Direct','Social','Referral'],[38,26,18,12,6],['#2563eb','#c9820a','#9b9b96','#7c3aed','#2a9d5c']);const srcC=['#2563eb','#c9820a','#9b9b96','#7c3aed','#2a9d5c'];const srcL=['Organic','Paid','Direct','Social','Referral'];const srcD=[38,26,18,12,6];document.getElementById('mkt-src-legend').innerHTML=srcL.map((l,i)=>`<span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-3)"><span style="width:8px;height:8px;border-radius:2px;background:${srcC[i]};display:inline-block"></span>${l} ${srcD[i]}%</span>`).join('');mkBar('c-mkt-conv',['Email','LinkedIn','Paid','SEO','Social'],[64,83,147,140,28],['#2563eb','#7c3aed','#c9820a','#2a9d5c','#c0392b']);mkLine('c-mkt-visitors',[18400,21200,19800,22400,24100,20800,24381],'#2a9d5c');mkLine('c-mkt-cpa',[52,48,45,44,41,39,38],'#c9820a');}
+document.addEventListener('DOMContentLoaded',()=>{initDate();renderDashFeed();renderDashCampaigns();renderDashQuickTasks();renderEmailTbl();renderEmailTeam();renderEmailTop();renderLiTbl();renderLiFollowups();renderMktTbl();initCharts();document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});setTimeout(()=>openModal('todo'),150);});
+</script>

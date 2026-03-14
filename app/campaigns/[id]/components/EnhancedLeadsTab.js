@@ -495,7 +495,7 @@ const handleDeleteProspect = async (prospectId) => {
       prospect.position || '',
       prospect.status || '',
       prospect.currentStep || 1,
-      prospect.nextSendAt ? new Date(prospect.nextSendAt).toLocaleString() :
+      (prospect.nextActionAt || prospect.nextSendAt) ? new Date(prospect.nextActionAt || prospect.nextSendAt).toLocaleString() :
         (prospect.status === 'active' ? 'Ready Now' : prospect.status === 'completed' ? 'Completed' : '-')
     ]);
 

@@ -223,7 +223,7 @@ export async function GET(request, { params }) {
       tags: cp.prospect.tags,
       // Campaign-specific fields - map to expected names for frontend compatibility
       status: cp.status,
-      currentStep: cp.sequenceStep || 1,
+      currentStep: (cp.attemptCount || 0) + 1,
       nextSendAt: cp.nextSendAt,
       nextActionAt: cp.nextActionAt, // V2 engine timing
       v2State: cp.v2State,           // V2 engine state
