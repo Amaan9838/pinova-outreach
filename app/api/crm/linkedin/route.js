@@ -98,6 +98,13 @@ export async function GET(request) {
   }
 }
 
+const sanitizeUrl = (url) => {
+  if (!url || typeof url !== 'string') return url;
+  url = url.trim();
+  if (url === '') return url;
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+};
+
 export async function POST(request) {
   try {
     await dbConnect();
@@ -110,7 +117,7 @@ export async function POST(request) {
         firstName: l.firstName || '',
         lastName: l.lastName || '',
         city: l.city || '',
-        linkedInUrl: l.linkedInUrl || '',
+        linkedInUrl: sanitizeUrl(l.linkedInUrl) || '',
         status: 'new',
         owner: l.owner || user,
         createdBy: user,
@@ -133,7 +140,7 @@ export async function POST(request) {
       firstName: body.firstName,
       lastName: body.lastName || '',
       city: body.city || '',
-      linkedInUrl: body.linkedInUrl || '',
+      linkedInUrl: sanitizeUrl(body.linkedInUrl) || '',
       status: body.status || 'new',
       owner: body.owner || user,
       nextFollowUp: body.nextFollowUp || null,

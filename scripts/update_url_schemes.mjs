@@ -11,38 +11,24 @@ const __dirname = path.dirname(__filename);
 // Load env vars
 dotenv.config({ path: path.join(__dirname, '../.env.local') });
 
-// Setup DNS fallback logic to avoid ECONNREFUSED issues on Windows
-function ensureMongoDnsResolution() {
-  const originalLookup = dns.lookup;
-  dns.lookup = (hostname, options, callback) => {
-    let cb = callback;
-    let opts = options;
-    if (typeof options === 'function') {
-      cb = options;
-      opts = {};
-    }
+const FALLBACK_DNS_SERVERS = ['8.8.8.8', '8.8.4.4', '1.1.1.1'];
 
-    originalLookup(hostname, opts, (err, address, family) => {
-      if (err) {
-        console.warn(`[DNS Fallback] Standard lookup failed for ${hostname}. Trying fallback DNS (8.8.8.8)...`);
-        dns.setServers(['8.8.8.8', '8.8.4.4']);
-        dns.resolve(hostname, (resolveErr, addresses) => {
-          if (resolveErr || !addresses || addresses.length === 0) {
-            console.error(`[DNS Fallback] Fully failed to resolve ${hostname}`);
-            return cb(err || resolveErr);
-          }
-          const ipv4Result = addresses.find(a => a.includes('.')) || addresses[0];
-          console.log(`[DNS Fallback] Successfully resolved ${hostname} to ${ipv4Result}`);
-          cb(null, ipv4Result, ipv4Result.includes(':') ? 6 : 4);
-        });
-      } else {
-        cb(err, address, family);
-      }
-    });
-  };
+function ensureMongoDnsResolution(uri) {
+  if (!uri?.startsWith('mongodb+srv://')) return;
+
+  const currentServers = dns.getServers();
+  const hasNonLoopbackDns = currentServers.some(
+    (server) => server !== '127.0.0.1' && server !== '::1'
+  );
+
+  if (hasNonLoopbackDns) return;
+
+  try {
+    dns.setServers(FALLBACK_DNS_SERVERS);
+  } catch (error) {
+    console.warn('Failed to set fallback DNS servers for MongoDB:', error?.message || error);
+  }
 }
-
-ensureMongoDnsResolution();
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -50,6 +36,8 @@ if (!MONGODB_URI) {
   console.error('Please define the MONGODB_URI environment variable inside .env.local');
   process.exit(1);
 }
+
+ensureMongoDnsResolution(MONGODB_URI);
 
 // Prospect Schema Definition (minimal for updating)
 const prospectSchema = new mongoose.Schema({
@@ -88,53 +76,69 @@ async function fixUrlSchemes() {
     console.log(`Found ${prospects.length} total prospects in the database.`);
     
     let updatedCount = 0;
-    
-    const fieldsToUpdate = ['website', 'linkedin', 'instagram', 'facebook', 'zillow'];
+    const updatePromises = prospects.map(async (prospect) => {
+      let needsUpdate = false;
+      const urlFields = ['website', 'linkedin', 'instagram', 'facebook', 'zillow'];
 
-    for (const prospect of prospects) {
-      let isUpdated = false;
-
-      for (const field of fieldsToUpdate) {
-        if (prospect[field] && typeof prospect[field] === 'string') {
-          const original = prospect[field];
-          const sanitized = ensureHttps(original);
-
-          if (original !== sanitized) {
-            prospect[field] = sanitized;
-            isUpdated = true;
-          }
+      urlFields.forEach((field) => {
+        if (prospect[field] && typeof prospect[field] === 'string' && !/^https?:\/\//i.test(prospect[field])) {
+          prospect[field] = `https://${prospect[field]}`;
+          needsUpdate = true;
         }
-      }
+      });
 
-      if (isUpdated) {
-        try {
-          // Use updateOne to bypass strict validation in script
-          await Prospect.updateOne({ _id: prospect._id }, { $set: {
-            website: prospect.website,
-            linkedin: prospect.linkedin,
-            instagram: prospect.instagram,
-            facebook: prospect.facebook,
-            zillow: prospect.zillow
-          }});
-          updatedCount++;
-          console.log(`Updated URLs for: ${prospect.email}`);
-        } catch (saveError) {
-          console.error(`Failed to update ${prospect.email}:`, saveError.message);
-        }
+      if (needsUpdate) {
+        await prospect.save();
+        updatedCount++;
       }
+    });
+
+    await Promise.all(updatePromises);
+    console.log(`Successfully updated ${updatedCount} Prospects with missing 'https://' scheme.`);
+
+    // --- NEW: Update LinkedInLead URLs ---
+    try {
+      const LinkedInLeadSchema = new mongoose.Schema({
+        linkedInUrl: { type: String, default: '', trim: true }
+      }, { strict: false }); // strict:false allows finding without defining all fields
+      
+      const LinkedInLead = mongoose.models.LinkedInLead || mongoose.model('LinkedInLead', LinkedInLeadSchema);
+      
+      console.log('Fetching LinkedIn Leads from database...');
+      const linkedinLeads = await LinkedInLead.find({});
+      console.log(`Found ${linkedinLeads.length} total LinkedIn Leads.`);
+
+      let linkedInUpdatedCount = 0;
+      const linkedInUpdatePromises = linkedinLeads.map(async (lead) => {
+        let needsUpdate = false;
+        
+        if (lead.linkedInUrl && typeof lead.linkedInUrl === 'string' && !/^https?:\/\//i.test(lead.linkedInUrl)) {
+          lead.linkedInUrl = `https://${lead.linkedInUrl}`;
+          needsUpdate = true;
+        }
+
+        if (needsUpdate) {
+          await lead.save();
+          linkedInUpdatedCount++;
+        }
+      });
+
+      await Promise.all(linkedInUpdatePromises);
+      console.log(`Successfully updated ${linkedInUpdatedCount} LinkedIn Leads with missing 'https://' scheme.`);
+      
+    } catch (llError) {
+      console.error('Error updating LinkedIn Leads:', llError);
     }
-    
-    console.log('\n=====================================');
-    console.log(`SUCCESS! Fixed URL schemes for ${updatedCount} prospects.`);
-    console.log('=====================================\n');
+    // -------------------------------------
 
   } catch (error) {
-    console.error('Fatal Error:', error);
+    console.error('Error updating URL schemes:', error);
   } finally {
-    if (mongoose.connection.readyState === 1) {
+    if (mongoose.connection.readyState !== 0) {
       await mongoose.disconnect();
-      console.log('Disconnected from MongoDB.');
+      console.log('MongoDB disconnected.');
     }
+    process.exit(0);
   }
 }
 
