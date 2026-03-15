@@ -93,7 +93,7 @@ export default function LinkedInPage({ currentUser }) {
       {/* Metrics */}
       <div className="metrics">
         <div className="mc"><div className="mc-top"><div className="mc-icon ic-b">🔗</div></div><div className="mc-num">{stats.total}</div><div className="mc-label">Total Leads</div></div>
-        <div className="mc"><div className="mc-top"><div className="mc-icon ic-g">💬</div></div><div className="mc-num">{stats.statusCounts.messaged || 0}</div><div className="mc-label">Messaged</div></div>
+        <div className="mc"><div className="mc-top"><div className="mc-icon ic-g">💬</div></div><div className="mc-num">{stats.totalMessaged || 0}</div><div className="mc-label">Messaged</div></div>
         <div className="mc"><div className="mc-top"><div className="mc-icon ic-p">↩</div></div><div className="mc-num">{stats.statusCounts.replied || 0}</div><div className="mc-label">Replied</div></div>
         <div className="mc"><div className="mc-top"><div className="mc-icon ic-a">⏰</div></div><div className="mc-num">{stats.followUpsDue}</div><div className="mc-label">Follow-ups Due</div></div>
       </div>

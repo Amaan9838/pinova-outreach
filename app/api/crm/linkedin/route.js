@@ -35,7 +35,7 @@ export async function GET(request) {
       filter.nextFollowUp = { $lte: endOfToday, $ne: null };
     }
 
-    const [leads, total, statusCounts, followUpsDueCount] = await Promise.all([
+    const [leads, total, statusCounts, followUpsDueCount, totalMessaged] = await Promise.all([
         LinkedInLead.aggregate([
           { $match: filter },
           { $sort: { createdAt: -1 } },
@@ -72,6 +72,10 @@ export async function GET(request) {
       LinkedInLead.countDocuments({
         nextFollowUp: { $lte: new Date(new Date().setHours(23, 59, 59, 999)), $ne: null },
       }),
+      // Count leads that have at least one outbound conversation
+      LinkedInLead.countDocuments({
+        'conversations.direction': 'outbound',
+      }),
     ]);
 
     const statusMap = {};
@@ -84,6 +88,7 @@ export async function GET(request) {
       stats: {
         total: await LinkedInLead.countDocuments(),
         statusCounts: statusMap,
+        totalMessaged,
         followUpsDue: followUpsDueCount,
       },
     }, { headers: { 'Cache-Control': 'no-store' } });

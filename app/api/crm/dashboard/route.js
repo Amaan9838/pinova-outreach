@@ -10,15 +10,38 @@ import '@/models/Prospect';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req) {
   try {
     await dbConnect();
+    const { searchParams } = new URL(req.url);
 
-    // ── Metrics ──────────────────────────────────────────────
+    // ── Date range filter ────────────────────────────────────
+    const dateRange = searchParams.get('dateRange') || ''; // 7d, 14d, 30d, 90d, custom
+    const customFrom = searchParams.get('from') || '';
+    const customTo = searchParams.get('to') || '';
+
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const sevenDaysAgo = new Date(todayStart);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    // Compute date window for filtering
+    let dateFrom = null;
+    let dateTo = null;
+    if (dateRange === '7d') { dateFrom = new Date(todayStart); dateFrom.setDate(dateFrom.getDate() - 7); }
+    else if (dateRange === '14d') { dateFrom = new Date(todayStart); dateFrom.setDate(dateFrom.getDate() - 14); }
+    else if (dateRange === '30d') { dateFrom = new Date(todayStart); dateFrom.setDate(dateFrom.getDate() - 30); }
+    else if (dateRange === '90d') { dateFrom = new Date(todayStart); dateFrom.setDate(dateFrom.getDate() - 90); }
+    else if (dateRange === 'custom' && customFrom) {
+      dateFrom = new Date(customFrom);
+      if (customTo) dateTo = new Date(customTo);
+    }
+
+    const dateFilter = {};
+    if (dateFrom) dateFilter.$gte = dateFrom;
+    if (dateTo) dateFilter.$lte = dateTo;
+    const hasDateFilter = Object.keys(dateFilter).length > 0;
+    const msgDateMatch = hasDateFilter ? { createdAt: dateFilter } : {};
 
     const [
       activeCampaigns,
@@ -60,25 +83,40 @@ export async function GET() {
     ]);
     const leadMap = Object.fromEntries(leadCounts.map(l => [l._id.toString(), l.count]));
 
-    // Get per-campaign sent counts from Message collection
+    // Get per-campaign sent counts from Message collection (with optional date filter)
+    const sentMatchFilter = { campaignId: { $in: campaignIds }, status: { $in: ['sent', 'delivered', 'opened', 'replied'] }, isTest: { $ne: true }, ...msgDateMatch };
     const sentCounts = await Message.aggregate([
-      { $match: { campaignId: { $in: campaignIds }, status: { $in: ['sent', 'delivered', 'opened', 'replied'] }, isTest: { $ne: true } } },
+      { $match: sentMatchFilter },
       { $group: { _id: '$campaignId', count: { $sum: 1 } } },
     ]);
     const campaignSentMap = Object.fromEntries(sentCounts.map(s => [s._id.toString(), s.count]));
 
-    // Get per-campaign reply counts from CampaignProspect statuses
+    // Get per-campaign reply counts from CampaignProspect
+    const replyMatchFilter = { campaign: { $in: campaignIds }, status: 'replied' };
+    if (hasDateFilter) replyMatchFilter.repliedAt = dateFilter;
     const replyCounts = await CampaignProspect.aggregate([
-      { $match: { campaign: { $in: campaignIds }, status: 'replied' } },
+      { $match: replyMatchFilter },
       { $group: { _id: '$campaign', count: { $sum: 1 } } },
     ]);
     const replyMap = Object.fromEntries(replyCounts.map(r => [r._id.toString(), r.count]));
+
+    // Get per-campaign max step count from emailSteps array
+    const stepCounts = await CampaignProspect.aggregate([
+      { $match: { campaign: { $in: campaignIds } } },
+      { $group: {
+        _id: '$campaign',
+        maxSteps: { $max: { $size: { $ifNull: ['$emailSteps', []] } } },
+      } },
+    ]);
+    const stepMap = Object.fromEntries(stepCounts.map(s => [s._id.toString(), s.maxSteps || 1]));
 
     const enrichedCampaigns = campaigns.map(c => {
       const id = c._id.toString();
       const leads = leadMap[id] || c.prospectCount || 0;
       const sent = campaignSentMap[id] || 0;
       const replies = replyMap[id] || 0;
+      const totalSteps = stepMap[id] || 1;  // how many email steps (initial + follow-ups)
+      const totalExpected = leads * totalSteps;  // total emails expected when campaign completes
       return {
         _id: id,
         name: c.name,
@@ -86,6 +124,8 @@ export async function GET() {
         leads,
         sent,
         replies,
+        totalSteps,
+        totalExpected,
         replyRate: sent > 0 ? Math.round((replies / sent) * 100) : 0,
         calls: 0,
       };

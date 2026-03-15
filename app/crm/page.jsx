@@ -6,6 +6,7 @@ import DashboardPage from './components/DashboardPage';
 import EmailCampaignsPage from './components/EmailCampaignsPage';
 import LinkedInPage from './components/LinkedInPage';
 import MarketingPage from './components/MarketingPage';
+import InboxPage from './components/InboxPage';
 import TasksPage from './components/TasksPage';
 import ActivityPage from './components/ActivityPage';
 import ModalOverlay from './components/ModalOverlay';
@@ -111,6 +112,9 @@ export default function CrmPulsePage() {
             )}
             {activePage === 'marketing' && (
               <MarketingPage />
+            )}
+            {activePage === 'inbox' && (
+              <InboxPage />
             )}
             {activePage === 'tasks' && (
               <TasksPage currentUser={currentUser} onOpenModal={openModal} />

@@ -120,7 +120,8 @@ export default function DashboardPage({ data, onNav, onOpenModal }) {
           <div>
             {campaigns.length === 0 && <div className="empty">No campaigns yet</div>}
             {campaigns.slice(0, 5).map(c => {
-              const pct = c.leads > 0 ? Math.round((c.sent / c.leads) * 100) : 0;
+              const totalExpected = c.totalExpected || c.leads || 1;
+              const pct = Math.min(100, totalExpected > 0 ? Math.round((c.sent / totalExpected) * 100) : 0);
               return (
                 <div key={c._id} className="feed-item" onClick={() => onNav('email')}>
                   <div className="feed-dot" style={{ background: stDot[c.status] || 'var(--text-3)' }} />

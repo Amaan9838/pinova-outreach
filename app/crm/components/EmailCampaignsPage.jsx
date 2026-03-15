@@ -1,8 +1,30 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { BarChart, LineChart } from './Charts';
 
-export default function EmailCampaignsPage({ data }) {
+export default function EmailCampaignsPage({ data: initialData }) {
+  const [dateRange, setDateRange] = useState('');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
+  const [data, setData] = useState(initialData);
+  const [loading, setLoading] = useState(false);
+
+  // Refetch when date range changes
+  const fetchData = useCallback(async () => {
+    if (!dateRange) { setData(initialData); return; }
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ dateRange });
+      if (dateRange === 'custom' && customFrom) { params.set('from', customFrom); if (customTo) params.set('to', customTo); }
+      const res = await fetch(`/api/crm/dashboard?${params}`);
+      const json = await res.json();
+      if (json.success) setData(json);
+    } catch (err) { console.error('Failed to fetch:', err); }
+    setLoading(false);
+  }, [dateRange, customFrom, customTo, initialData]);
+
+  useEffect(() => { fetchData(); }, [dateRange]);
+
   const campaigns = data?.campaigns || [];
   const m = data?.metrics || {};
   const chart = data?.chartData || {};
@@ -25,8 +47,9 @@ export default function EmailCampaignsPage({ data }) {
 
   const stCls = { active: 'b-run', running: 'b-run', paused: 'b-pau', completed: 'b-com', draft: 'b-pend' };
   const stLabel = { active: 'Running', running: 'Running', paused: 'Paused', completed: 'Done', draft: 'Draft' };
+  const dateLabels = { '7d': '7 days', '14d': '14 days', '30d': '30 days', '90d': '90 days', 'custom': 'Custom' };
 
-  function handleSort(key, th) {
+  function handleSort(key) {
     if (sortKey === key) setSortDir(d => -d);
     else { setSortKey(key); setSortDir(1); }
   }
@@ -35,7 +58,40 @@ export default function EmailCampaignsPage({ data }) {
     <div className="page-content active" id="page-email">
       <div className="ph">
         <div className="ph-left"><h1>Email Campaigns</h1><p>Track outbound email performance and conversion.</p></div>
+        <div className="ph-actions" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+          {['7d', '14d', '30d', '90d'].map(v => (
+            <button key={v} className="t-btn" onClick={() => setDateRange(dateRange === v ? '' : v)} style={{
+              fontSize: 11, padding: '4px 10px',
+              background: dateRange === v ? 'var(--blue)' : undefined,
+              color: dateRange === v ? '#fff' : undefined,
+              borderColor: dateRange === v ? 'var(--blue)' : undefined,
+            }}>
+              {dateLabels[v]}
+            </button>
+          ))}
+          <button className="t-btn" onClick={() => setDateRange(dateRange === 'custom' ? '' : 'custom')} style={{
+            fontSize: 11, padding: '4px 10px',
+            background: dateRange === 'custom' ? 'var(--blue)' : undefined,
+            color: dateRange === 'custom' ? '#fff' : undefined,
+            borderColor: dateRange === 'custom' ? 'var(--blue)' : undefined,
+          }}>
+            Custom
+          </button>
+        </div>
       </div>
+
+      {/* Custom Date Inputs */}
+      {dateRange === 'custom' && (
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
+          <label style={{ fontSize: 12, color: 'var(--text-3)' }}>From</label>
+          <input type="date" className="f-input" value={customFrom} onChange={e => setCustomFrom(e.target.value)} style={{ minWidth: 130 }} />
+          <label style={{ fontSize: 12, color: 'var(--text-3)' }}>To</label>
+          <input type="date" className="f-input" value={customTo} onChange={e => setCustomTo(e.target.value)} style={{ minWidth: 130 }} />
+          <button className="t-btn accent" onClick={fetchData} style={{ fontSize: 11, padding: '4px 12px' }}>Apply</button>
+        </div>
+      )}
+
+      {loading && <div style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 8 }}>Refreshing data…</div>}
 
       {/* Metrics */}
       <div className="metrics five">
@@ -65,7 +121,7 @@ export default function EmailCampaignsPage({ data }) {
       {/* Campaigns Table */}
       <div className="card mb-14">
         <div className="card-head">
-          <div className="card-head-l"><span className="ch-title">All Campaigns</span></div>
+          <div className="card-head-l"><span className="ch-title">All Campaigns</span>{dateRange && <span style={{ fontSize: 11, color: 'var(--text-3)', marginLeft: 8 }}>({dateLabels[dateRange] || dateRange})</span>}</div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <input className="f-input" style={{ minWidth: 140 }} type="text" placeholder="Search…" value={search} onChange={e => setSearch(e.target.value)} />
             <select className="f-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
@@ -81,6 +137,7 @@ export default function EmailCampaignsPage({ data }) {
           <table><thead><tr>
             <th onClick={() => handleSort('name')}>Campaign<span className="sort-ic">↕</span></th>
             <th onClick={() => handleSort('leads')}>Leads<span className="sort-ic">↕</span></th>
+            <th>Steps</th>
             <th>Status</th>
             <th onClick={() => handleSort('sent')}>Sent<span className="sort-ic">↕</span></th>
             <th>Progress</th>
@@ -88,15 +145,17 @@ export default function EmailCampaignsPage({ data }) {
             <th>Reply %</th>
           </tr></thead>
           <tbody>
-            {filtered.length === 0 && <tr><td colSpan={7} className="empty">No campaigns found</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={8} className="empty">No campaigns found</td></tr>}
             {filtered.map(c => {
-              const pct = c.leads > 0 ? Math.round((c.sent / c.leads) * 100) : 0;
+              const totalExpected = c.totalExpected || c.leads || 1;
+              const pct = Math.min(100, totalExpected > 0 ? Math.round((c.sent / totalExpected) * 100) : 0);
               return (
                 <tr key={c._id}>
                   <td><b>{c.name}</b></td>
                   <td>{c.leads}</td>
+                  <td style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-3)' }}>{c.totalSteps || 1}</td>
                   <td><span className={`badge ${stCls[c.status] || 'b-pend'}`}>{stLabel[c.status] || c.status}</span></td>
-                  <td>{c.sent}</td>
+                  <td>{c.sent}<span style={{ fontSize: 10, color: 'var(--text-4)', marginLeft: 4 }}>/ {totalExpected}</span></td>
                   <td>
                     <div className="pbar-wrap">
                       <div className="pbar-track"><div className="pbar-fill" style={{ width: `${pct}%` }} /></div>
