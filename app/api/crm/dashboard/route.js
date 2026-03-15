@@ -91,9 +91,10 @@ export async function GET(req) {
     ]);
     const campaignSentMap = Object.fromEntries(sentCounts.map(s => [s._id.toString(), s.count]));
 
-    // Get per-campaign reply counts from CampaignProspect
-    const replyMatchFilter = { campaign: { $in: campaignIds }, status: 'replied' };
-    if (hasDateFilter) replyMatchFilter.repliedAt = dateFilter;
+    // Get per-campaign reply counts — use BOTH CampaignProspect.repliedAt AND Message inbound replies
+    // CampaignProspect.status may not be 'replied' yet if v2 engine hasn't classified it
+    const replyMatchFilter = { campaign: { $in: campaignIds }, repliedAt: { $ne: null } };
+    if (hasDateFilter) replyMatchFilter.repliedAt = { ...replyMatchFilter.repliedAt, ...dateFilter };
     const replyCounts = await CampaignProspect.aggregate([
       { $match: replyMatchFilter },
       { $group: { _id: '$campaign', count: { $sum: 1 } } },
@@ -131,20 +132,31 @@ export async function GET(req) {
       };
     });
 
-    // ── 7-day chart data ────────────────────────────────────
+    // ── Dynamic chart data (adapts to dateRange) ────────────
+    const chartDays = dateRange === '14d' ? 14 : dateRange === '30d' ? 30 : dateRange === '90d' ? 90 : 7;
+    const chartStart = new Date(todayStart);
+    chartStart.setDate(chartStart.getDate() - chartDays);
+
     const dayLabels = [];
     const dayStarts = [];
-    for (let i = 6; i >= 0; i--) {
+    for (let i = chartDays - 1; i >= 0; i--) {
       const d = new Date(todayStart);
       d.setDate(d.getDate() - i);
-      dayLabels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
+      // Show shorter labels for larger ranges
+      if (chartDays <= 7) {
+        dayLabels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
+      } else if (chartDays <= 14) {
+        dayLabels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      } else {
+        dayLabels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      }
       dayStarts.push(new Date(d));
     }
 
     const sentByDay = await Message.aggregate([
       {
         $match: {
-          createdAt: { $gte: sevenDaysAgo },
+          createdAt: { $gte: chartStart },
           status: { $in: ['sent', 'delivered', 'opened', 'replied'] },
           isTest: { $ne: true },
         },
@@ -162,7 +174,7 @@ export async function GET(req) {
     const repliesByDay = await CampaignProspect.aggregate([
       {
         $match: {
-          repliedAt: { $gte: sevenDaysAgo },
+          repliedAt: { $gte: chartStart, $ne: null },
         },
       },
       {

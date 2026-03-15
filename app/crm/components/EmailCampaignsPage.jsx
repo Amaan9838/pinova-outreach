@@ -43,7 +43,7 @@ export default function EmailCampaignsPage({ data: initialData }) {
   }, [campaigns, search, statusFilter, sortKey, sortDir]);
 
   const totalSent = m.totalEmailsSent || campaigns.reduce((s, c) => s + c.sent, 0);
-  const totalReplies = campaigns.reduce((s, c) => s + c.replies, 0);
+  const totalReplies = campaigns.reduce((s, c) => s + (c.replies || 0), 0);
 
   const stCls = { active: 'b-run', running: 'b-run', paused: 'b-pau', completed: 'b-com', draft: 'b-pend' };
   const stLabel = { active: 'Running', running: 'Running', paused: 'Paused', completed: 'Done', draft: 'Draft' };
@@ -105,13 +105,13 @@ export default function EmailCampaignsPage({ data: initialData }) {
       {/* Charts */}
       <div className="grid-2 mb-14">
         <div className="card">
-          <div className="card-head"><div className="card-head-l"><span className="ch-title">Emails Sent — 7 days</span></div></div>
+          <div className="card-head"><div className="card-head-l"><span className="ch-title">Emails Sent — {dateLabels[dateRange] || '7 days'}</span></div></div>
           <div className="chart-pad"><div className="chart-wrap tall">
-            <BarChart id="c-email-sent" labels={chart.labels || []} data={chart.emailsSent7d || []} colors={Array(7).fill('#2563eb')} />
+            <BarChart id="c-email-sent" labels={chart.labels || []} data={chart.emailsSent7d || []} colors={Array(chart.labels?.length || 7).fill('#2563eb')} />
           </div></div>
         </div>
         <div className="card">
-          <div className="card-head"><div className="card-head-l"><span className="ch-title">Reply Rate Trend</span></div></div>
+          <div className="card-head"><div className="card-head-l"><span className="ch-title">Reply Rate — {dateLabels[dateRange] || '7 days'}</span></div></div>
           <div className="chart-pad"><div className="chart-wrap tall">
             <LineChart id="c-email-replies" labels={chart.labels || []} data={chart.replies7d || []} color="#7c3aed" />
           </div></div>

@@ -126,9 +126,9 @@ export async function GET(req) {
     const totalThreads = threads.length;
     const paginatedThreads = threads.slice((threadPage - 1) * threadsPerPage, threadPage * threadsPerPage);
 
-    // Mailboxes for filter
-    const mailboxes = await Mailbox.find({ status: { $in: ['active', 'warming'] } })
-      .select('fromEmail fromName')
+    // Mailboxes for filter — include all statuses so paused mailboxes still show their historical messages
+    const mailboxes = await Mailbox.find({})
+      .select('fromEmail fromName status')
       .lean();
 
     // Stats
@@ -148,7 +148,7 @@ export async function GET(req) {
         totalThreadPages: Math.ceil(totalThreads / threadsPerPage),
       },
       stats: { totalMessages, totalReplied, totalSent },
-      mailboxes: mailboxes.map(m => ({ _id: m._id, fromEmail: m.fromEmail, fromName: m.fromName })),
+      mailboxes: mailboxes.map(m => ({ _id: m._id, fromEmail: m.fromEmail, fromName: m.fromName, status: m.status })),
     }, { headers: { 'Cache-Control': 'no-store' } });
 
   } catch (error) {
