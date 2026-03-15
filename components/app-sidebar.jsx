@@ -43,6 +43,7 @@ const data = {
   ],
   navMain: [
     { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+    { title: "CRM Pulse", url: "/crm", icon: Brain, badge: "New" },
     { title: "Pipeline", url: "/pipeline", icon: Kanban, badge: "AI" },
     { title: "Campaigns", url: "/campaigns", icon: RocketIcon },
     { title: "Prospects", url: "/prospects", icon: Users },

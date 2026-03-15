@@ -931,26 +931,46 @@ function ProspectCard({ prospect, isSelected, onSelect, onEdit, onDelete, onView
             )}
           </div>
 
-          {(prospect.linkedinUrl || prospect.instagramUrl || prospect.websiteUrl) && (
-            <div className="flex gap-2 pt-2 border-t border-gray-100">
-              {prospect.linkedinUrl && (
+          {(prospect.linkedin || prospect.instagram || prospect.website || prospect.facebook || prospect.zillow) && (
+            <div className="flex gap-2 pt-2 border-t border-gray-100 flex-wrap">
+              {prospect.linkedin && (
                 <Button size="sm" variant="ghost" asChild>
-                  <a href={prospect.linkedinUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-3 w-3" />
+                  <a href={prospect.linkedin.startsWith('http') ? prospect.linkedin : `https://${prospect.linkedin}`} target="_blank" rel="noopener noreferrer">
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.338 16.338H13.67V12.16c0-.995-.017-2.277-1.387-2.277-1.39 0-1.601 1.086-1.601 2.207v4.248H8.014v-8.59h2.559v1.174h.037c.356-.675 1.227-1.387 2.527-1.387 2.703 0 3.2 1.778 3.2 4.091v4.715zM5.337 7.433c-.322 0-.58-.26-.58-.58 0-.322.26-.58.58-.58.32 0 .58.258.58.58 0 .32-.26.58-.58.58zm.5 8.925H3.26V8.59h2.577v7.768zM17.34 3.75H2.66C2.3 3.75 2 4.05 2 4.41v12.18c0 .36.3.66.66.66h14.68c.36 0 .66-.3.66-.66V4.41c0-.36-.3-.66-.66-.66z" clipRule="evenodd" />
+                    </svg>
                   </a>
                 </Button>
               )}
-              {prospect.instagramUrl && (
+              {prospect.instagram && (
                 <Button size="sm" variant="ghost" asChild>
-                  <a href={prospect.instagramUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-3 w-3" />
+                  <a href={`https://instagram.com/${prospect.instagram.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer">
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.987 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12.001 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                    </svg>
                   </a>
                 </Button>
               )}
-              {prospect.websiteUrl && (
+              {prospect.facebook && (
                 <Button size="sm" variant="ghost" asChild>
-                  <a href={prospect.websiteUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-3 w-3" />
+                  <a href={prospect.facebook.startsWith('http') ? prospect.facebook : `https://${prospect.facebook}`} target="_blank" rel="noopener noreferrer">
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                  </a>
+                </Button>
+              )}
+              {prospect.zillow && (
+                <Button size="sm" variant="ghost" asChild title="Zillow Profile">
+                  <a href={prospect.zillow.startsWith('http') ? prospect.zillow : `https://${prospect.zillow}`} target="_blank" rel="noopener noreferrer">
+                    <Globe className="h-4 w-4" />
+                  </a>
+                </Button>
+              )}
+              {prospect.website && (
+                <Button size="sm" variant="ghost" asChild title="Personal Website">
+                  <a href={prospect.website.startsWith('http') ? prospect.website : `https://${prospect.website}`} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4" />
                   </a>
                 </Button>
               )}
@@ -1091,6 +1111,10 @@ function ProspectForm({ prospect, customFields, setCustomFields, setProspect, on
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!formData.website && !formData.linkedin && !formData.instagram && !formData.facebook && !formData.zillow) {
+      toast.error('Please provide at least one social/web link (Website, LinkedIn, Instagram, Facebook, or Zillow)');
+      return;
+    }
     onSubmit({
       ...formData,
       customFields: customFields.filter(field => field.name.trim() !== '')
@@ -1254,6 +1278,28 @@ function ProspectForm({ prospect, customFields, setCustomFields, setProspect, on
                 placeholder="username"
               />
             </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Facebook
+            </label>
+            <Input
+              type="text"
+              value={formData.facebook || ''}
+              onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
+              placeholder="facebook.com/username"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Zillow
+            </label>
+            <Input
+              type="text"
+              value={formData.zillow || ''}
+              onChange={(e) => setFormData({ ...formData, zillow: e.target.value })}
+              placeholder="zillow.com/profile/username"
+            />
           </div>
         </div>
       </div>
@@ -1457,6 +1503,34 @@ function ProspectDetails({ prospect }) {
                   className="text-blue-600 hover:underline"
                 >
                   @{prospect.instagram.replace(/^@/, '')}
+                </a>
+              </div>
+            )}
+            {prospect.facebook && (
+              <div className="flex items-center gap-2">
+                <svg className="h-4 w-4 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                <a 
+                  href={prospect.facebook.startsWith('http') ? prospect.facebook : `https://${prospect.facebook}`}
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  {prospect.facebook.replace(/^https?:\/\//, '').replace(/^www\./i, '')}
+                </a>
+              </div>
+            )}
+            {prospect.zillow && (
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-gray-500" />
+                <a 
+                  href={prospect.zillow.startsWith('http') ? prospect.zillow : `https://${prospect.zillow}`}
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  Zillow Profile
                 </a>
               </div>
             )}

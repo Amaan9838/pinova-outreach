@@ -66,6 +66,10 @@ function validateCSV(headers, rows) {
     if (!row.lastname)  errs.push({ level: 'row', row: rowNum, msg: 'lastname is required' });
     if (!row.email)     errs.push({ level: 'row', row: rowNum, msg: 'email is required' });
     else if (!EMAIL_RE.test(row.email)) errs.push({ level: 'row', row: rowNum, msg: `Invalid email: ${row.email}` });
+
+    const links = ['website', 'linkedin', 'instagram', 'facebook', 'zillow'];
+    const hasLink = links.some(link => row[link] && row[link].trim() !== '');
+    if (!hasLink) errs.push({ level: 'row', row: rowNum, msg: 'At least one social/web link is required (website, linkedin, instagram, facebook, zillow)' });
   });
 
   return errs;
@@ -96,10 +100,10 @@ function buildPreview(headers, rows) {
 
 // ─── Download sample CSV ────────────────────────────────────────────────────
 function downloadSampleCSV() {
-  const headers = ['firstname','lastname','email','company','phone',
+  const headers = ['firstname','lastname','email','company','linkedin','website','phone',
     'step1_subject','step1_body','step2_subject','step2_body',
     'step3_subject','step3_body'];
-  const row1 = ['Jane','Smith','jane@example.com','Acme Corp','',
+  const row1 = ['Jane','Smith','jane@example.com','Acme Corp','https://linkedin.com/in/janesmith','', '',
     'Quick question about your property','Hi Jane, I wanted to reach out about your listing...',
     'Following up','Hey Jane, just checking in on my previous message...',
     'Last touch','Hi Jane, I understand timing may not be right...'];
@@ -265,12 +269,13 @@ export default function LeadsCSVImportModal({ open, onOpenChange, campaignId, on
               </div>
               <div className="bg-blue-50 rounded-lg p-4 text-sm space-y-2">
                 <p className="font-semibold text-blue-800">Column Reference</p>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-blue-700 text-xs">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-blue-700 text-xs">
                   <span>✅ firstname (required)</span>
-                  <span>⬜ company</span>
                   <span>✅ lastname (required)</span>
-                  <span>⬜ phone</span>
                   <span>✅ email (required)</span>
+                  <span>✅ at least 1: website, linkedin, instagram, facebook, zillow</span>
+                  <span>⬜ company</span>
+                  <span>⬜ phone</span>
                   <span>⬜ notes</span>
                   <span>⬜ step1_subject + step1_body</span>
                   <span>⬜ step2_subject + step2_body</span>

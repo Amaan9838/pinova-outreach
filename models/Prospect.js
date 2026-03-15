@@ -63,6 +63,14 @@ const ProspectSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  zillow: {
+    type: String,
+    default: '',
+  },
+  facebook: {
+    type: String,
+    default: '',
+  },
   personalizationNote: {
     type: String,
     default: '',

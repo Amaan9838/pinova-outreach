@@ -38,6 +38,12 @@ export async function POST(request, { params }) {
           continue;
         }
 
+        // Validate at least one link
+        if (!prospectData.website && !prospectData.linkedin && !prospectData.instagram && !prospectData.facebook && !prospectData.zillow) {
+          errors.push(`Missing required social/web link for ${prospectData.email}. At least one link (Website, LinkedIn, Instagram, Facebook, Zillow) is required.`);
+          continue;
+        }
+
         // Check if prospect already exists
         let prospect = await Prospect.findOne({ 
           email: prospectData.email.toLowerCase().trim() 
@@ -57,6 +63,8 @@ export async function POST(request, { params }) {
             notes: prospectData.notes?.trim() || '',
             instagram: prospectData.instagram?.trim() || '',
             linkedin: prospectData.linkedin?.trim() || '',
+            facebook: prospectData.facebook?.trim() || '',
+            zillow: prospectData.zillow?.trim() || '',
             personalizationNote: prospectData.personalizationNote?.trim() || '',
             customFields: prospectData.customFields || [],
             tags: prospectData.tags || [],

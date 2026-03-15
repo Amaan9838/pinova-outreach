@@ -46,6 +46,8 @@ const PREDEFINED_FIELDS = [
   { value: 'industry', label: 'Industry', icon: Building, type: 'text' },
   { value: 'linkedin', label: 'LinkedIn URL', icon: Link, type: 'url' },
   { value: 'instagram', label: 'Instagram', icon: Link, type: 'text' },
+  { value: 'facebook', label: 'Facebook', icon: Link, type: 'url' },
+  { value: 'zillow', label: 'Zillow URL', icon: Link, type: 'url' },
   { value: 'notes', label: 'Notes', icon: FileText, type: 'text' },
   { value: 'personalizationNote', label: 'Personalization Note', icon: FileText, type: 'text' },
   { value: 'tags', label: 'Tags (comma-separated)', icon: Tag, type: 'text' },
@@ -109,7 +111,9 @@ export default function FieldMappingModal({
           (field.value === 'phone' && (lowerHeader.includes('phone') || lowerHeader.includes('mobile'))) ||
           (field.value === 'website' && (lowerHeader.includes('website') || lowerHeader.includes('site'))) ||
           (field.value === 'linkedin' && lowerHeader.includes('linkedin')) ||
-          (field.value === 'instagram' && lowerHeader.includes('instagram'))
+          (field.value === 'instagram' && lowerHeader.includes('instagram')) ||
+          (field.value === 'facebook' && lowerHeader.includes('facebook')) ||
+          (field.value === 'zillow' && lowerHeader.includes('zillow'))
         );
       });
 
@@ -142,11 +146,21 @@ export default function FieldMappingModal({
     const hasEmail = mappedValues.includes('email');
     const hasFirstName = mappedValues.includes('firstName');
     
+    // Check if at least one link is mapped
+    const hasLinkMapped = mappedValues.includes('website') || 
+                          mappedValues.includes('linkedin') || 
+                          mappedValues.includes('instagram') || 
+                          mappedValues.includes('facebook') || 
+                          mappedValues.includes('zillow');
+
     if (!hasEmail) {
       errors.email = 'Email field is required for import';
     }
     if (!hasFirstName) {
       errors.firstName = 'First Name field is required for import';
+    }
+    if (!hasLinkMapped) {
+      errors.link = 'At least one link field (Website, LinkedIn, Instagram, Facebook, Zillow) must be mapped';
     }
 
     // Check for duplicates
@@ -267,6 +281,13 @@ export default function FieldMappingModal({
     const mappedData = getMappedData();
     if (mappedData.length === 0) {
       toast.error('No valid data to import. Please check your field mapping.');
+      return;
+    }
+
+    // New validation for link requirement
+    const rowsWithoutLink = mappedData.filter(row => !row.website && !row.linkedin && !row.instagram && !row.facebook && !row.zillow);
+    if (rowsWithoutLink.length > 0) {
+      toast.error(`${rowsWithoutLink.length} prospect(s) are missing a required social/web link. Please ensure every prospect has at least one link (Website, LinkedIn, Instagram, Facebook, or Zillow).`);
       return;
     }
 

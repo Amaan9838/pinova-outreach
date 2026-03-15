@@ -61,7 +61,7 @@ function parseCSV(csv) {
  *
  * CSV Column Reference:
  *   Required: firstname, lastname, email
- *   Optional: company, phone, website, industry, position, notes
+ *   Optional: company, phone, website, linkedin, instagram, facebook, zillow, industry, position, notes
  *   Per-step:  step1_subject, step1_body, step2_subject, step2_body … step7_subject, step7_body
  *   Legacy:    customsubject, custombody (alias for step1_subject / step1_body)
  */
@@ -145,6 +145,10 @@ export async function POST(request, { params }) {
       if (!d.email)     rowIssues.push('email is required');
       else if (!EMAIL_REGEX.test(d.email)) rowIssues.push('invalid email format');
 
+      const links = ['website', 'linkedin', 'instagram', 'facebook', 'zillow'];
+      const hasLink = links.some(link => d[link] && d[link].trim() !== '');
+      if (!hasLink) rowIssues.push('at least one social/web link is required (website, linkedin, instagram, facebook, zillow)');
+
       if (rowIssues.length > 0) {
         rowErrors.push({ row: rowNum, email: d.email || '', reason: rowIssues.join(', ') });
         continue;
@@ -180,6 +184,10 @@ export async function POST(request, { params }) {
             company:   d.company   || '',
             phone:     d.phone     || '',
             website:   d.website   || '',
+            linkedin:  d.linkedin  || '',
+            instagram: d.instagram || '',
+            facebook:  d.facebook  || '',
+            zillow:    d.zillow    || '',
             industry:  d.industry  || '',
             position:  d.position  || '',
             notes:     d.notes     || '',

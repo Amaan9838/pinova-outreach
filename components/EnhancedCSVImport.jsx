@@ -44,6 +44,8 @@ const CSV_TEMPLATE_HEADERS = [
   'industry',
   'linkedin',
   'instagram',
+  'facebook',
+  'zillow',
   'notes',
   'personalizationNote',
   'tags'
@@ -63,6 +65,8 @@ const SAMPLE_DATA = [
     'Technology',
     'https://linkedin.com/in/johndoe',
     '@johndoe',
+    'https://facebook.com/johndoe',
+    'https://zillow.com/profile/johndoe',
     'Interested in automation tools',
     'Recently posted about AI trends',
     'hot-lead,enterprise'
@@ -80,6 +84,8 @@ const SAMPLE_DATA = [
     'SaaS',
     'https://linkedin.com/in/janesmith',
     '@janesmith',
+    '',
+    '',
     'Looking for growth solutions',
     'Mentioned scaling challenges in recent interview',
     'warm-lead,saas,growth'

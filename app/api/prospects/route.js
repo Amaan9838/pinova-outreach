@@ -27,10 +27,16 @@ export async function POST(request) {
     
     const data = await request.json();
     
-    // Validate required fields
     if (!data.email || !data.firstName) {
       return Response.json(
         { success: false, error: 'Email and first name are required' },
+        { status: 400 }
+      );
+    }
+
+    if (!data.website && !data.linkedin && !data.instagram && !data.facebook && !data.zillow) {
+      return Response.json(
+        { success: false, error: 'At least one social/web link (Website, LinkedIn, Instagram, Facebook, or Zillow) is required' },
         { status: 400 }
       );
     }
@@ -82,6 +88,8 @@ export async function POST(request) {
       notes: data.notes || '',
       instagram: data.instagram || '',
       linkedin: data.linkedin || '',
+      facebook: data.facebook || '',
+      zillow: data.zillow || '',
       personalizationNote: data.personalizationNote || '',
       customFields,
       tags,

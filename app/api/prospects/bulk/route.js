@@ -27,6 +27,15 @@ export async function POST(request) {
           results.errors.push({
             email: prospectData.email || 'unknown',
             error: 'Email and first name are required'
+          results.skipped++;
+          continue;
+        }
+
+        // Validate at least one link
+        if (!prospectData.website && !prospectData.linkedin && !prospectData.instagram && !prospectData.facebook && !prospectData.zillow) {
+          results.errors.push({
+            email: prospectData.email || 'unknown',
+            error: 'At least one social/web link (Website, LinkedIn, Instagram, Facebook, or Zillow) is required.'
           });
           results.skipped++;
           continue;
@@ -81,6 +90,8 @@ export async function POST(request) {
           notes: prospectData.notes || '',
           instagram: prospectData.instagram || '',
           linkedin: prospectData.linkedin || '',
+          facebook: prospectData.facebook || '',
+          zillow: prospectData.zillow || '',
           personalizationNote: prospectData.personalizationNote || '',
           customFields,
           tags,

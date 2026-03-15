@@ -99,6 +99,8 @@ export default function EnhancedLeadsTab({ campaign, campaignId, getStatusColor 
     notes: '',
     instagram: '',
     linkedin: '',
+    zillow: '',
+    facebook: '',
     personalizationNote: ''
   });
   const [editedProspect, setEditedProspect] = useState({
@@ -113,6 +115,8 @@ export default function EnhancedLeadsTab({ campaign, campaignId, getStatusColor 
     notes: '',
     instagram: '',
     linkedin: '',
+    zillow: '',
+    facebook: '',
     personalizationNote: ''
   });
   const [customFields, setCustomFields] = useState([{ name: '', value: '' }]);
@@ -190,6 +194,11 @@ export default function EnhancedLeadsTab({ campaign, campaignId, getStatusColor 
       return;
     }
     
+    if (!newProspect.website && !newProspect.linkedin && !newProspect.instagram && !newProspect.facebook && !newProspect.zillow) {
+      toast.error('Please provide at least one social/web link (Website, LinkedIn, Instagram, Facebook, or Zillow)');
+      return;
+    }
+    
     // Prepare custom fields data
     const validCustomFields = customFields
       .filter(field => field.name.trim() !== '' && field.value.trim() !== '')
@@ -226,6 +235,8 @@ export default function EnhancedLeadsTab({ campaign, campaignId, getStatusColor 
           notes: '',
           instagram: '',
           linkedin: '',
+          zillow: '',
+          facebook: '',
           personalizationNote: ''
         });
         setCustomFields([{ name: '', value: '' }]);
@@ -416,7 +427,17 @@ const handleDeleteProspect = async (prospectId) => {
 
 
   const handleUpdateProspect = async () => {
-      try {
+    if (!editedProspect.firstName || !editedProspect.email) {
+      toast.error('Please fill in all required fields (First Name, Email)');
+      return;
+    }
+
+    if (!editedProspect.website && !editedProspect.linkedin && !editedProspect.instagram && !editedProspect.facebook && !editedProspect.zillow) {
+      toast.error('Please provide at least one social/web link (Website, LinkedIn, Instagram, Facebook, or Zillow)');
+      return;
+    }
+
+    try {
         const response = await fetch(`/api/campaigns/${campaignId}/prospects/${editingProspect._id}`, {
           method: 'PATCH',
           headers: {
@@ -971,6 +992,24 @@ const handleDeleteProspect = async (prospectId) => {
                       />
                     </div>
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Facebook</label>
+                    <Input
+                      value={newProspect.facebook || ''}
+                      onChange={(e) => setNewProspect(prev => ({ ...prev, facebook: e.target.value }))}
+                      placeholder="facebook.com/username"
+                      className="h-11"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Zillow</label>
+                    <Input
+                      value={newProspect.zillow || ''}
+                      onChange={(e) => setNewProspect(prev => ({ ...prev, zillow: e.target.value }))}
+                      placeholder="zillow.com/profile/username"
+                      className="h-11"
+                    />
+                  </div>
                 </div>
               </div>
             
@@ -1393,6 +1432,24 @@ const handleDeleteProspect = async (prospectId) => {
                           placeholder="username"
                         />
                       </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Facebook</label>
+                      <Input
+                        value={editedProspect.facebook || ''}
+                        onChange={(e) => setEditedProspect(prev => ({ ...prev, facebook: e.target.value }))}
+                        placeholder="facebook.com/username"
+                        className="h-11"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Zillow</label>
+                      <Input
+                        value={editedProspect.zillow || ''}
+                        onChange={(e) => setEditedProspect(prev => ({ ...prev, zillow: e.target.value }))}
+                        placeholder="zillow.com/profile/username"
+                        className="h-11"
+                      />
                     </div>
                   </div>
                 </div>

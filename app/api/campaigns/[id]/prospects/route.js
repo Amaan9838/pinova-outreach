@@ -99,6 +99,8 @@ export async function POST(request, { params }) {
       notes = '',
       instagram = '',
       linkedin = '',
+      facebook = '',
+      zillow = '',
       personalizationNote = '',
       customFields = []
     } = body;
@@ -106,6 +108,13 @@ export async function POST(request, { params }) {
     if (!firstName || !email) {
       return Response.json(
         { success: false, error: 'First name and email are required' },
+        { status: 400 }
+      );
+    }
+
+    if (!website && !linkedin && !instagram && !facebook && !zillow) {
+      return Response.json(
+        { success: false, error: 'At least one social/web link (Website, LinkedIn, Instagram, Facebook, or Zillow) is required' },
         { status: 400 }
       );
     }
@@ -127,6 +136,8 @@ export async function POST(request, { params }) {
         notes: notes.trim(),
         instagram: instagram.trim(),
         linkedin: linkedin.trim(),
+        facebook: facebook.trim(),
+        zillow: zillow.trim(),
         personalizationNote: personalizationNote.trim(),
         status: 'active',
         customFields: Array.isArray(customFields) ? customFields : [],
