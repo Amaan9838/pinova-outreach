@@ -48,8 +48,9 @@ export async function GET(req) {
       totalCampaigns,
       totalLeads,
       emailsSentToday,
-      repliesToday,
+      repliesTodayCP,
       totalEmailsSent,
+      repliesTodayMsg,
     ] = await Promise.all([
       Campaign.countDocuments({ status: 'active' }),
       Campaign.countDocuments(),
@@ -66,7 +67,14 @@ export async function GET(req) {
         status: { $in: ['sent', 'delivered', 'opened', 'replied'] },
         isTest: { $ne: true },
       }),
+      // Outbound messages that received replies today (repliedAt set by inbox-monitor)
+      Message.countDocuments({
+        repliedAt: { $gte: todayStart },
+        status: 'replied',
+        isTest: { $ne: true },
+      }),
     ]);
+    const repliesToday = Math.max(repliesTodayCP, repliesTodayMsg);
 
     // ── Campaigns table ─────────────────────────────────────
     const campaigns = await Campaign.find()
@@ -91,15 +99,39 @@ export async function GET(req) {
     ]);
     const campaignSentMap = Object.fromEntries(sentCounts.map(s => [s._id.toString(), s.count]));
 
-    // Get per-campaign reply counts — use BOTH CampaignProspect.repliedAt AND Message inbound replies
-    // CampaignProspect.status may not be 'replied' yet if v2 engine hasn't classified it
-    const replyMatchFilter = { campaign: { $in: campaignIds }, repliedAt: { $ne: null } };
-    if (hasDateFilter) replyMatchFilter.repliedAt = { ...replyMatchFilter.repliedAt, ...dateFilter };
-    const replyCounts = await CampaignProspect.aggregate([
-      { $match: replyMatchFilter },
+    // Get per-campaign reply counts — dual source for reliability
+    // Source 1: CampaignProspect.repliedAt (set by stopAllSchedulingForProspect)
+    const cpReplyFilter = { campaign: { $in: campaignIds }, repliedAt: { $ne: null } };
+    if (hasDateFilter) cpReplyFilter.repliedAt = { ...cpReplyFilter.repliedAt, ...dateFilter };
+    const cpReplyCounts = await CampaignProspect.aggregate([
+      { $match: cpReplyFilter },
       { $group: { _id: '$campaign', count: { $sum: 1 } } },
     ]);
-    const replyMap = Object.fromEntries(replyCounts.map(r => [r._id.toString(), r.count]));
+    const cpReplyMap = Object.fromEntries(cpReplyCounts.map(r => [r._id.toString(), r.count]));
+
+    // Source 2: Outbound Messages that received a reply (repliedAt set by inbox-monitor line 296)
+    // These are the original sent messages updated to status='replied' with repliedAt timestamp
+    const msgReplyFilter = {
+      campaignId: { $in: campaignIds },
+      status: 'replied',
+      repliedAt: { $ne: null },
+      isTest: { $ne: true },
+    };
+    if (hasDateFilter) msgReplyFilter.repliedAt = { ...msgReplyFilter.repliedAt, ...dateFilter };
+    const msgReplyCounts = await Message.aggregate([
+      { $match: msgReplyFilter },
+      // Group by prospect to avoid counting multiple messages from same prospect
+      { $group: { _id: { campaign: '$campaignId', prospect: '$prospectId' } } },
+      { $group: { _id: '$_id.campaign', count: { $sum: 1 } } },
+    ]);
+    const msgReplyMap = Object.fromEntries(msgReplyCounts.map(r => [r._id.toString(), r.count]));
+
+    // Merge: take max of both sources per campaign
+    const allCampaignIdStrs = [...new Set([...Object.keys(cpReplyMap), ...Object.keys(msgReplyMap)])];
+    const replyMap = {};
+    for (const id of allCampaignIdStrs) {
+      replyMap[id] = Math.max(cpReplyMap[id] || 0, msgReplyMap[id] || 0);
+    }
 
     // Get per-campaign max step count from emailSteps array
     const stepCounts = await CampaignProspect.aggregate([
@@ -171,7 +203,7 @@ export async function GET(req) {
       },
     ]);
 
-    const repliesByDay = await CampaignProspect.aggregate([
+    const repliesByDayCP = await CampaignProspect.aggregate([
       {
         $match: {
           repliedAt: { $gte: chartStart, $ne: null },
@@ -187,8 +219,34 @@ export async function GET(req) {
       },
     ]);
 
+    // Also count outbound messages that got replies, grouped by reply date
+    const repliesByDayMsg = await Message.aggregate([
+      {
+        $match: {
+          repliedAt: { $gte: chartStart, $ne: null },
+          status: 'replied',
+          isTest: { $ne: true },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m-%d', date: '$repliedAt' },
+          },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
     const sentMap = Object.fromEntries(sentByDay.map(s => [s._id, s.count]));
-    const replyDayMap = Object.fromEntries(repliesByDay.map(r => [r._id, r.count]));
+    const cpReplyDayMap = Object.fromEntries(repliesByDayCP.map(r => [r._id, r.count]));
+    const msgReplyDayMap = Object.fromEntries(repliesByDayMsg.map(r => [r._id, r.count]));
+    // Merge: take max per day
+    const allReplyDays = new Set([...Object.keys(cpReplyDayMap), ...Object.keys(msgReplyDayMap)]);
+    const replyDayMap = {};
+    for (const day of allReplyDays) {
+      replyDayMap[day] = Math.max(cpReplyDayMap[day] || 0, msgReplyDayMap[day] || 0);
+    }
 
     const emailsSent7d = dayStarts.map(d => {
       const key = d.toISOString().split('T')[0];
