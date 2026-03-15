@@ -50,6 +50,13 @@ export async function POST(request, { params }) {
         });
 
         if (!prospect) {
+          const sanitizeUrl = (url) => {
+            if (!url || typeof url !== 'string') return url;
+            url = url.trim();
+            if (url === '') return url;
+            return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+          };
+
           // Create new prospect
           prospect = new Prospect({
             email: prospectData.email.toLowerCase().trim(),
@@ -57,14 +64,14 @@ export async function POST(request, { params }) {
             lastName: prospectData.lastName?.trim() || '',
             company: prospectData.company?.trim() || '',
             phone: prospectData.phone?.trim() || '',
-            website: prospectData.website?.trim() || '',
+            website: sanitizeUrl(prospectData.website?.trim() || ''),
             industry: prospectData.industry?.trim() || '',
             position: prospectData.position?.trim() || '',
             notes: prospectData.notes?.trim() || '',
-            instagram: prospectData.instagram?.trim() || '',
-            linkedin: prospectData.linkedin?.trim() || '',
-            facebook: prospectData.facebook?.trim() || '',
-            zillow: prospectData.zillow?.trim() || '',
+            instagram: sanitizeUrl(prospectData.instagram?.trim() || ''),
+            linkedin: sanitizeUrl(prospectData.linkedin?.trim() || ''),
+            facebook: sanitizeUrl(prospectData.facebook?.trim() || ''),
+            zillow: sanitizeUrl(prospectData.zillow?.trim() || ''),
             personalizationNote: prospectData.personalizationNote?.trim() || '',
             customFields: prospectData.customFields || [],
             tags: prospectData.tags || [],

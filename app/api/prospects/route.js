@@ -74,6 +74,13 @@ export async function POST(request) {
       }
     }
 
+    const sanitizeUrl = (url) => {
+      if (!url || typeof url !== 'string') return url;
+      url = url.trim();
+      if (url === '') return url;
+      return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    };
+
     // Create prospect
     const prospect = new Prospect({
       email: data.email,
@@ -82,14 +89,14 @@ export async function POST(request) {
       lastName: data.lastName || '',
       company: data.company || '',
       phone: data.phone || '',
-      website: data.website || '',
+      website: sanitizeUrl(data.website || ''),
       industry: data.industry || '',
       position: data.position || '',
       notes: data.notes || '',
-      instagram: data.instagram || '',
-      linkedin: data.linkedin || '',
-      facebook: data.facebook || '',
-      zillow: data.zillow || '',
+      instagram: sanitizeUrl(data.instagram || ''),
+      linkedin: sanitizeUrl(data.linkedin || ''),
+      facebook: sanitizeUrl(data.facebook || ''),
+      zillow: sanitizeUrl(data.zillow || ''),
       personalizationNote: data.personalizationNote || '',
       customFields,
       tags,

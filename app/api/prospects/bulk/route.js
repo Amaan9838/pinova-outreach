@@ -27,6 +27,7 @@ export async function POST(request) {
           results.errors.push({
             email: prospectData.email || 'unknown',
             error: 'Email and first name are required'
+          });
           results.skipped++;
           continue;
         }
@@ -76,6 +77,13 @@ export async function POST(request) {
           }
         }
 
+        const sanitizeUrl = (url) => {
+          if (!url || typeof url !== 'string') return url;
+          url = url.trim();
+          if (url === '') return url;
+          return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+        };
+
         // Create prospect
         const prospect = new Prospect({
           email: prospectData.email,
@@ -84,14 +92,14 @@ export async function POST(request) {
           lastName: prospectData.lastName || '',
           company: prospectData.company || '',
           phone: prospectData.phone || '',
-          website: prospectData.website || '',
+          website: sanitizeUrl(prospectData.website || ''),
           industry: prospectData.industry || '',
           position: prospectData.position || '',
           notes: prospectData.notes || '',
-          instagram: prospectData.instagram || '',
-          linkedin: prospectData.linkedin || '',
-          facebook: prospectData.facebook || '',
-          zillow: prospectData.zillow || '',
+          instagram: sanitizeUrl(prospectData.instagram || ''),
+          linkedin: sanitizeUrl(prospectData.linkedin || ''),
+          facebook: sanitizeUrl(prospectData.facebook || ''),
+          zillow: sanitizeUrl(prospectData.zillow || ''),
           personalizationNote: prospectData.personalizationNote || '',
           customFields,
           tags,

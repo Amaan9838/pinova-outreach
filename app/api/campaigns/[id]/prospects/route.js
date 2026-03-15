@@ -123,6 +123,13 @@ export async function POST(request, { params }) {
     let prospect = await Prospect.findOne({ email: email.toLowerCase().trim() });
     
     if (!prospect) {
+      const sanitizeUrl = (url) => {
+        if (!url || typeof url !== 'string') return url;
+        url = url.trim();
+        if (url === '') return url;
+        return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+      };
+
       // Create new prospect with all fields including custom ones
       const prospectData = {
         email: email.toLowerCase().trim(),
@@ -130,14 +137,14 @@ export async function POST(request, { params }) {
         lastName: lastName.trim(),
         company: company.trim(),
         phone: phone.trim(),
-        website: website.trim(),
+        website: sanitizeUrl(website.trim()),
         industry: industry.trim(),
         position: position.trim(),
         notes: notes.trim(),
-        instagram: instagram.trim(),
-        linkedin: linkedin.trim(),
-        facebook: facebook.trim(),
-        zillow: zillow.trim(),
+        instagram: sanitizeUrl(instagram.trim()),
+        linkedin: sanitizeUrl(linkedin.trim()),
+        facebook: sanitizeUrl(facebook.trim()),
+        zillow: sanitizeUrl(zillow.trim()),
         personalizationNote: personalizationNote.trim(),
         status: 'active',
         customFields: Array.isArray(customFields) ? customFields : [],
