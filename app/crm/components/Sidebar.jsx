@@ -1,18 +1,24 @@
 'use client';
 
-export default function Sidebar({ activePage, onNav, campaignCount }) {
+const USER_COLORS = { Amaan: '#2563eb', Ayushman: '#7c3aed' };
+const USER_INITIALS = { Amaan: 'AM', Ayushman: 'AY' };
+
+export default function Sidebar({ activePage, onNav, campaignCount, currentUser, onSwitchUser }) {
   const links = [
     { section: 'Workspace' },
     { id: 'dashboard', icon: '⬡', label: 'Dashboard' },
     { section: 'Outreach' },
     { id: 'email', icon: '✉', label: 'Email Campaigns', badge: campaignCount, badgeCls: 'green' },
-    { id: 'linkedin', icon: '◈', label: 'LinkedIn Outreach', badge: 14 },
+    { id: 'linkedin', icon: '◈', label: 'LinkedIn Outreach' },
     { id: 'marketing', icon: '◎', label: 'Marketing' },
     { section: 'Productivity' },
     { id: 'tasks', icon: '◻', label: 'Tasks', badge: 6 },
     { section: 'Reports' },
     { id: 'activity', icon: '◑', label: 'Activity Log' },
   ];
+
+  const color = USER_COLORS[currentUser] || '#2563eb';
+  const initials = USER_INITIALS[currentUser] || '??';
 
   return (
     <aside className="sidebar" id="sidebar">
@@ -43,12 +49,13 @@ export default function Sidebar({ activePage, onNav, campaignCount }) {
       </nav>
 
       <div className="sb-footer">
-        <div className="sb-user">
-          <div className="sb-avatar">FO</div>
+        <div className="sb-user" onClick={onSwitchUser} style={{ cursor: 'pointer' }} title="Click to switch user">
+          <div className="sb-avatar" style={{ background: color }}>{initials}</div>
           <div>
-            <div className="sb-uname">Founder</div>
-            <div className="sb-urole">Admin</div>
+            <div className="sb-uname">{currentUser || 'Select User'}</div>
+            <div className="sb-urole">Team Member</div>
           </div>
+          <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-3)' }}>⇅</span>
         </div>
       </div>
     </aside>

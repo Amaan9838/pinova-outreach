@@ -3,17 +3,15 @@ import { LineChart } from './Charts';
 
 export default function DashboardPage({ data, onNav, onOpenModal }) {
   const m = data?.metrics || {};
-  const activity = data?.activity || [];
+  const activity = data?.userActivity || [];
   const campaigns = data?.campaigns || [];
   const chart = data?.chartData || {};
 
-  // Static tasks (placeholder until Task model exists)
-  const tasks = [
-    { id: 1, title: 'Review campaign performance', status: 'in_progress', priority: 'high' },
-    { id: 2, title: 'Follow up with latest replies', status: 'pending', priority: 'high' },
-    { id: 3, title: 'Import new leads batch', status: 'pending', priority: 'med' },
-  ];
-  const todayDone = tasks.filter(t => t.status === 'completed').length;
+  // Real tasks from API + follow-up tasks
+  const realTasks = data?.tasks || [];
+  const followUpTasks = data?.followUpTasks || [];
+  const allTasks = [...followUpTasks, ...realTasks].slice(0, 5);
+  const todayDone = allTasks.filter(t => t.status === 'done').length;
 
   const stCls = { active: 'b-run', running: 'b-run', paused: 'b-pau', completed: 'b-com', draft: 'b-pend' };
   const stLabel = { active: 'Running', running: 'Running', paused: 'Paused', completed: 'Done', draft: 'Draft' };
@@ -76,18 +74,17 @@ export default function DashboardPage({ data, onNav, onOpenModal }) {
           <div className="card-head">
             <div className="card-head-l">
               <span className="ch-title">Today&apos;s Tasks</span>
-              <span className="ch-count">{todayDone}/{tasks.length}</span>
+              <span className="ch-count">{todayDone}/{allTasks.length}</span>
             </div>
-            <button className="card-act" onClick={() => onOpenModal('todo')}>Open →</button>
+            <button className="card-act" onClick={() => onNav('tasks')}>Open →</button>
           </div>
           <div>
-            {tasks.slice(0, 5).map(t => (
-              <div key={t.id} className="qtask" onClick={() => onOpenModal('todo')}>
-                <div className={`qchk ${t.status === 'completed' ? 'done' : ''}`} />
-                <span className={`qt-text ${t.status === 'completed' ? 'done' : ''}`}>{t.title}</span>
-                <span className={`qt-badge ${t.status === 'in_progress' ? 'qb-a' : 'qb-p'}`}>
-                  {t.status === 'in_progress' ? 'Active' : '—'}
-                </span>
+            {allTasks.length === 0 && <div className="empty" style={{ padding: '20px 16px' }}>No tasks yet</div>}
+            {allTasks.map(t => (
+              <div key={t._id} className="qtask" onClick={() => onNav('tasks')}>
+                <div className={`qchk ${t.status === 'done' ? 'done' : ''}`} />
+                <span className={`qt-text ${t.status === 'done' ? 'done' : ''}`}>{t.title}</span>
+                {t.isFollowUp && <span className="qt-badge qb-a" style={{ fontSize: 9, padding: '1px 5px', background: 'rgba(99,102,241,0.12)', color: 'var(--purple)' }}>Follow-up</span>}
               </div>
             ))}
           </div>
@@ -107,7 +104,10 @@ export default function DashboardPage({ data, onNav, onOpenModal }) {
               <div key={i} className="feed-item" onClick={() => onOpenModal('activity')}>
                 <div className={`feed-dot fd-${a.type}`} />
                 <span className="feed-time">{a.time}</span>
-                <span className="feed-text">{a.text} <b>{a.bold}</b></span>
+                <span className="feed-text">
+                  <span style={{ fontWeight: 600, color: 'var(--blue)' }}>{a.user} </span>
+                  {a.action || a.text} <b>{a.target || a.bold}</b>
+                </span>
               </div>
             ))}
           </div>

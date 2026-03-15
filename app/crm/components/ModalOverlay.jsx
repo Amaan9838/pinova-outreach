@@ -1,19 +1,13 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-// Static tasks for modal — placeholder until Task model exists
-const INITIAL_TASKS = [
-  { id: 1, title: 'Review campaign performance', owner: 'Sam', status: 'in_progress', due_date: 'Mar 13', priority: 'high' },
-  { id: 2, title: 'Send 25 LinkedIn messages', owner: 'Alex', status: 'completed', due_date: 'Mar 13', priority: 'med' },
-  { id: 3, title: 'Follow up with yesterday replies', owner: 'Maria', status: 'pending', due_date: 'Mar 13', priority: 'high' },
-  { id: 4, title: 'Import 50 new leads', owner: 'Jordan', status: 'pending', due_date: 'Mar 13', priority: 'med' },
-  { id: 5, title: 'Build LinkedIn Lead List', owner: 'Alex', status: 'in_progress', due_date: 'Mar 14', priority: 'high' },
-];
-
-export default function ModalOverlay({ modalType, onClose, activity }) {
-  const [tasks, setTasks] = useState(INITIAL_TASKS);
-  const [tabIdx, setTabIdx] = useState(0);
+export default function ModalOverlay({ modalType, onClose, activity, currentUser }) {
+  const [tasks, setTasks] = useState([]);
+  const [userActivities, setUserActivities] = useState([]);
+  const [activityTab, setActivityTab] = useState('user');
   const [newTask, setNewTask] = useState('');
+  const [loadingTasks, setLoadingTasks] = useState(false);
+  const [loadingActivity, setLoadingActivity] = useState(false);
 
   useEffect(() => {
     const onKey = e => { if (e.key === 'Escape') onClose(); };
@@ -21,32 +15,68 @@ export default function ModalOverlay({ modalType, onClose, activity }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
 
+  // Fetch tasks when todo modal opens
+  const fetchTasks = useCallback(async () => {
+    setLoadingTasks(true);
+    try {
+      const res = await fetch('/api/crm/tasks');
+      const json = await res.json();
+      if (json.success) setTasks(json.tasks || []);
+    } catch (err) { console.error(err); }
+    finally { setLoadingTasks(false); }
+  }, []);
+
+  // Fetch user activities when activity modal opens
+  const fetchUserActivities = useCallback(async () => {
+    setLoadingActivity(true);
+    try {
+      const res = await fetch('/api/crm/activity');
+      const json = await res.json();
+      if (json.success) setUserActivities(json.activities || []);
+    } catch (err) { console.error(err); }
+    finally { setLoadingActivity(false); }
+  }, []);
+
+  useEffect(() => {
+    if (modalType === 'todo') fetchTasks();
+    if (modalType === 'activity') fetchUserActivities();
+  }, [modalType, fetchTasks, fetchUserActivities]);
+
   if (!modalType) return null;
 
-  const toggleTodo = (id) => {
-    setTasks(prev => prev.map(t =>
-      t.id === id ? { ...t, status: t.status === 'completed' ? 'pending' : 'completed' } : t
-    ));
+  const toggleTodo = async (id, currentStatus) => {
+    const newStatus = currentStatus === 'done' ? 'pending' : 'done';
+    try {
+      await fetch(`/api/crm/tasks/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-crm-user': currentUser || 'Unknown' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      fetchTasks();
+    } catch (err) { console.error(err); }
   };
 
-  const addTask = () => {
+  const addTask = async () => {
     if (!newTask.trim()) return;
-    setTasks(prev => [{ id: Date.now(), title: newTask.trim(), owner: 'Me', status: 'pending', due_date: 'Today', priority: 'med' }, ...prev]);
-    setNewTask('');
+    try {
+      await fetch('/api/crm/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-crm-user': currentUser || 'Unknown' },
+        body: JSON.stringify({ title: newTask.trim() }),
+      });
+      setNewTask('');
+      fetchTasks();
+    } catch (err) { console.error(err); }
   };
 
-  const tabs = ['All', 'Pending', 'In Progress', 'Done'];
-  const tabFilters = [null, 'pending', 'in_progress', 'completed'];
-  const filteredTasks = tabFilters[tabIdx] ? tasks.filter(t => t.status === tabFilters[tabIdx]) : tasks;
-  const done = tasks.filter(t => t.status === 'completed').length;
+  const done = tasks.filter(t => t.status === 'done').length;
   const total = tasks.length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   const circ = 2 * Math.PI * 14;
   const off = circ - (pct / 100) * circ;
-  const pc = { high: 'tp-h', med: 'tp-m', low: 'tp-l' };
-  const pl = { high: 'High', med: 'Med', low: 'Low' };
 
-  const dotCls = { c: 'fd-c', l: 'fd-l', k: 'fd-k', t: 'fd-t' };
+  const dotCls = { c: 'fd-c', l: 'fd-l', k: 'fd-k', t: 'fd-t', s: 'fd-t' };
+  const systemActivity = activity || [];
 
   return (
     <div className={`m-overlay ${modalType ? 'open' : ''}`} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -62,19 +92,18 @@ export default function ModalOverlay({ modalType, onClose, activity }) {
               <div className="m-sub">
                 {modalType === 'todo'
                   ? `${total - done} remaining · ${done} done`
-                  : 'Live engine actions'}
+                  : 'User & system activity'}
               </div>
             </div>
           </div>
           <button className="m-close" onClick={onClose}>✕</button>
         </div>
 
-        {/* Tabs (todo only) */}
-        {modalType === 'todo' && (
+        {/* Activity tabs */}
+        {modalType === 'activity' && (
           <div className="m-tabs">
-            {tabs.map((t, i) => (
-              <button key={t} className={`m-tab ${tabIdx === i ? 'active' : ''}`} onClick={() => setTabIdx(i)}>{t}</button>
-            ))}
+            <button className={`m-tab ${activityTab === 'user' ? 'active' : ''}`} onClick={() => setActivityTab('user')}>👤 User</button>
+            <button className={`m-tab ${activityTab === 'system' ? 'active' : ''}`} onClick={() => setActivityTab('system')}>⚡ System</button>
           </div>
         )}
 
@@ -82,7 +111,7 @@ export default function ModalOverlay({ modalType, onClose, activity }) {
         <div className="m-body">
           {modalType === 'todo' && (
             <>
-              {/* Progress bar */}
+              {/* Progress */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--s2)' }}>
                 <svg className="pring" viewBox="0 0 32 32">
                   <circle className="pr-bg" cx="16" cy="16" r="14" />
@@ -96,16 +125,16 @@ export default function ModalOverlay({ modalType, onClose, activity }) {
               </div>
 
               {/* Task list */}
-              {filteredTasks.length === 0 && <div className="empty">No tasks in this category</div>}
-              {filteredTasks.map(t => (
-                <div key={t.id} className="todo-item">
-                  <div className={`todo-chk ${t.status === 'completed' ? 'checked' : ''}`} onClick={() => toggleTodo(t.id)} />
+              {loadingTasks && <div className="empty">Loading tasks…</div>}
+              {!loadingTasks && tasks.length === 0 && <div className="empty">No tasks yet — add one below</div>}
+              {tasks.map(t => (
+                <div key={t._id} className="todo-item">
+                  <div className={`todo-chk ${t.status === 'done' ? 'checked' : ''}`} onClick={() => toggleTodo(t._id, t.status)} />
                   <div className="todo-body">
-                    <div className={`todo-t ${t.status === 'completed' ? 'done' : ''}`}>{t.title}</div>
+                    <div className={`todo-t ${t.status === 'done' ? 'done' : ''}`}>{t.title}</div>
                     <div className="todo-meta">
                       <span className="todo-owner">{t.owner}</span>
-                      <span className="todo-due">Due {t.due_date}</span>
-                      <span className={`todo-prio ${pc[t.priority]}`}>{pl[t.priority]}</span>
+                      {t.dueDate && <span className="todo-due">Due {new Date(t.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
                     </div>
                   </div>
                 </div>
@@ -115,14 +144,34 @@ export default function ModalOverlay({ modalType, onClose, activity }) {
 
           {modalType === 'activity' && (
             <div>
-              {(!activity || activity.length === 0) && <div className="empty">No activity logged yet</div>}
-              {(activity || []).map((a, i) => (
-                <div key={i} className="feed-item" style={{ padding: '10px 16px' }}>
-                  <div className={`feed-dot ${dotCls[a.type] || 'fd-t'}`} />
-                  <span className="feed-time">{a.time}</span>
-                  <span className="feed-text">{a.text} <b>{a.bold}</b></span>
-                </div>
-              ))}
+              {activityTab === 'user' && (
+                loadingActivity
+                  ? <div className="empty">Loading…</div>
+                  : userActivities.length === 0
+                    ? <div className="empty">No user activity yet</div>
+                    : userActivities.map((a, i) => (
+                      <div key={a._id || i} className="feed-item" style={{ padding: '10px 16px' }}>
+                        <div className={`feed-dot ${dotCls[a.type] || 'fd-t'}`} />
+                        <span className="feed-time">{a.time}</span>
+                        <span style={{ fontSize: 10, color: 'var(--text-4)', marginRight: 6, fontFamily: 'var(--mono)' }}>{a.date}</span>
+                        <span className="feed-text">
+                          <span style={{ fontWeight: 600, color: 'var(--blue)' }}>{a.user} </span>
+                          {a.action} <b>{a.target}</b>
+                        </span>
+                      </div>
+                    ))
+              )}
+              {activityTab === 'system' && (
+                systemActivity.length === 0
+                  ? <div className="empty">No system activity logged yet</div>
+                  : systemActivity.map((a, i) => (
+                    <div key={i} className="feed-item" style={{ padding: '10px 16px' }}>
+                      <div className={`feed-dot ${dotCls[a.type] || 'fd-t'}`} />
+                      <span className="feed-time">{a.time}</span>
+                      <span className="feed-text">{a.text} <b>{a.bold}</b></span>
+                    </div>
+                  ))
+              )}
             </div>
           )}
         </div>

@@ -3,6 +3,9 @@ import Campaign from '@/models/Campaign';
 import CampaignProspect from '@/models/CampaignProspect';
 import Message from '@/models/Message';
 import EngineLog from '@/models/EngineLog';
+import Task from '@/models/Task';
+import CrmActivity from '@/models/CrmActivity';
+import LinkedInLead from '@/models/LinkedInLead';
 import '@/models/Prospect';
 
 export const dynamic = 'force-dynamic';
@@ -196,6 +199,41 @@ export async function GET() {
       };
     });
 
+    // ── Tasks (for dashboard widget) ────────────────────────
+    const tasks = await Task.find().sort({ createdAt: -1 }).limit(50).lean();
+
+    // ── LinkedIn follow-ups due today (auto tasks) ──────────
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    const followUps = await LinkedInLead.find({
+      nextFollowUp: { $lte: endOfToday, $ne: null },
+    }).select('firstName lastName owner nextFollowUp status').lean();
+
+    const followUpTasks = followUps.map(f => ({
+      _id: `fu_${f._id}`,
+      title: `Follow up with ${f.firstName || ''} ${f.lastName || ''}`.trim(),
+      owner: f.owner || 'Unknown',
+      status: 'pending',
+      dueDate: f.nextFollowUp,
+      isFollowUp: true,
+      leadId: f._id,
+    }));
+
+    // ── CRM User Activities ─────────────────────────────────
+    const crmActivities = await CrmActivity.find()
+      .sort({ timestamp: -1 })
+      .limit(30)
+      .lean();
+
+    const userActivity = crmActivities.map(a => ({
+      time: new Date(a.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+      date: new Date(a.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      user: a.user,
+      text: `${a.user} ${a.action}`,
+      bold: a.target,
+      type: a.type,
+    }));
+
     return Response.json({
       success: true,
       metrics: {
@@ -214,6 +252,16 @@ export async function GET() {
         replies7d,
       },
       activity,
+      userActivity,
+      tasks: tasks.map(t => ({
+        _id: t._id.toString(),
+        title: t.title,
+        owner: t.owner,
+        status: t.status,
+        dueDate: t.dueDate,
+        createdAt: t.createdAt,
+      })),
+      followUpTasks,
     }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
     console.error('CRM Dashboard API error:', error);

@@ -125,7 +125,7 @@ input,select,textarea{font-family:inherit}
 .sb-urole{font-size:11px;color:var(--text-3)}
 
 /* ─── MAIN CONTENT ─────────────────────────────────────────────── */
-.main-wrap{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);min-height:calc(100vh - var(--topbar-h))}
+.main-wrap{min-height:calc(100vh - var(--topbar-h))}
 .page-content{display:none;padding:28px 26px;max-width:1260px}
 .page-content.active{display:block;animation:fadeUp .2s ease both}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
@@ -151,7 +151,7 @@ input,select,textarea{font-family:inherit}
 .mc-label{font-size:11.5px;color:var(--text-3);margin-top:4px;font-weight:400}
 
 /* ─── CARD ─────────────────────────────────────────────────── */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;padding:0}
 .card-head{padding:14px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
 .card-head-l{display:flex;align-items:center;gap:8px}
 .ch-title{font-size:13px;font-weight:600;color:var(--text-1)}
@@ -221,6 +221,35 @@ th.sorted .sort-ic{opacity:1}
 .b-foll{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
 .b-book{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
 .b-clos{background:var(--s2);color:var(--text-3);border:1px solid var(--border)}
+
+/* LinkedIn Lead statuses */
+.b-new{background:var(--s2);color:var(--text-3);border:1px solid var(--border)}
+.b-msg{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.b-conv{background:#ecfdf5;color:#0891b2;border:1px solid #a5f3fc}
+.b-int{background:#ecfdf5;color:#059669;border:1px solid #6ee7b7}
+.b-demo{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.b-won{background:#dcfce7;color:#16a34a;border:1px solid #86efac}
+.b-lost{background:var(--s2);color:var(--text-3);border:1px solid var(--border)}
+.b-noint{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+
+/* Inline status select (looks like a badge) */
+.badge-select{
+  font-size:10.5px;font-weight:500;padding:2px 20px 2px 8px;border-radius:99px;
+  appearance:none;outline:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg width='8' height='5' viewBox='0 0 8 5' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L4 4L7 1' stroke='%23a0a09b' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 6px center;
+  transition:all var(--transition);
+}
+.badge-select.b-new{background-color:var(--s2);color:var(--text-3);border:1px solid var(--border)}
+.badge-select.b-msg{background-color:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.badge-select.b-repl{background-color:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.badge-select.b-conv{background-color:#ecfdf5;color:#0891b2;border:1px solid #a5f3fc}
+.badge-select.b-int{background-color:#ecfdf5;color:#059669;border:1px solid #6ee7b7}
+.badge-select.b-demo{background-color:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.badge-select.b-won{background-color:#dcfce7;color:#16a34a;border:1px solid #86efac}
+.badge-select.b-lost{background-color:var(--s2);color:var(--text-3);border:1px solid var(--border)}
+.badge-select.b-noint{background-color:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.badge-select:hover{opacity:.85}
 
 /* ─── PROGRESS BAR ─────────────────────────────────────────────── */
 .pbar-wrap{display:flex;align-items:center;gap:8px}
