@@ -113,7 +113,15 @@ export async function POST(request) {
 
     // Bulk import: array of leads
     if (Array.isArray(body.leads)) {
-      const docs = body.leads.map(l => ({
+      // Find existing URLs to skip duplicates
+      const sanitizedUrls = body.leads.map(l => sanitizeUrl(l.linkedInUrl)).filter(Boolean);
+      const existingLeads = await LinkedInLead.find({ linkedInUrl: { $in: sanitizedUrls } }).select('linkedInUrl');
+      const existingUrls = new Set(existingLeads.map(l => l.linkedInUrl));
+
+      const newDocs = body.leads.filter(l => {
+        const url = sanitizeUrl(l.linkedInUrl);
+        return !url || !existingUrls.has(url);
+      }).map(l => ({
         firstName: l.firstName || '',
         lastName: l.lastName || '',
         city: l.city || '',
@@ -122,25 +130,46 @@ export async function POST(request) {
         owner: l.owner || user,
         createdBy: user,
       }));
-      const result = await LinkedInLead.insertMany(docs);
 
-      // Log activity for bulk upload
-      await CrmActivity.create({
-        user,
-        action: `uploaded ${result.length} LinkedIn leads`,
-        target: '',
-        type: 'l',
-      });
+      if (newDocs.length === 0 && body.leads.length > 0) {
+        return Response.json({ success: false, error: 'All provided leads are already in the system.' }, { status: 400 });
+      }
 
-      return Response.json({ success: true, count: result.length });
+      if (newDocs.length > 0) {
+        const result = await LinkedInLead.insertMany(newDocs);
+
+        // Log activity for bulk upload
+        await CrmActivity.create({
+          user,
+          action: `uploaded ${result.length} LinkedIn leads`,
+          target: '',
+          type: 'l',
+        });
+
+        return Response.json({ success: true, count: result.length, skipped: body.leads.length - result.length });
+      } else {
+        return Response.json({ success: true, count: 0, skipped: 0 });
+      }
     }
 
     // Single lead
+    const linkedInUrl = sanitizeUrl(body.linkedInUrl) || '';
+    
+    if (linkedInUrl) {
+      const existing = await LinkedInLead.findOne({ linkedInUrl });
+      if (existing) {
+        return Response.json({ 
+          success: false, 
+          error: `This lead is already present in the system, owned by ${existing.owner || 'Unknown'}.` 
+        }, { status: 400 });
+      }
+    }
+
     const lead = await LinkedInLead.create({
       firstName: body.firstName,
       lastName: body.lastName || '',
       city: body.city || '',
-      linkedInUrl: sanitizeUrl(body.linkedInUrl) || '',
+      linkedInUrl: linkedInUrl,
       status: body.status || 'new',
       owner: body.owner || user,
       nextFollowUp: body.nextFollowUp || null,

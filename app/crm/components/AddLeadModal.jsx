@@ -18,12 +18,14 @@ export default function AddLeadModal({ onClose, currentUser, onSaved }) {
     firstName: '', lastName: '', city: '', linkedInUrl: '', owner: currentUser, status: 'new', nextFollowUp: '',
   });
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
 
   const handleSave = async () => {
     if (!form.firstName.trim()) return;
     setSaving(true);
+    setError('');
     try {
       const res = await fetch('/api/crm/linkedin', {
         method: 'POST',
@@ -31,9 +33,14 @@ export default function AddLeadModal({ onClose, currentUser, onSaved }) {
         body: JSON.stringify({ ...form, nextFollowUp: form.nextFollowUp || null }),
       });
       const json = await res.json();
-      if (json.success) onSaved();
+      if (json.success) {
+        onSaved();
+      } else {
+        setError(json.error || 'Failed to add lead');
+      }
     } catch (err) {
       console.error('Add lead error:', err);
+      setError(err.message || 'An error occurred');
     }
     setSaving(false);
   };
@@ -55,6 +62,7 @@ export default function AddLeadModal({ onClose, currentUser, onSaved }) {
           <button className="m-close" onClick={onClose}>✕</button>
         </div>
         <div className="m-body" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {error && <div style={{ color: '#dc2626', fontSize: 12, padding: '6px 10px', background: '#fef2f2', borderRadius: 6, marginBottom: 4 }}>{error}</div>}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div><label style={labelStyle}>First Name *</label><input style={fieldStyle} value={form.firstName} onChange={e => set('firstName', e.target.value)} placeholder="John" /></div>
             <div><label style={labelStyle}>Last Name</label><input style={fieldStyle} value={form.lastName} onChange={e => set('lastName', e.target.value)} placeholder="Smith" /></div>
