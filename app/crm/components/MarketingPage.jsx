@@ -1,122 +1,250 @@
 'use client';
-import { useState, useMemo } from 'react';
-import { DoughnutChart, BarChart, LineChart } from './Charts';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import MarketingDetailPanel from './MarketingDetailPanel';
+import NewCampaignModal from './NewCampaignModal';
 
-const MKT_DATA = [
-  { id: 1, name: 'Q1 Lead Gen Push', channel: 'Email', impressions: 12400, clicks: 820, conversions: 64, spend: 1200, status: 'active' },
-  { id: 2, name: 'Solo Agent Blitz', channel: 'LinkedIn', impressions: 8200, clicks: 612, conversions: 38, spend: 900, status: 'active' },
-  { id: 3, name: 'Google Search Brokers', channel: 'Paid', impressions: 31000, clicks: 1240, conversions: 92, spend: 2800, status: 'active' },
-  { id: 4, name: 'Instagram Brand Awareness', channel: 'Social', impressions: 54000, clicks: 1800, conversions: 28, spend: 1100, status: 'paused' },
-  { id: 5, name: 'SEO Content Cluster', channel: 'SEO', impressions: 18000, clicks: 2100, conversions: 140, spend: 400, status: 'active' },
-  { id: 6, name: 'Retargeting Campaign', channel: 'Paid', impressions: 9800, clicks: 720, conversions: 55, spend: 650, status: 'active' },
-  { id: 7, name: 'Newsletter Growth', channel: 'Email', impressions: 6200, clicks: 480, conversions: 30, spend: 200, status: 'ended' },
-  { id: 8, name: 'LinkedIn Thought Leadership', channel: 'LinkedIn', impressions: 14000, clicks: 980, conversions: 45, spend: 1400, status: 'active' },
-];
+const CH_CLS = { LinkedIn: 'ch-li', Website: 'ch-web', Facebook: 'ch-fb', Instagram: 'ch-ig' };
+const ST_CLS = { active: 'b-run', scheduled: 'b-prog', completed: 'b-com', paused: 'b-pau' };
+const ST_LBL = { active: 'Active', scheduled: 'Scheduled', completed: 'Completed', paused: 'Paused' };
 
-export default function MarketingPage() {
+export default function MarketingPage({ currentUser }) {
+  const [campaigns, setCampaigns] = useState([]);
+  const [metrics, setMetrics] = useState({ activeCampaigns: 0, postsScheduled: 0, postsPublished: 0, totalEngagement: 0 });
+  const [owners, setOwners] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [search, setSearch] = useState('');
-  const [channelFilter, setChannelFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [channelFilter, setChannelFilter] = useState('');
+  const [ownerFilter, setOwnerFilter] = useState('');
 
-  const filtered = useMemo(() => {
-    return MKT_DATA.filter(r =>
-      (!search || r.name.toLowerCase().includes(search.toLowerCase())) &&
-      (!channelFilter || r.channel === channelFilter) &&
-      (!statusFilter || r.status === statusFilter)
+  const [sortKey, setSortKey] = useState('');
+  const [sortDir, setSortDir] = useState(1);
+
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [showNewModal, setShowNewModal] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      if (statusFilter) params.set('status', statusFilter);
+      if (channelFilter) params.set('channel', channelFilter);
+      if (ownerFilter) params.set('owner', ownerFilter);
+
+      const res = await fetch(`/api/crm/marketing?${params.toString()}`);
+      const json = await res.json();
+      if (json.success) {
+        setCampaigns(json.campaigns);
+        setMetrics(json.metrics);
+        setOwners(json.owners || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch marketing data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [search, statusFilter, channelFilter, ownerFilter]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const sorted = useMemo(() => {
+    if (!sortKey) return campaigns;
+    return [...campaigns].sort((a, b) => {
+      let av = a[sortKey], bv = b[sortKey];
+      if (typeof av === 'string') { av = av.toLowerCase(); bv = bv.toLowerCase(); }
+      return (av > bv ? 1 : av < bv ? -1 : 0) * sortDir;
+    });
+  }, [campaigns, sortKey, sortDir]);
+
+  const maxEng = Math.max(...sorted.map(c => c.engagement || 0), 1);
+
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortDir(d => -d);
+    } else {
+      setSortKey(key);
+      setSortDir(1);
+    }
+  };
+
+  const sortIcon = (key) => {
+    if (sortKey !== key) return '↕';
+    return sortDir === 1 ? '↑' : '↓';
+  };
+
+  const handleCampaignCreated = () => {
+    setShowNewModal(false);
+    fetchData();
+  };
+
+  const handleDetailClose = () => {
+    setSelectedCampaign(null);
+    fetchData(); // refresh after any changes
+  };
+
+  if (loading) {
+    return (
+      <div className="page-content active" id="page-marketing">
+        <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Loading marketing campaigns...</div>
+      </div>
     );
-  }, [search, channelFilter, statusFilter]);
-
-  const stCls = { active: 'b-run', paused: 'b-pau', ended: 'b-com' };
-  const stLabel = { active: 'Active', paused: 'Paused', ended: 'Ended' };
+  }
 
   return (
     <div className="page-content active" id="page-marketing">
+      {/* Header */}
       <div className="ph">
-        <div className="ph-left"><h1>Marketing Campaigns</h1><p>Performance, reach and conversion across all channels.</p></div>
+        <div className="ph-left">
+          <h1>Marketing Campaigns</h1>
+          <p>Track and monitor campaigns across website, LinkedIn, Facebook, and Instagram.</p>
+        </div>
+        <div className="ph-right" style={{ display: 'flex', gap: 8 }}>
+          <button className="btn btn-primary" onClick={() => setShowNewModal(true)}>+ New Campaign</button>
+        </div>
       </div>
 
+      {/* Metrics */}
       <div className="metrics">
-        <div className="mc"><div className="mc-top"><div className="mc-icon ic-b">👁</div><span className="mc-trend tr-up">+18%</span></div><div className="mc-num">24.4k</div><div className="mc-label">Visitors This Week</div></div>
-        <div className="mc"><div className="mc-top"><div className="mc-icon ic-g">🎯</div><span className="mc-trend tr-up">+5%</span></div><div className="mc-num">7.6%</div><div className="mc-label">Conversion Rate</div></div>
-        <div className="mc"><div className="mc-top"><div className="mc-icon ic-a">💰</div><span className="mc-trend tr-up">↓$4</span></div><div className="mc-num">$38</div><div className="mc-label">Cost per Acquisition</div></div>
-        <div className="mc"><div className="mc-top"><div className="mc-icon ic-p">📣</div><span className="mc-trend tr-up">+2</span></div><div className="mc-num">6</div><div className="mc-label">Active Channels</div></div>
+        <div className="mc">
+          <div className="mc-top"><div className="mc-icon ic-g">◎</div></div>
+          <div className="mc-num">{metrics.activeCampaigns}</div>
+          <div className="mc-label">Active Campaigns</div>
+        </div>
+        <div className="mc">
+          <div className="mc-top"><div className="mc-icon ic-b">⏱</div></div>
+          <div className="mc-num">{metrics.postsScheduled}</div>
+          <div className="mc-label">Posts Scheduled</div>
+        </div>
+        <div className="mc">
+          <div className="mc-top"><div className="mc-icon ic-a">✓</div></div>
+          <div className="mc-num">{metrics.postsPublished}</div>
+          <div className="mc-label">Posts Published</div>
+        </div>
+        <div className="mc">
+          <div className="mc-top"><div className="mc-icon ic-p">◈</div></div>
+          <div className="mc-num">{metrics.totalEngagement.toLocaleString()}</div>
+          <div className="mc-label">Total Engagement</div>
+        </div>
       </div>
 
-      <div className="grid-2 mb-14">
-        <div className="card">
-          <div className="card-head"><div className="card-head-l"><span className="ch-title">Traffic Sources</span></div></div>
-          <div className="chart-pad"><div className="chart-wrap" style={{ height: 180 }}>
-            <DoughnutChart id="c-mkt-src" labels={['Organic','Paid','Direct','Social','Referral']} data={[38,26,18,12,6]} colors={['#2563eb','#c9820a','#9b9b96','#7c3aed','#2a9d5c']} />
-          </div></div>
-        </div>
-        <div className="card">
-          <div className="card-head"><div className="card-head-l"><span className="ch-title">Conversions by Channel</span></div></div>
-          <div className="chart-pad"><div className="chart-wrap" style={{ height: 180 }}>
-            <BarChart id="c-mkt-conv" labels={['Email','LinkedIn','Paid','SEO','Social']} data={[64,83,147,140,28]} colors={['#2563eb','#7c3aed','#c9820a','#2a9d5c','#c0392b']} />
-          </div></div>
-        </div>
-      </div>
-
-      <div className="card mb-14">
+      {/* Campaigns Table */}
+      <div className="card">
         <div className="card-head">
-          <div className="card-head-l"><span className="ch-title">Campaign Performance</span><span className="ch-count">8</span></div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input className="f-input" style={{ minWidth: 130 }} type="text" placeholder="Search…" value={search} onChange={e => setSearch(e.target.value)} />
-            <select className="f-select" value={channelFilter} onChange={e => setChannelFilter(e.target.value)}>
-              <option value="">All channels</option>
-              <option value="Email">Email</option><option value="LinkedIn">LinkedIn</option>
-              <option value="Paid">Paid</option><option value="SEO">SEO</option><option value="Social">Social</option>
-            </select>
+          <div className="card-head-l">
+            <span className="ch-title">All Campaigns</span>
+            <span className="ch-count">{sorted.length}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <input className="f-input" style={{ minWidth: 150 }} type="text" placeholder="Search campaigns…"
+              value={search} onChange={e => setSearch(e.target.value)} />
             <select className="f-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
               <option value="">All statuses</option>
-              <option value="active">Active</option><option value="paused">Paused</option><option value="ended">Ended</option>
+              <option value="active">Active</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="paused">Paused</option>
+              <option value="completed">Completed</option>
+            </select>
+            <select className="f-select" value={channelFilter} onChange={e => setChannelFilter(e.target.value)}>
+              <option value="">All channels</option>
+              <option value="LinkedIn">LinkedIn</option>
+              <option value="Website">Website</option>
+              <option value="Facebook">Facebook</option>
+              <option value="Instagram">Instagram</option>
+            </select>
+            <select className="f-select" value={ownerFilter} onChange={e => setOwnerFilter(e.target.value)}>
+              <option value="">All owners</option>
+              {owners.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
           </div>
         </div>
+
         <div className="tbl-wrap">
-          <table><thead><tr>
-            <th>Campaign<span className="sort-ic">↕</span></th><th>Channel</th>
-            <th>Impressions<span className="sort-ic">↕</span></th><th>Clicks<span className="sort-ic">↕</span></th>
-            <th>CTR</th><th>Conversions<span className="sort-ic">↕</span></th>
-            <th>Spend<span className="sort-ic">↕</span></th><th>CAC</th><th>Status</th>
-          </tr></thead>
-          <tbody>
-            {filtered.length === 0 && <tr><td colSpan={9} className="empty">No campaigns found</td></tr>}
-            {filtered.map(r => {
-              const ctr = (r.clicks / r.impressions * 100).toFixed(1);
-              const cac = r.conversions > 0 ? '$' + (r.spend / r.conversions).toFixed(0) : '—';
-              return (
-                <tr key={r.id}>
-                  <td><b>{r.name}</b></td>
-                  <td><span style={{ fontSize: 11, fontWeight: 500, padding: '2px 7px', borderRadius: 4, background: 'var(--s2)', color: 'var(--text-2)' }}>{r.channel}</span></td>
-                  <td style={{ fontFamily: 'var(--mono)' }}>{r.impressions.toLocaleString()}</td>
-                  <td style={{ fontFamily: 'var(--mono)' }}>{r.clicks.toLocaleString()}</td>
-                  <td style={{ fontFamily: 'var(--mono)' }}>{ctr}%</td>
-                  <td style={{ fontFamily: 'var(--mono)' }}>{r.conversions}</td>
-                  <td style={{ fontFamily: 'var(--mono)' }}>${r.spend.toLocaleString()}</td>
-                  <td style={{ fontFamily: 'var(--mono)' }}>{cac}</td>
-                  <td><span className={`badge ${stCls[r.status]}`}>{stLabel[r.status]}</span></td>
-                </tr>
-              );
-            })}
-          </tbody></table>
+          <table>
+            <thead>
+              <tr>
+                <th onClick={() => handleSort('name')} style={{ cursor: 'pointer' }}>
+                  Campaign name <span className="sort-ic">{sortIcon('name')}</span>
+                </th>
+                <th>Channels</th>
+                <th onClick={() => handleSort('posts')} style={{ cursor: 'pointer' }}>
+                  Posts <span className="sort-ic">{sortIcon('posts')}</span>
+                </th>
+                <th onClick={() => handleSort('owner')} style={{ cursor: 'pointer' }}>
+                  Owner <span className="sort-ic">{sortIcon('owner')}</span>
+                </th>
+                <th>Status</th>
+                <th onClick={() => handleSort('startDate')} style={{ cursor: 'pointer' }}>
+                  Start <span className="sort-ic">{sortIcon('startDate')}</span>
+                </th>
+                <th onClick={() => handleSort('endDate')} style={{ cursor: 'pointer' }}>
+                  End <span className="sort-ic">{sortIcon('endDate')}</span>
+                </th>
+                <th onClick={() => handleSort('engagement')} style={{ cursor: 'pointer' }}>
+                  Engagement <span className="sort-ic">{sortIcon('engagement')}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.length === 0 && (
+                <tr><td colSpan={8} className="empty">No campaigns found</td></tr>
+              )}
+              {sorted.map(c => {
+                const pct = Math.round((c.engagement || 0) / maxEng * 100);
+                const fmtDate = (d) => {
+                  if (!d) return '—';
+                  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                };
+                return (
+                  <tr key={c._id} onClick={() => setSelectedCampaign(c._id)} style={{ cursor: 'pointer' }}>
+                    <td><b>{c.name}</b></td>
+                    <td>
+                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                        {(c.channels || []).map(ch => (
+                          <span key={ch} className={`ch-badge-sm ${CH_CLS[ch] || ''}`}>{ch}</span>
+                        ))}
+                      </div>
+                    </td>
+                    <td style={{ fontFamily: 'var(--mono)', fontSize: '12.5px' }}>{c.posts || 0}</td>
+                    <td>{c.owner}</td>
+                    <td><span className={`badge ${ST_CLS[c.status] || 'b-com'}`}>{ST_LBL[c.status] || c.status}</span></td>
+                    <td style={{ fontSize: 12, color: 'var(--text-3)', fontFamily: 'var(--mono)' }}>{fmtDate(c.startDate)}</td>
+                    <td style={{ fontSize: 12, color: 'var(--text-3)', fontFamily: 'var(--mono)' }}>{fmtDate(c.endDate)}</td>
+                    <td>
+                      {c.engagement > 0 ? (
+                        <div className="pbar">
+                          <div className="pbar-track"><div className="pbar-fill" style={{ width: `${pct}%` }} /></div>
+                          <span className="pbar-pct">{c.engagement.toLocaleString()}</span>
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: 12, color: 'var(--text-4)' }}>—</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <div className="grid-2">
-        <div className="card">
-          <div className="card-head"><div className="card-head-l"><span className="ch-title">Weekly Visitors</span></div></div>
-          <div className="chart-pad"><div className="chart-wrap">
-            <LineChart id="c-mkt-visitors" labels={['Mon','Tue','Wed','Thu','Fri','Sat','Sun']} data={[18400,21200,19800,22400,24100,20800,24381]} color="#2a9d5c" />
-          </div></div>
-        </div>
-        <div className="card">
-          <div className="card-head"><div className="card-head-l"><span className="ch-title">CPA Trend</span></div></div>
-          <div className="chart-pad"><div className="chart-wrap">
-            <LineChart id="c-mkt-cpa" labels={['Mon','Tue','Wed','Thu','Fri','Sat','Sun']} data={[52,48,45,44,41,39,38]} color="#c9820a" />
-          </div></div>
-        </div>
-      </div>
+      {/* Detail Panel */}
+      {selectedCampaign && (
+        <MarketingDetailPanel
+          campaignId={selectedCampaign}
+          currentUser={currentUser}
+          onClose={handleDetailClose}
+        />
+      )}
+
+      {/* New Campaign Modal */}
+      {showNewModal && (
+        <NewCampaignModal
+          currentUser={currentUser}
+          onClose={() => setShowNewModal(false)}
+          onCreated={handleCampaignCreated}
+        />
+      )}
     </div>
   );
 }

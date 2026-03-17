@@ -111,7 +111,7 @@ export default function CrmPulsePage() {
               <LinkedInPage currentUser={currentUser} />
             )}
             {activePage === 'marketing' && (
-              <MarketingPage />
+              <MarketingPage currentUser={currentUser} />
             )}
             {activePage === 'inbox' && (
               <InboxPage />

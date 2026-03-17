@@ -292,6 +292,47 @@ th.sorted .sort-ic{opacity:1}
 .mb-12{margin-bottom:12px} .mb-14{margin-bottom:14px} .mb-20{margin-bottom:20px}
 .empty{padding:28px;text-align:center;color:var(--text-3);font-size:12.5px}
 
+/* ─── MARKETING  ─────────────────────────────────────────────── */
+/* Channel badges (small) */
+.mk-ch-badge{font-size:10px;font-weight:500;padding:1px 7px;border-radius:99px;white-space:nowrap;background:var(--s2);color:var(--text-3);border:1px solid var(--border)}
+.mk-ch-badge.ch-li{background:#ebf0fc;color:#0a66c2;border-color:#b8d3f5}
+.mk-ch-badge.ch-web{background:var(--s2);color:var(--text-2);border-color:var(--border)}
+.mk-ch-badge.ch-fb{background:#edf4ff;color:#1877f2;border-color:#b0d0fc}
+.mk-ch-badge.ch-ig{background:#fdeef7;color:#c7358d;border-color:#f0b8d9}
+/* Form fields for modals */
+.mk-field{margin-bottom:14px}
+.mk-label{display:block;font-size:11.5px;font-weight:500;color:var(--text-3);margin-bottom:5px}
+.mk-input{width:100%;height:34px;padding:0 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--s2);font-size:13px;color:var(--text-1);font-family:var(--font);outline:none;transition:border-color var(--transition)}
+.mk-input::placeholder{color:var(--text-4)}
+.mk-input:focus{border-color:var(--border-md);background:var(--surface)}
+/* Channel option buttons */
+.mk-ch-opt{height:28px;padding:0 12px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:500;color:var(--text-2);font-family:var(--font);cursor:pointer;transition:all var(--transition)}
+.mk-ch-opt:hover{border-color:var(--border-md);background:var(--s2)}
+.mk-ch-opt.sel{background:var(--text-1);color:#fff;border-color:var(--text-1)}
+/* Post items in detail panel */
+.mk-post-item{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);transition:background var(--transition)}
+.mk-post-item:last-child{border-bottom:none}
+/* Stats row in Overview tab */
+.mk-stats-row{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border)}
+.mk-stat-cell{text-align:center;padding:16px 10px;border-right:1px solid var(--border)}
+.mk-stat-cell:last-child{border-right:none}
+.mk-stat-num{font-size:20px;font-weight:600;font-family:var(--mono);color:var(--text-1);letter-spacing:-.5px}
+.mk-stat-lbl{font-size:10.5px;color:var(--text-3);margin-top:3px}
+/* Overview grid in detail panel */
+.mk-ov-grid{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border)}
+.mk-ov-cell{padding:14px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.mk-ov-cell:nth-child(even){border-right:none}
+.mk-ov-lbl{font-size:11px;color:var(--text-3);margin-bottom:4px}
+.mk-ov-val{font-size:13px;font-weight:500;color:var(--text-1)}
+/* Timeline in detail panel */
+.mk-tl-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;position:relative}
+.mk-tl-item:not(:last-child)::after{content:'';position:absolute;left:4px;top:22px;bottom:-2px;width:1px;background:var(--border)}
+.mk-tl-dot{width:9px;height:9px;border-radius:50%;border:2px solid var(--border-md);background:var(--surface);flex-shrink:0;margin-top:4px}
+.mk-tl-dot.done{background:var(--text-1);border-color:var(--text-1)}
+.mk-tl-date{font-size:10.5px;font-family:var(--mono);color:var(--text-3);margin-bottom:2px}
+.mk-tl-text{font-size:12.5px;color:var(--text-2);line-height:1.4}
+.mk-tl-text strong{color:var(--text-1);font-weight:500}
+
 /* ═══════════════════════════════════════════════════════════
    MODAL FRAMEWORK
 ═══════════════════════════════════════════════════════════ */
