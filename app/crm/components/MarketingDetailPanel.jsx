@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import AddPostModal from './AddPostModal';
+import EditPostModal from './EditPostModal';
 
 const CH_CLS = { LinkedIn: 'ch-li', Website: 'ch-web', Facebook: 'ch-fb', Instagram: 'ch-ig' };
 const ST_CLS = { active: 'b-run', scheduled: 'b-prog', completed: 'b-com', paused: 'b-pau' };
@@ -19,6 +20,7 @@ export default function MarketingDetailPanel({ campaignId, currentUser, onClose 
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('posts');
   const [showAddPost, setShowAddPost] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
   const [statusUpdating, setStatusUpdating] = useState(false);
 
   const fetchDetail = useCallback(async () => {
@@ -40,6 +42,11 @@ export default function MarketingDetailPanel({ campaignId, currentUser, onClose 
 
   const handlePostAdded = () => {
     setShowAddPost(false);
+    fetchDetail();
+  };
+
+  const handlePostUpdated = () => {
+    setEditingPost(null);
     fetchDetail();
   };
 
@@ -190,9 +197,14 @@ export default function MarketingDetailPanel({ campaignId, currentUser, onClose 
                       ) : (
                         <span style={{ fontSize: 12, color: 'var(--text-4)' }}>—</span>
                       )}
-                      <button onClick={(e) => { e.stopPropagation(); handleDeletePost(p._id); }}
-                        title="Delete post"
-                        style={{ fontSize: 11, color: 'var(--text-4)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>✕</button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <button onClick={(e) => { e.stopPropagation(); setEditingPost(p); }}
+                          title="Edit post"
+                          style={{ fontSize: 12, color: 'var(--text-3)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>✏️</button>
+                        <button onClick={(e) => { e.stopPropagation(); handleDeletePost(p._id); }}
+                          title="Delete post"
+                          style={{ fontSize: 11, color: 'var(--text-4)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>✕</button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -289,6 +301,17 @@ export default function MarketingDetailPanel({ campaignId, currentUser, onClose 
           currentUser={currentUser}
           onClose={() => setShowAddPost(false)}
           onAdded={handlePostAdded}
+        />
+      )}
+
+      {/* Edit Post Sub-modal */}
+      {editingPost && (
+        <EditPostModal
+          post={editingPost}
+          campaignId={campaignId}
+          currentUser={currentUser}
+          onClose={() => setEditingPost(null)}
+          onUpdated={handlePostUpdated}
         />
       )}
     </div>
