@@ -508,17 +508,28 @@ const handleDeleteProspect = async (prospectId) => {
     }
 
     const csvHeaders = ['First Name', 'Last Name', 'Email', 'Company', 'Position', 'Status', 'Current Step', 'Next Send At'];
-    const csvData = prospects.map(prospect => [
-      prospect.firstName || '',
-      prospect.lastName || '',
-      prospect.email || '',
-      prospect.company || '',
-      prospect.position || '',
-      prospect.status || '',
-      prospect.currentStep || 1,
-      (prospect.nextActionAt || prospect.nextSendAt) ? new Date(prospect.nextActionAt || prospect.nextSendAt).toLocaleString() :
-        (prospect.status === 'active' ? 'Ready Now' : prospect.status === 'completed' ? 'Completed' : '-')
-    ]);
+    const csvData = prospects.map(prospect => {
+      const currentStepNum = prospect.currentStep || 1;
+      const totalSteps = prospect.emailSteps?.length > 0
+        ? prospect.emailSteps.length
+        : (campaign?.emailSteps?.length || 0);
+      let stepDisplay = `Step ${currentStepNum}`;
+      if (prospect.status === 'completed' || (totalSteps > 0 && currentStepNum > totalSteps)) {
+        stepDisplay = 'Completed';
+      }
+
+      return [
+        prospect.firstName || '',
+        prospect.lastName || '',
+        prospect.email || '',
+        prospect.company || '',
+        prospect.position || '',
+        prospect.status || '',
+        stepDisplay,
+        (prospect.nextActionAt || prospect.nextSendAt) ? new Date(prospect.nextActionAt || prospect.nextSendAt).toLocaleString() :
+          (prospect.status === 'active' ? 'Ready Now' : prospect.status === 'completed' ? 'Completed' : '-')
+      ];
+    });
 
     const csvContent = [csvHeaders, ...csvData]
       .map(row => row.map(field => `"${field}"`).join(','))
@@ -716,7 +727,18 @@ const handleDeleteProspect = async (prospectId) => {
                     <div className="text-sm text-gray-500">{prospectData.position || ''}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    Step {prospectData.currentStep || 1}
+                    {(() => {
+                      const currentStepNum = prospectData.currentStep || 1;
+                      const totalSteps = prospectData.emailSteps?.length > 0
+                        ? prospectData.emailSteps.length
+                        : (campaign?.emailSteps?.length || 0);
+                      
+                      if (prospectData.status === 'completed' || (totalSteps > 0 && currentStepNum > totalSteps)) {
+                        return <span className="text-green-600 font-medium">Completed</span>;
+                      }
+                      
+                      return `Step ${currentStepNum}`;
+                    })()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
