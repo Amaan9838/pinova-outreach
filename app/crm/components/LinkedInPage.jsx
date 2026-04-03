@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { DoughnutChart } from './Charts';
 import AddLeadModal from './AddLeadModal';
 import BulkUploadModal from './BulkUploadModal';
@@ -32,6 +32,46 @@ export default function LinkedInPage({ currentUser }) {
 
   const [modal, setModal] = useState(null); // 'add' | 'bulk' | null
   const [detailId, setDetailId] = useState(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const exportRef = useRef(null);
+
+  // Close export menu on outside click
+  useEffect(() => {
+    if (!showExportMenu) return;
+    const handler = (e) => {
+      if (exportRef.current && !exportRef.current.contains(e.target)) {
+        setShowExportMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showExportMenu]);
+
+  const exportLeads = async (mode) => {
+    setExporting(true);
+    setShowExportMenu(false);
+    try {
+      const params = new URLSearchParams();
+      if (mode === 'filtered') {
+        if (search) params.set('search', search);
+        if (statusFilter) params.set('status', statusFilter);
+        if (ownerFilter) params.set('owner', ownerFilter);
+      }
+      const res = await fetch(`/api/crm/linkedin/export?${params}`);
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `LinkedIn_Outreach_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) { console.error('Export error:', err); }
+    setExporting(false);
+  };
 
   const fetchLeads = useCallback(async (pg = page) => {
     setLoading(true);
@@ -80,11 +120,67 @@ export default function LinkedInPage({ currentUser }) {
     return fu <= new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
   });
 
+  const hasActiveFilter = !!(search || statusFilter || ownerFilter);
+
   return (
     <div className="page-content active" id="page-linkedin">
       <div className="ph">
         <div className="ph-left"><h1>LinkedIn Outreach</h1><p>Monitor and manage social outreach.</p></div>
         <div className="ph-actions" style={{ display: 'flex', gap: 8 }}>
+          <div ref={exportRef} style={{ position: 'relative' }}>
+            <button
+              className="t-btn"
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              disabled={exporting}
+              style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              {exporting ? '⏳ Exporting…' : '📥 Export'}
+              <span style={{ fontSize: 9, opacity: 0.6 }}>▼</span>
+            </button>
+            {showExportMenu && (
+              <div style={{
+                position: 'absolute', top: '100%', right: 0, marginTop: 4, zIndex: 50,
+                background: 'var(--s1)', border: '1px solid var(--border)', borderRadius: 8,
+                boxShadow: '0 8px 24px rgba(0,0,0,.15)', minWidth: 200, overflow: 'hidden',
+              }}>
+                <button
+                  onClick={() => exportLeads('all')}
+                  style={{
+                    display: 'block', width: '100%', padding: '10px 14px', border: 'none',
+                    background: 'transparent', textAlign: 'left', cursor: 'pointer',
+                    fontSize: 12, color: 'var(--text-1)', transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <div style={{ fontWeight: 600 }}>📊 Export All Leads</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 2 }}>
+                    All {stats.total} leads with conversations
+                  </div>
+                </button>
+                <div style={{ height: 1, background: 'var(--border)' }} />
+                <button
+                  onClick={() => exportLeads('filtered')}
+                  disabled={!hasActiveFilter}
+                  style={{
+                    display: 'block', width: '100%', padding: '10px 14px', border: 'none',
+                    background: 'transparent', textAlign: 'left', cursor: hasActiveFilter ? 'pointer' : 'default',
+                    fontSize: 12, color: hasActiveFilter ? 'var(--text-1)' : 'var(--text-4)',
+                    opacity: hasActiveFilter ? 1 : 0.5, transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => { if (hasActiveFilter) e.currentTarget.style.background = 'var(--s2)'; }}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <div style={{ fontWeight: 600 }}>🔍 Export Filtered View</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 2 }}>
+                    {hasActiveFilter
+                      ? `${pagination.total} leads matching current filters`
+                      : 'Apply filters first'}
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
           <button className="t-btn" onClick={() => setModal('bulk')}>📁 Bulk Upload</button>
           <button className="t-btn accent" onClick={() => setModal('add')}>+ Add Lead</button>
         </div>

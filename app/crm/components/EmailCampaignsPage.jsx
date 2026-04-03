@@ -1,5 +1,5 @@
 'use client';
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { BarChart, LineChart } from './Charts';
 
 export default function EmailCampaignsPage({ data: initialData }) {
@@ -8,6 +8,72 @@ export default function EmailCampaignsPage({ data: initialData }) {
   const [customTo, setCustomTo] = useState('');
   const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(false);
+
+  // Export state
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const exportRef = useRef(null);
+
+  // Close export menu on outside click
+  useEffect(() => {
+    if (!showExportMenu) return;
+    const handler = (e) => {
+      if (exportRef.current && !exportRef.current.contains(e.target)) {
+        setShowExportMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showExportMenu]);
+
+  // ─── Export helpers ────────────────────────────────────────────────────
+  const triggerDownload = async (url, fallbackName) => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      // Try to get filename from Content-Disposition header
+      const cd = res.headers.get('Content-Disposition');
+      const match = cd && cd.match(/filename="?([^"]+)"?/);
+      a.download = match ? match[1] : fallbackName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('Export error:', err);
+      alert('Export failed — please try again.');
+    }
+  };
+
+  const exportCampaigns = async (mode) => {
+    setExporting(true);
+    setShowExportMenu(false);
+    const params = new URLSearchParams({ mode: 'summary' });
+    if (mode === 'filtered') {
+      if (search) params.set('search', search);
+      if (statusFilter) params.set('status', statusFilter);
+    }
+    await triggerDownload(
+      `/api/campaigns/export?${params}`,
+      `Campaigns_Summary_${new Date().toISOString().slice(0, 10)}.csv`
+    );
+    setExporting(false);
+  };
+
+  const exportCampaignDetail = async (campaignId, campaignName) => {
+    setExporting(true);
+    const params = new URLSearchParams({ mode: 'detail', campaignId });
+    const safeName = (campaignName || 'campaign').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
+    await triggerDownload(
+      `/api/campaigns/export?${params}`,
+      `Campaign_${safeName}_Detail_${new Date().toISOString().slice(0, 10)}.csv`
+    );
+    setExporting(false);
+  };
 
   // Refetch when date range changes
   const fetchData = useCallback(async () => {
@@ -77,6 +143,55 @@ export default function EmailCampaignsPage({ data: initialData }) {
           }}>
             Custom
           </button>
+
+          {/* ── Export dropdown ── */}
+          <div ref={exportRef} style={{ position: 'relative', display: 'inline-block' }}>
+            <button
+              className="t-btn"
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              disabled={exporting}
+              style={{
+                fontSize: 11, padding: '4px 12px', display: 'flex', alignItems: 'center', gap: 4,
+                background: showExportMenu ? 'var(--blue)' : undefined,
+                color: showExportMenu ? '#fff' : undefined,
+                borderColor: showExportMenu ? 'var(--blue)' : undefined,
+              }}
+            >
+              {exporting ? '⏳ Exporting…' : '📥 Export ▾'}
+            </button>
+            {showExportMenu && (
+              <div style={{
+                position: 'absolute', right: 0, top: '100%', marginTop: 4, minWidth: 210,
+                background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8,
+                boxShadow: '0 8px 24px rgba(0,0,0,.15)', zIndex: 100, overflow: 'hidden',
+              }}>
+                <button
+                  onClick={() => exportCampaigns('all')}
+                  style={{
+                    display: 'block', width: '100%', padding: '10px 14px', border: 'none',
+                    background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: 12,
+                    color: 'var(--text-1)', borderBottom: '1px solid var(--border)',
+                  }}
+                  onMouseEnter={e => e.target.style.background = 'var(--hover)'}
+                  onMouseLeave={e => e.target.style.background = 'none'}
+                >
+                  📊 Export All Campaigns (Summary)
+                </button>
+                <button
+                  onClick={() => exportCampaigns('filtered')}
+                  style={{
+                    display: 'block', width: '100%', padding: '10px 14px', border: 'none',
+                    background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: 12,
+                    color: 'var(--text-1)',
+                  }}
+                  onMouseEnter={e => e.target.style.background = 'var(--hover)'}
+                  onMouseLeave={e => e.target.style.background = 'none'}
+                >
+                  🔍 Export Filtered Campaigns{search || statusFilter ? ' (active filters)' : ''}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -143,9 +258,10 @@ export default function EmailCampaignsPage({ data: initialData }) {
             <th>Progress</th>
             <th onClick={() => handleSort('replies')}>Replies<span className="sort-ic">↕</span></th>
             <th>Reply %</th>
+            <th style={{ width: 44, textAlign: 'center' }}>Export</th>
           </tr></thead>
           <tbody>
-            {filtered.length === 0 && <tr><td colSpan={8} className="empty">No campaigns found</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={9} className="empty">No campaigns found</td></tr>}
             {filtered.map(c => {
               const totalExpected = c.totalExpected || c.leads || 1;
               const pct = Math.min(100, totalExpected > 0 ? Math.round((c.sent / totalExpected) * 100) : 0);
@@ -164,6 +280,22 @@ export default function EmailCampaignsPage({ data: initialData }) {
                   </td>
                   <td>{c.replies}</td>
                   <td style={{ fontFamily: 'var(--mono)', fontSize: 12 }}>{c.replyRate}%</td>
+                  <td style={{ textAlign: 'center' }}>
+                    <button
+                      onClick={() => exportCampaignDetail(c._id, c.name)}
+                      disabled={exporting}
+                      title="Export all prospects &amp; emails for this campaign"
+                      style={{
+                        background: 'none', border: 'none', cursor: 'pointer', fontSize: 16,
+                        padding: '2px 6px', borderRadius: 4, opacity: exporting ? 0.4 : 1,
+                        transition: 'background 0.15s',
+                      }}
+                      onMouseEnter={e => e.target.style.background = 'var(--hover)'}
+                      onMouseLeave={e => e.target.style.background = 'none'}
+                    >
+                      📥
+                    </button>
+                  </td>
                 </tr>
               );
             })}
