@@ -1,5 +1,6 @@
 import dbConnect from '../../../lib/mongodb.js';
 import Mailbox from '../../../models/MailboxFixed.js';
+import Message from '../../../models/Message.js';
 
 export async function GET() {
   try {
@@ -7,29 +8,41 @@ export async function GET() {
     
     const mailboxes = await Mailbox.find().sort({ createdAt: -1 });
     
-    // Auto-reset dailySent counters for any mailbox whose lastDailyReset is stale
-    const startOfToday = new Date();
-    startOfToday.setUTCHours(0, 0, 0, 0);
+    // Get actual today's sent count per mailbox from Message collection (source of truth)
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
     
-    const staleMailboxIds = mailboxes
-      .filter(mb => !mb.lastDailyReset || new Date(mb.lastDailyReset) < startOfToday)
-      .map(mb => mb._id);
+    const todayCounts = await Message.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: todayStart },
+          status: { $in: ['sent', 'delivered', 'opened'] }
+        }
+      },
+      {
+        $group: {
+          _id: '$mailboxId',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
     
-    if (staleMailboxIds.length > 0) {
-      await Mailbox.updateMany(
-        { _id: { $in: staleMailboxIds } },
-        { $set: { dailySent: 0, lastDailyReset: new Date() } }
-      );
-      // Refresh the stale ones in our result set
-      staleMailboxIds.forEach(id => {
-        const mb = mailboxes.find(m => m._id.equals(id));
-        if (mb) mb.dailySent = 0;
-      });
-    }
+    // Build a lookup map: mailboxId → today's sent count
+    const countMap = {};
+    todayCounts.forEach(item => {
+      countMap[item._id.toString()] = item.count;
+    });
+    
+    // Override dailySent with the real count for each mailbox
+    const mailboxesWithRealCounts = mailboxes.map(mb => {
+      const obj = mb.toObject();
+      obj.dailySent = countMap[mb._id.toString()] || 0;
+      return obj;
+    });
     
     return Response.json({
       success: true,
-      mailboxes
+      mailboxes: mailboxesWithRealCounts
     });
 
   } catch (error) {
