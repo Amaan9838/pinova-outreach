@@ -83,6 +83,10 @@ const MailboxSchema = new mongoose.Schema({
      type: Number,
      default: 0,
    },
+   lastDailyReset: {
+     type: Date,
+     default: Date.now,
+   },
    lastSent: {
      type: Date,
    },
@@ -100,5 +104,55 @@ MailboxSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Auto-reset dailySent counter when the day changes.
+// This eliminates the need for an external cron to call /api/mailboxes/reset-daily.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Resets dailySent to 0 if lastDailyReset is not today (UTC).
+ * Returns the updated mailbox document.
+ * Uses atomic findOneAndUpdate to avoid race conditions.
+ */
+MailboxSchema.statics.resetDailySentIfNeeded = async function(mailboxId) {
+  const startOfToday = new Date();
+  startOfToday.setUTCHours(0, 0, 0, 0);
+
+  const mailbox = await this.findById(mailboxId);
+  if (!mailbox) return null;
+
+  const lastReset = mailbox.lastDailyReset ? new Date(mailbox.lastDailyReset) : new Date(0);
+
+  // If last reset was before today (UTC), reset the counter
+  if (lastReset < startOfToday) {
+    return this.findByIdAndUpdate(
+      mailboxId,
+      { $set: { dailySent: 0, lastDailyReset: new Date() } },
+      { new: true }
+    );
+  }
+
+  return mailbox;
+};
+
+/**
+ * Atomically increment dailySent, auto-resetting first if the day has changed.
+ * Call this instead of raw `$inc: { dailySent: 1 }`.
+ */
+MailboxSchema.statics.incrementDailySent = async function(mailboxId) {
+  // Reset if needed first
+  await this.resetDailySentIfNeeded(mailboxId);
+
+  // Then increment
+  return this.findByIdAndUpdate(
+    mailboxId,
+    {
+      $inc: { dailySent: 1 },
+      $set: { lastSent: new Date() }
+    },
+    { new: true }
+  );
+};
 
 export default mongoose.models.Mailbox || mongoose.model('Mailbox', MailboxSchema);

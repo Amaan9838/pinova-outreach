@@ -7,6 +7,26 @@ export async function GET() {
     
     const mailboxes = await Mailbox.find().sort({ createdAt: -1 });
     
+    // Auto-reset dailySent counters for any mailbox whose lastDailyReset is stale
+    const startOfToday = new Date();
+    startOfToday.setUTCHours(0, 0, 0, 0);
+    
+    const staleMailboxIds = mailboxes
+      .filter(mb => !mb.lastDailyReset || new Date(mb.lastDailyReset) < startOfToday)
+      .map(mb => mb._id);
+    
+    if (staleMailboxIds.length > 0) {
+      await Mailbox.updateMany(
+        { _id: { $in: staleMailboxIds } },
+        { $set: { dailySent: 0, lastDailyReset: new Date() } }
+      );
+      // Refresh the stale ones in our result set
+      staleMailboxIds.forEach(id => {
+        const mb = mailboxes.find(m => m._id.equals(id));
+        if (mb) mb.dailySent = 0;
+      });
+    }
+    
     return Response.json({
       success: true,
       mailboxes

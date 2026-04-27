@@ -102,10 +102,8 @@ export async function POST(request) {
       
       await message.save();
 
-      // Update mailbox daily count
-      mailbox.dailySent += 1;
-      mailbox.lastSent = new Date();
-      await mailbox.save();
+      // Update mailbox daily count (auto-resets if day changed)
+      await Mailbox.incrementDailySent(mailbox._id);
 
       return Response.json({
         success: true,
