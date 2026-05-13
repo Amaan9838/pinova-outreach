@@ -164,6 +164,15 @@ const CampaignProspectSchema = new mongoose.Schema({
   threadSubject: {
     type: String,
     default: null
+  },
+
+  // §7.10 — Multi-mailbox: sticky mailbox assignment for thread integrity
+  // Assigned at enrollment via round-robin from campaign.mailboxes[] pool.
+  // Once set, all follow-ups for this lead use the same mailbox.
+  assignedMailbox: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Mailbox',
+    default: null
   }
 
 }, {

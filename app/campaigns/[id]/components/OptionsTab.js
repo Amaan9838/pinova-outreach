@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Settings, Save } from 'lucide-react';
+import { Settings, Save, Mail, Clock, Shield } from 'lucide-react';
 
 export default function OptionsTab({
   campaign,
@@ -19,7 +19,8 @@ export default function OptionsTab({
   resumeCampaign,
   deleteCampaign,
 }) {
-  const [mailboxes, setMailboxes] = useState([]);
+  const [availableMailboxes, setAvailableMailboxes] = useState([]);
+  const [selectedMailboxIds, setSelectedMailboxIds] = useState([]);
   const [settings, setSettings] = useState({
     selectedMailbox: '',
     trackOpens: true,
@@ -32,6 +33,11 @@ export default function OptionsTab({
     stopOnReply: true,
     stopOnOpen: false
   });
+  const [sendPacing, setSendPacing] = useState({
+    enabled: true,
+    minGapSeconds: 120,
+    maxGapSeconds: 240,
+  });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -39,7 +45,6 @@ export default function OptionsTab({
     
     // Initialize settings from campaign data
     if (campaign?.options || campaign?.followUpSettings) {
-      // Use either the options.selectedMailbox or the campaign.mailbox
       const selectedMailbox = campaign.options?.selectedMailbox || campaign.mailbox || '';
       
       setSettings({
@@ -49,11 +54,26 @@ export default function OptionsTab({
         unsubscribeLink: campaign.options?.unsubscribeLink ?? true,
         timezone: campaign.scheduling?.timezone || campaign.v2Timezone || 'America/New_York',
         notes: campaign.options?.notes || '',
-        // Follow-up settings from campaign
         followUpEnabled: campaign.followUpSettings?.enabled ?? false,
         stopOnReply: campaign.followUpSettings?.stopOnReply ?? true,
         stopOnOpen: campaign.followUpSettings?.stopOnOpen ?? false
       });
+
+      // Initialize multi-mailbox pool from campaign data
+      if (campaign.mailboxes && campaign.mailboxes.length > 0) {
+        setSelectedMailboxIds(campaign.mailboxes.map(id => id.toString()));
+      } else if (selectedMailbox) {
+        setSelectedMailboxIds([selectedMailbox.toString()]);
+      }
+
+      // Initialize send pacing
+      if (campaign.v2SendPacing) {
+        setSendPacing({
+          enabled: campaign.v2SendPacing.enabled ?? true,
+          minGapSeconds: campaign.v2SendPacing.minGapSeconds ?? 120,
+          maxGapSeconds: campaign.v2SendPacing.maxGapSeconds ?? 240,
+        });
+      }
     }
   }, [campaign?._id, campaign?.options, campaign?.mailbox, campaign?.scheduling, campaign?.v2Timezone]);
 
@@ -71,13 +91,22 @@ export default function OptionsTab({
         
         if (data.success && data.options) {
           console.log('Setting options:', data.options);
-          // Handle null selectedMailbox from database
           const optionsToSet = {
             ...data.options,
             selectedMailbox: data.options.selectedMailbox || ''
           };
           console.log('Final options to set:', optionsToSet);
           setSettings(optionsToSet);
+
+          // Load multi-mailbox pool
+          if (data.mailboxes && data.mailboxes.length > 0) {
+            setSelectedMailboxIds(data.mailboxes.map(id => id.toString()));
+          }
+
+          // Load send pacing
+          if (data.v2SendPacing) {
+            setSendPacing(data.v2SendPacing);
+          }
         } else {
           console.log('No options found, using defaults');
         }
@@ -94,32 +123,48 @@ export default function OptionsTab({
       const response = await fetch('/api/mailboxes');
       const data = await response.json();
       if (data.success) {
-        setMailboxes(data.mailboxes || []);
+        setAvailableMailboxes(data.mailboxes || []);
       }
     } catch (error) {
       console.error('Failed to fetch mailboxes:', error);
     }
   };
 
+  // Toggle a mailbox in the multi-select pool
+  const toggleMailbox = (mailboxId) => {
+    setSelectedMailboxIds(prev => {
+      if (prev.includes(mailboxId)) {
+        return prev.filter(id => id !== mailboxId);
+      }
+      return [...prev, mailboxId];
+    });
+  };
+
   const saveSettings = async () => {
     setSaving(true);
     try {
-      // Validate settings before saving
-      if (!settings.selectedMailbox && campaign.status === 'active') {
-        throw new Error('A mailbox must be selected for active campaigns');
+      // Validate: at least one mailbox for active campaigns
+      if (selectedMailboxIds.length === 0 && campaign.status === 'active') {
+        throw new Error('At least one mailbox must be selected for active campaigns');
+      }
+
+      // Validate pacing values
+      if (sendPacing.enabled && sendPacing.minGapSeconds > sendPacing.maxGapSeconds) {
+        throw new Error('Min gap cannot be greater than max gap');
       }
       
       const response = await fetch(`/api/campaigns/${campaign._id}/options`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          selectedMailbox: settings.selectedMailbox || null,
+          selectedMailbox: selectedMailboxIds[0] || null,
+          mailboxes: selectedMailboxIds,
           trackOpens: settings.trackOpens,
           trackClicks: settings.trackClicks,
           unsubscribeLink: settings.unsubscribeLink,
           timezone: settings.timezone,
           notes: settings.notes || '',
-          // Follow-up settings
+          v2SendPacing: sendPacing,
           followUpSettings: {
             enabled: settings.followUpEnabled,
             stopOnReply: settings.stopOnReply,
@@ -135,7 +180,6 @@ export default function OptionsTab({
       const data = await response.json();
       
       if (data.success) {
-        // Update local state with server response
         if (data.options) {
           setSettings({
             selectedMailbox: data.options.selectedMailbox || '',
@@ -145,11 +189,16 @@ export default function OptionsTab({
             dailyLimit: data.options.dailyLimit || 50,
             timezone: data.options.timezone || 'UTC',
             notes: data.options.notes || '',
-            // Follow-up settings from response
             followUpEnabled: data.followUpSettings?.enabled ?? false,
             stopOnReply: data.followUpSettings?.stopOnReply ?? true,
             stopOnOpen: data.followUpSettings?.stopOnOpen ?? false
           });
+        }
+        if (data.mailboxes) {
+          setSelectedMailboxIds(data.mailboxes.map(id => id.toString()));
+        }
+        if (data.v2SendPacing) {
+          setSendPacing(data.v2SendPacing);
         }
         toast.success('Campaign options saved successfully!', {
           duration: 3000,
@@ -168,8 +217,170 @@ export default function OptionsTab({
       setSaving(false);
     }
   };
+
+  const activeMailboxes = availableMailboxes.filter(mb => mb.status === 'active');
+  const inactiveMailboxes = availableMailboxes.filter(mb => mb.status !== 'active');
+
   return (
     <div className="space-y-6">
+
+      {/* Mailbox Pool Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Sending Mailboxes
+          </CardTitle>
+          <p className="text-sm text-gray-500 mt-1">
+            Select multiple mailboxes for round-robin rotation. Each lead will be assigned a mailbox and stick with it for all follow-ups.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {availableMailboxes.length > 0 ? (
+            <>
+              {/* Active mailboxes */}
+              <div className="space-y-2">
+                {activeMailboxes.map((mailbox) => {
+                  const isSelected = selectedMailboxIds.includes(mailbox._id);
+                  return (
+                    <label
+                      key={mailbox._id}
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                        isSelected
+                          ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200'
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleMailbox(mailbox._id)}
+                        className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm truncate">{mailbox.fromEmail}</span>
+                          <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
+                        </div>
+                        <span className="text-xs text-gray-500">{mailbox.fromName}</span>
+                      </div>
+                      <div className="text-xs text-gray-400 flex-shrink-0">
+                        {mailbox.dailySent || 0}/{mailbox.dailyLimit || 40}/day
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+
+              {/* Inactive mailboxes (dimmed) */}
+              {inactiveMailboxes.length > 0 && (
+                <div className="space-y-2 pt-2 border-t">
+                  <p className="text-xs text-gray-400 font-medium">Inactive</p>
+                  {inactiveMailboxes.map((mailbox) => (
+                    <div
+                      key={mailbox._id}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 opacity-50 cursor-not-allowed"
+                    >
+                      <input type="checkbox" disabled className="h-4 w-4 rounded border-gray-300" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm truncate">{mailbox.fromEmail}</span>
+                          <div className={`w-2 h-2 rounded-full ${
+                            mailbox.status === 'warming' ? 'bg-yellow-500' : 'bg-red-500'
+                          } flex-shrink-0`}></div>
+                        </div>
+                        <span className="text-xs text-gray-500">{mailbox.fromName} — {mailbox.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Pool summary */}
+              {selectedMailboxIds.length > 0 && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800 font-medium">
+                    {selectedMailboxIds.length} mailbox{selectedMailboxIds.length > 1 ? 'es' : ''} selected
+                  </p>
+                  <p className="text-xs text-blue-600 mt-0.5">
+                    Leads will be distributed evenly via round-robin. The <code className="bg-blue-100 px-1 rounded">[Name]</code> placeholder in your email body will be replaced with each mailbox&apos;s sender name.
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-6 text-gray-500">
+              <Mail className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">No mailboxes available</p>
+              <p className="text-xs mt-1">Add mailboxes in the Mailbox settings first</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Send Pacing */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Send Pacing
+          </CardTitle>
+          <p className="text-sm text-gray-500 mt-1">
+            Control the delay between individual email sends to protect deliverability.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="pacingEnabled">Enable Send Pacing</Label>
+              <p className="text-xs text-gray-500">Add random delays between sends to mimic human patterns</p>
+            </div>
+            <Switch
+              id="pacingEnabled"
+              checked={sendPacing.enabled}
+              onCheckedChange={(checked) => setSendPacing(prev => ({ ...prev, enabled: checked }))}
+            />
+          </div>
+
+          {sendPacing.enabled && (
+            <div className="p-4 bg-gray-50 rounded-lg space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="minGap" className="text-xs">Min Gap (seconds)</Label>
+                  <Input
+                    id="minGap"
+                    type="number"
+                    min={30}
+                    max={600}
+                    value={sendPacing.minGapSeconds}
+                    onChange={(e) => setSendPacing(prev => ({ ...prev, minGapSeconds: parseInt(e.target.value) || 120 }))}
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="maxGap" className="text-xs">Max Gap (seconds)</Label>
+                  <Input
+                    id="maxGap"
+                    type="number"
+                    min={30}
+                    max={600}
+                    value={sendPacing.maxGapSeconds}
+                    onChange={(e) => setSendPacing(prev => ({ ...prev, maxGapSeconds: parseInt(e.target.value) || 240 }))}
+                    className="h-9"
+                  />
+                </div>
+              </div>
+              <div className="flex items-start gap-2 p-2 bg-amber-50 border border-amber-200 rounded-md">
+                <Shield className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-amber-700">
+                  Industry standard: 2–4 min gaps between sends. With {selectedMailboxIds.length || 1} mailbox{selectedMailboxIds.length !== 1 ? 'es' : ''}, 
+                  each will send ~{Math.round(60 / ((sendPacing.minGapSeconds + sendPacing.maxGapSeconds) / 2 / 60))} emails/hour.
+                </p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Campaign Settings */}
       <Card>
@@ -180,47 +391,6 @@ export default function OptionsTab({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Mailbox Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="mailbox">Sending Mailbox</Label>
-            <Select 
-              value={settings.selectedMailbox} 
-              onValueChange={(value) => setSettings(prev => ({ ...prev, selectedMailbox: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a mailbox..." />
-              </SelectTrigger>
-              <SelectContent>
-                {mailboxes.length > 0 ? (
-                  mailboxes.map((mailbox) => (
-                    <SelectItem key={mailbox._id} value={mailbox._id}>
-                      <div className="flex items-center gap-3">
-                        <div className="flex flex-col">
-                          <span className="font-medium">{mailbox.fromEmail}</span>
-                          <span className="text-xs text-gray-500">{mailbox.fromName}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <div className={`w-2 h-2 rounded-full ${
-                            mailbox.status === 'active' ? 'bg-green-500' :
-                            mailbox.status === 'warming' ? 'bg-yellow-500' :
-                            mailbox.status === 'paused' ? 'bg-gray-500' :
-                            'bg-red-500'
-                          }`}></div>
-                          <span className="text-xs text-gray-400 capitalize">{mailbox.status}</span>
-                        </div>
-                      </div>
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="no-mailboxes" disabled>
-                    No mailboxes available - Add mailboxes first
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Daily Limit - REMOVED: Use Schedule tab instead */}
 
           {/* Timezone */}
           <div className="space-y-2">

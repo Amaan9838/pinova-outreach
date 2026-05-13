@@ -245,6 +245,14 @@ const CampaignSchema = new mongoose.Schema({
     maxAttemptsPerCycle:  { type: Number, default: 6 }
   },
 
+  // §7.10 — Send pacing (inter-send delay for deliverability)
+  v2SendPacing: {
+    enabled:          { type: Boolean, default: true },
+    minGapSeconds:    { type: Number, default: 120 },  // 2 min base
+    maxGapSeconds:    { type: Number, default: 240 },  // 4 min max
+    respectWarmScore: { type: Boolean, default: true }
+  },
+
   // §5.1–5.3 — Angle rotation (minimum 3 required before v2 activation)
   v2Angles: [{
     key:         { type: String, required: true },

@@ -1,3 +1,8 @@
+@import url('./leads.css');
+@import url('./leads-2.css');
+@import url('./leads-3.css');
+@import url('./leads-4.css');
+
 /* ─── RESET ─────────────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 button{cursor:pointer;font-family:inherit}
@@ -125,9 +130,9 @@ input,select,textarea{font-family:inherit}
 .sb-urole{font-size:11px;color:var(--text-3)}
 
 /* ─── MAIN CONTENT ─────────────────────────────────────────────── */
-.main-wrap{min-height:calc(100vh - var(--topbar-h))}
+.main-wrap{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);min-height:calc(100vh - var(--topbar-h))}
 .page-content{display:none;padding:28px 26px;max-width:1260px}
-.page-content.active{display:block;animation:fadeUp .2s ease both}
+.page-content.active{display:block;animation:fadeUp .2s ease both;min-height: 100vh;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 /* ─── PAGE HEADER ─────────────────────────────────────────────── */

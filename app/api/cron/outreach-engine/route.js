@@ -7,9 +7,10 @@
 // Runs every 5 minutes via Vercel cron.
 // Picks up leads where nextActionAt <= now AND campaign.useV2Engine = true.
 //
-// NO IN-CRON SLEEPING: Processes all due leads immediately (up to 100/run).
-// Deliverability is protected by staggered nextActionAt at enrollment time
-// and per-mailbox daily send limits (checkMailboxRateLimits).
+// SEND PACING: Adds randomized inter-send delays (v2SendPacing config)
+// between processLead() calls to prevent burst sending patterns that
+// damage email deliverability. With default 2-4 min gaps, ~2-3 leads
+// are processed per cron run — matching industry best practices.
 //
 // PRD Reference: §3.2 (Cron Execution Model), §11 (Observability)
 //
@@ -113,12 +114,11 @@ export async function GET() {
     let processed = 0;
     let errors = 0;
 
-    // ── Process leads — no in-cron sleeping ───────────────────────────────────
-    // Deliverability is protected by:
-    //   1. Staggered nextActionAt at enrollment (leads don't all come due at once)
-    //   2. Per-mailbox daily send limits (checkMailboxRateLimits in processLead)
-    //   3. Business hour enforcement (leads outside hours get rescheduled)
-    // Sleeping inside a serverless function wastes execution time.
+    // ── Process leads with human-like send pacing ─────────────────────────────
+    // Industry standard (Instantly, Smartlead, Salesforge) uses 45-120s gaps
+    // between sends to mimic human sending patterns. Burst sending triggers
+    // ESP spam filters. The pacing naturally limits how many leads we process
+    // per 5-min cron run (~2-3 with default 2-4 min gaps).
     for (let i = 0; i < dueLeads.length; i++) {
       const lead = dueLeads[i];
 
@@ -131,6 +131,35 @@ export async function GET() {
       try {
         await processLead(lead._id.toString());
         processed++;
+
+        // ── Inter-send pacing delay (PRD §7.10) ────────────────────────────
+        // Add randomized delay between sends to prevent burst patterns.
+        // Only sleep if there are more leads to process and we have time.
+        if (i < dueLeads.length - 1 && (Date.now() - startTime) < MAX_RUNTIME_MS - 30_000) {
+          // Fetch campaign-specific pacing config for this lead
+          const leadCampaignId = lead.campaign || lead.campaignId;
+          let minGapMs = 120_000; // 2 min default
+          let maxGapMs = 240_000; // 4 min default
+
+          if (leadCampaignId) {
+            try {
+              const leadCampaign = await Campaign.findById(leadCampaignId).select('v2SendPacing').lean();
+              if (leadCampaign?.v2SendPacing?.enabled !== false) {
+                minGapMs = (leadCampaign.v2SendPacing?.minGapSeconds || 120) * 1000;
+                maxGapMs = (leadCampaign.v2SendPacing?.maxGapSeconds || 240) * 1000;
+              } else {
+                minGapMs = 0; // Pacing disabled — no delay
+                maxGapMs = 0;
+              }
+            } catch { /* Use defaults */ }
+          }
+
+          if (minGapMs > 0) {
+            const delay = minGapMs + Math.random() * (maxGapMs - minGapMs);
+            console.log(`[outreach-engine-cron] Pacing: waiting ${Math.round(delay / 1000)}s before next send`);
+            await new Promise(r => setTimeout(r, delay));
+          }
+        }
       } catch (err) {
         errors++;
         console.error(`[outreach-engine-cron] Error processing lead ${lead._id}:`, err.message);

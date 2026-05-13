@@ -33,7 +33,7 @@ export async function PUT(request, { params }) {
       campaign.options = {};
     }
     
-    // Handle selectedMailbox
+    // Handle selectedMailbox (legacy single-mailbox support)
     try {
       if (options.selectedMailbox && options.selectedMailbox !== '') {
         // Verify the mailbox exists and is valid
@@ -52,6 +52,47 @@ export async function PUT(request, { params }) {
         campaign.options.selectedMailbox = null;
         campaign.mailbox = null;
     }
+
+      // ── Multi-mailbox pool (PRD §7.10) ─────────────────────────────────────
+      // Accept an array of mailbox IDs for round-robin rotation
+      if (Array.isArray(options.mailboxes)) {
+        // Validate each mailbox exists and is active
+        const validatedMailboxIds = [];
+        for (const mbId of options.mailboxes) {
+          const mb = await Mailbox.findById(mbId);
+          if (mb && mb.status === 'active') {
+            validatedMailboxIds.push(mb._id);
+          } else {
+            console.warn(`[options] Mailbox ${mbId} skipped: not found or inactive`);
+          }
+        }
+        campaign.mailboxes = validatedMailboxIds;
+        
+        // Backward compat: set campaign.mailbox to first in pool
+        if (validatedMailboxIds.length > 0 && !campaign.mailbox) {
+          campaign.mailbox = validatedMailboxIds[0];
+          campaign.options.selectedMailbox = validatedMailboxIds[0];
+        }
+        
+        console.log(`[options] Multi-mailbox pool set: ${validatedMailboxIds.length} mailbox(es)`);
+      }
+
+      // ── Send pacing config (PRD §7.10) ─────────────────────────────────────
+      if (options.v2SendPacing) {
+        campaign.v2SendPacing = {
+          enabled: options.v2SendPacing.enabled ?? campaign.v2SendPacing?.enabled ?? true,
+          minGapSeconds: Math.max(0, parseInt(options.v2SendPacing.minGapSeconds) || campaign.v2SendPacing?.minGapSeconds || 120),
+          maxGapSeconds: Math.max(0, parseInt(options.v2SendPacing.maxGapSeconds) || campaign.v2SendPacing?.maxGapSeconds || 240),
+          respectWarmScore: options.v2SendPacing.respectWarmScore ?? campaign.v2SendPacing?.respectWarmScore ?? true
+        };
+        // Ensure min <= max
+        if (campaign.v2SendPacing.minGapSeconds > campaign.v2SendPacing.maxGapSeconds) {
+          campaign.v2SendPacing.maxGapSeconds = campaign.v2SendPacing.minGapSeconds;
+        }
+        campaign.markModified('v2SendPacing');
+        console.log(`[options] Send pacing updated: ${campaign.v2SendPacing.minGapSeconds}–${campaign.v2SendPacing.maxGapSeconds}s`);
+      }
+
       // Update other options
       campaign.options.trackOpens = options.trackOpens ?? campaign.options.trackOpens ?? true;
       campaign.options.trackClicks = options.trackClicks ?? campaign.options.trackClicks ?? true;
@@ -240,7 +281,16 @@ export async function GET(request, { params }) {
     return NextResponse.json({
       success: true,
       options: options,
-      followUpSettings: followUpSettings
+      followUpSettings: followUpSettings,
+      // Multi-mailbox pool for round-robin rotation
+      mailboxes: campaign.mailboxes || [],
+      // Send pacing config
+      v2SendPacing: campaign.v2SendPacing || {
+        enabled: true,
+        minGapSeconds: 120,
+        maxGapSeconds: 240,
+        respectWarmScore: true
+      }
     });
 
   } catch (error) {

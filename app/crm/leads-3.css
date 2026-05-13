@@ -1,0 +1,57 @@
+/* ─── DRAWER: SECTIONS & INPUTS ────────────────────────────── */
+.ld-drawer-section{display:flex;flex-direction:column;gap:24px}
+.ld-drawer-subsection{display:flex;flex-direction:column;gap:12px}
+.ld-subsection-title{font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px}
+
+.ld-inline-input{width:100%;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);font-size:13px;color:var(--text-1);transition:border-color .14s}
+.ld-inline-input:focus{outline:none;border-color:var(--blue)}
+.ld-inline-input.sm{height:28px;padding:0 8px;font-size:12px}
+.ld-inline-sel{height:36px;padding:0 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);font-size:13px;color:var(--text-1);cursor:pointer}
+.ld-inline-sel.sm{height:28px;padding:0 6px;font-size:12px}
+
+/* ─── DRAWER: NEXT ACTION CARD ─────────────────────────────── */
+.ld-next-action-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.ld-next-action-card.overdue{border-color:var(--red);background:var(--red-bg)}
+.ld-nac-header{display:flex;justify-content:space-between;align-items:center}
+.ld-nac-title{font-size:13px;font-weight:600;color:var(--text-1)}
+.ld-nac-overdue{font-size:10px;font-weight:700;color:var(--red);background:rgba(239,68,68,0.1);padding:2px 6px;border-radius:4px}
+.ld-nac-body{display:flex;flex-direction:column;gap:10px}
+.ld-nac-row{display:flex;gap:8px}
+
+/* ─── DRAWER: STATE GRID ───────────────────────────────────── */
+.ld-state-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ld-state-item{display:flex;flex-direction:column;gap:6px}
+.ld-state-label{font-size:12px;color:var(--text-3);font-weight:500}
+.ld-state-sel{width:100%;height:32px;padding:0 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);font-size:13px;color:var(--text-1);cursor:pointer;transition:border-color .14s}
+.ld-state-sel:hover{border-color:var(--border-md)}
+.ld-score-bar{display:flex;align-items:center;gap:10px;height:32px;background:var(--s2);border-radius:var(--r-sm);padding:0 10px;position:relative;overflow:hidden}
+.ld-score-fill{position:absolute;left:0;top:0;bottom:0;background:var(--green);opacity:0.1}
+.ld-score-num{position:relative;font-size:13px;font-family:var(--mono);font-weight:600;color:var(--green);z-index:1}
+
+/* ─── DRAWER: CONTACT & TAGS ───────────────────────────────── */
+.ld-contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ld-contact-item{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;color:var(--text-1);text-decoration:none;transition:all .14s}
+.ld-contact-item:hover{border-color:var(--border-md);background:var(--surface)}
+.ld-ci-icon{color:var(--text-3)}
+
+.ld-tags{display:flex;flex-wrap:wrap;gap:6px}
+.ld-tag{padding:4px 10px;background:var(--s2);border:1px solid var(--border);border-radius:12px;font-size:12px;color:var(--text-2)}
+.ld-no-tags{font-size:12px;color:var(--text-4);font-style:italic}
+.ld-notes-area{width:100%;min-height:80px;padding:12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);font-size:13px;color:var(--text-1);resize:vertical;font-family:inherit}
+.ld-notes-area:focus{outline:none;border-color:var(--blue)}
+
+/* ─── DRAWER: DEAL TAB ─────────────────────────────────────── */
+.ld-deal-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ld-deal-item{display:flex;flex-direction:column;gap:6px}
+.ld-deal-item label{font-size:12px;color:var(--text-3);font-weight:500}
+.ld-deal-item.full{grid-column:1 / -1}
+.ld-weighted-val{font-size:24px;font-family:var(--mono);font-weight:700;color:var(--green);padding:16px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:var(--r);display:flex;align-items:center;justify-content:center}
+
+/* ─── DRAWER: INTEL TAB ────────────────────────────────────── */
+.ld-intel-header{font-size:14px;font-weight:600;color:var(--text-1);border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:16px}
+.ld-intel-grid{display:flex;flex-direction:column;gap:16px}
+.ld-intel-item{display:flex;flex-direction:column;gap:6px}
+.ld-intel-item label{font-size:13px;font-weight:500;color:var(--text-2)}
+.ld-intel-input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);font-size:13px;color:var(--text-1);resize:vertical;font-family:inherit}
+.ld-intel-input:focus{outline:none;border-color:var(--blue)}
+.ld-intel-section{margin-top:24px}

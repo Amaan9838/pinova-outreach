@@ -7,6 +7,7 @@ export default function Sidebar({ activePage, onNav, campaignCount, currentUser,
   const links = [
     { section: 'Workspace' },
     { id: 'dashboard', icon: '⬡', label: 'Dashboard' },
+    { id: 'leads', icon: '◆', label: 'Leads' },
     { section: 'Outreach' },
     { id: 'email', icon: '✉', label: 'Email Campaigns', badge: campaignCount, badgeCls: 'green' },
     { id: 'linkedin', icon: '◈', label: 'LinkedIn Outreach' },

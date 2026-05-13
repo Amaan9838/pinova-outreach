@@ -98,25 +98,42 @@ export async function POST(request, { params }) {
     
     // Update prospects to active status
     if (campaign.useV2Engine) {
-      // v2: Initialize state machine for all pending prospects (PRD £4.1, £12.4)
-      // Set state = new and nextActionAt = now so cron picks up immediately
-      const updateResult = await CampaignProspect.updateMany(
-        { campaign: id, $or: [{ v2State: null }, { v2State: 'new' }] },
-        {
-          $set: {
-            v2State: 'new',
-            nextActionAt: new Date(), // Immediate pickup on next cron tick
-            stopFlag: false,
-            attemptCount: 0,
-            failureCount: 0,
-            processingLock: false
-          }
-        }
-      );
-      if (updateResult.modifiedCount === 0) {
+      // v2: Initialize state machine for all pending prospects (PRD §4.1, §12.4)
+      // Use individual updates (not updateMany) to enable round-robin mailbox assignment
+      const pendingLeads = await CampaignProspect.find({
+        campaign: id,
+        $or: [{ v2State: null }, { v2State: 'new' }]
+      }).select('_id');
+
+      if (pendingLeads.length === 0) {
         return Response.json({ success: false, error: 'No prospects to initialize for v2 engine' }, { status: 400 });
       }
-      console.log(`[v2] Initialized ${updateResult.modifiedCount} prospects with state=new`);
+
+      // Build mailbox pool for round-robin assignment
+      const Mailbox = (await import('../../../../../models/MailboxFixed.js')).default;
+      const mailboxPool = (campaign.mailboxes && campaign.mailboxes.length > 0)
+        ? campaign.mailboxes
+        : [selectedMailboxId].filter(Boolean);
+
+      const bulkOps = pendingLeads.map((lead, index) => ({
+        updateOne: {
+          filter: { _id: lead._id },
+          update: {
+            $set: {
+              v2State: 'new',
+              nextActionAt: new Date(),
+              stopFlag: false,
+              attemptCount: 0,
+              failureCount: 0,
+              processingLock: false,
+              assignedMailbox: mailboxPool[index % mailboxPool.length]
+            }
+          }
+        }
+      }));
+
+      const updateResult = await CampaignProspect.bulkWrite(bulkOps);
+      console.log(`[v2] Initialized ${pendingLeads.length} prospects with round-robin mailbox assignment across ${mailboxPool.length} mailbox(es)`);
     } else {
       // Legacy
       const updateResult = await CampaignProspect.updateMany(
@@ -127,6 +144,11 @@ export async function POST(request, { params }) {
         return Response.json({ success: false, error: 'No prospects to activate' }, { status: 400 });
       }
     }
+
+    // Compute prospect count for response (works for both v2 and legacy paths)
+    const activatedCount = campaign.useV2Engine
+      ? (await CampaignProspect.countDocuments({ campaign: id, v2State: 'new' }))
+      : (await CampaignProspect.countDocuments({ campaign: id, status: 'active' }));
     
     // Set campaign as active
     campaign.status = 'active';
@@ -135,16 +157,16 @@ export async function POST(request, { params }) {
     
     await campaign.save();
     
-    console.log(`Campaign ${campaign.name} activated with ${updateResult.modifiedCount} prospects`);
+    console.log(`Campaign ${campaign.name} activated with ${activatedCount} prospects`);
     
     return Response.json({
       success: true,
-      message: `Campaign activated with ${updateResult.modifiedCount} prospects`,
+      message: `Campaign activated with ${activatedCount} prospects`,
       campaign: {
         id: campaign._id,
         name: campaign.name,
         status: campaign.status,
-        prospectCount: updateResult.modifiedCount,
+        prospectCount: activatedCount,
         mailbox: {
           id: mailbox._id,
           email: mailbox.email
