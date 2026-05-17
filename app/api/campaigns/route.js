@@ -126,6 +126,11 @@ export async function POST(request) {
       description: data.description,
       persona,
       goal,
+      autoReplyTemplate: {
+        enabled: data.autoReplyTemplate?.enabled ?? false,
+        subject: data.autoReplyTemplate?.subject || '',
+        body: data.autoReplyTemplate?.body || ''
+      },
       status: initialStatus,
       sequence: data.sequence || [{
         stepNumber: 1,

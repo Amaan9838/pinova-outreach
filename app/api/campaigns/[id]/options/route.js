@@ -192,6 +192,8 @@ export async function PUT(request, { params }) {
         message: 'Campaign options updated successfully',
         options: campaign.options,
         followUpSettings: campaign.followUpSettings,
+        mailboxes: campaign.mailboxes || [],
+        v2SendPacing: campaign.v2SendPacing,
         validation: {
           valid: validation.valid,
           errors: validation.errors || []

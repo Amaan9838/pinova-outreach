@@ -11,6 +11,13 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { Settings, Save, Mail, Clock, Shield } from 'lucide-react';
 
+function normalizeMailboxId(mailbox) {
+  if (!mailbox) return '';
+  if (typeof mailbox === 'string') return mailbox;
+  if (typeof mailbox === 'object' && mailbox._id) return mailbox._id.toString();
+  return mailbox.toString?.() || '';
+}
+
 export default function OptionsTab({
   campaign,
   sendTestEmail,
@@ -61,7 +68,7 @@ export default function OptionsTab({
 
       // Initialize multi-mailbox pool from campaign data
       if (campaign.mailboxes && campaign.mailboxes.length > 0) {
-        setSelectedMailboxIds(campaign.mailboxes.map(id => id.toString()));
+        setSelectedMailboxIds(campaign.mailboxes.map(normalizeMailboxId).filter(Boolean));
       } else if (selectedMailbox) {
         setSelectedMailboxIds([selectedMailbox.toString()]);
       }
@@ -100,7 +107,7 @@ export default function OptionsTab({
 
           // Load multi-mailbox pool
           if (data.mailboxes && data.mailboxes.length > 0) {
-            setSelectedMailboxIds(data.mailboxes.map(id => id.toString()));
+            setSelectedMailboxIds(data.mailboxes.map(normalizeMailboxId).filter(Boolean));
           }
 
           // Load send pacing
@@ -195,7 +202,7 @@ export default function OptionsTab({
           });
         }
         if (data.mailboxes) {
-          setSelectedMailboxIds(data.mailboxes.map(id => id.toString()));
+          setSelectedMailboxIds(data.mailboxes.map(normalizeMailboxId).filter(Boolean));
         }
         if (data.v2SendPacing) {
           setSendPacing(data.v2SendPacing);
@@ -241,10 +248,11 @@ export default function OptionsTab({
               {/* Active mailboxes */}
               <div className="space-y-2">
                 {activeMailboxes.map((mailbox) => {
-                  const isSelected = selectedMailboxIds.includes(mailbox._id);
+                  const mailboxId = normalizeMailboxId(mailbox);
+                  const isSelected = selectedMailboxIds.includes(mailboxId);
                   return (
                     <label
-                      key={mailbox._id}
+                      key={mailboxId}
                       className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                         isSelected
                           ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200'
@@ -254,7 +262,7 @@ export default function OptionsTab({
                       <input
                         type="checkbox"
                         checked={isSelected}
-                        onChange={() => toggleMailbox(mailbox._id)}
+                        onChange={() => toggleMailbox(mailboxId)}
                         className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                       />
                       <div className="flex-1 min-w-0">
@@ -301,6 +309,12 @@ export default function OptionsTab({
                 <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-800 font-medium">
                     {selectedMailboxIds.length} mailbox{selectedMailboxIds.length > 1 ? 'es' : ''} selected
+                  </p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    {activeMailboxes
+                      .filter((mailbox) => selectedMailboxIds.includes(normalizeMailboxId(mailbox)))
+                      .map((mailbox) => mailbox.fromEmail)
+                      .join(', ')}
                   </p>
                   <p className="text-xs text-blue-600 mt-0.5">
                     Leads will be distributed evenly via round-robin. The <code className="bg-blue-100 px-1 rounded">[Name]</code> placeholder in your email body will be replaced with each mailbox&apos;s sender name.

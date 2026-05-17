@@ -29,6 +29,20 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+const DEFAULT_REPLY_TEMPLATE = [
+  '{{firstName}},',
+  '',
+  'Got your reply, thank you.',
+  '',
+  'I can send over the redesigned version within the next hour. The idea is simple: keep the brand premium, make the site easy for relocating and out-of-state buyers to access, and remove the friction that is currently blocking people before they even see the listings.',
+  '',
+  'I will send you the preview link shortly.',
+  '',
+  '- {{senderName}}'
+].join('\n');
+
+const TEMPLATE_VARIABLES = ['{{firstName}}', '{{name}}', '{{company}}', '{{senderName}}', '{{senderEmail}}', '{{replySnippet}}'];
+
 /**
  * CAMPAIGN CREATION - Enhanced but Simple
  * Step 1: Name + Add Leads (CSV, Manual, or Import)
@@ -47,6 +61,11 @@ export default function NewCampaignPage() {
   
   const [campaignData, setCampaignData] = useState({
     name: ''
+  });
+  const [replyTemplate, setReplyTemplate] = useState({
+    enabled: true,
+    subject: '',
+    body: DEFAULT_REPLY_TEMPLATE
   });
   
   const [scheduleDate, setScheduleDate] = useState('');
@@ -279,6 +298,7 @@ export default function NewCampaignPage() {
           description: '',
           persona: 'outreach',
           goal: 'outreach',
+          autoReplyTemplate: replyTemplate,
           status: 'draft',
           sequence: [{
             stepNumber: 1,
@@ -336,6 +356,59 @@ export default function NewCampaignPage() {
                   className="h-14 text-lg"
                   autoFocus
                 />
+              </div>
+
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-4">
+                <div>
+                  <h3 className="text-sm font-medium">Reply Template</h3>
+                  <p className="text-xs text-gray-500 mt-1">
+                    This is the one-time acknowledgement email sent when a prospect replies.
+                  </p>
+                </div>
+
+                <label className="flex items-center gap-3 text-sm">
+                  <Checkbox
+                    checked={replyTemplate.enabled}
+                    onCheckedChange={(checked) => setReplyTemplate(prev => ({ ...prev, enabled: checked === true }))}
+                  />
+                  Send this template automatically when a prospect replies
+                </label>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Subject</label>
+                  <Input
+                    value={replyTemplate.subject}
+                    onChange={(e) => setReplyTemplate(prev => ({ ...prev, subject: e.target.value }))}
+                    placeholder="Leave blank to reply in the same thread subject"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Body</label>
+                  <Textarea
+                    value={replyTemplate.body}
+                    onChange={(e) => setReplyTemplate(prev => ({ ...prev, body: e.target.value }))}
+                    rows={8}
+                    className="font-mono text-sm"
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {TEMPLATE_VARIABLES.map((variable) => (
+                    <Button
+                      key={variable}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setReplyTemplate(prev => ({
+                        ...prev,
+                        body: `${prev.body}${prev.body.endsWith(' ') || prev.body.endsWith('\n') ? '' : ' '}${variable}`
+                      }))}
+                    >
+                      {variable}
+                    </Button>
+                  ))}
+                </div>
               </div>
 
               {/* Create Button */}
