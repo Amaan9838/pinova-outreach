@@ -61,6 +61,11 @@ const CampaignSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  autoReplyTemplate: {
+    enabled: { type: Boolean, default: false },
+    subject: { type: String, default: '' },
+    body: { type: String, default: '' }
+  },
   status: {
     type: String,
     enum: ['draft', 'pending_scheduled', 'scheduled', 'active', 'paused', 'completed', 'failed', 'cancelled'],

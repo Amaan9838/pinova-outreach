@@ -16,7 +16,8 @@ import {
   PenSquare,
   Bug,
   Kanban,
-  Brain
+  Brain,
+  FileUp
 } from "lucide-react"
 
 import { NavMain } from "./nav-main"
@@ -46,6 +47,7 @@ const data = {
     { title: "CRM Pulse", url: "/crm", icon: Brain, badge: "New" },
     { title: "Pipeline", url: "/pipeline", icon: Kanban, badge: "AI" },
     { title: "Campaigns", url: "/campaigns", icon: RocketIcon },
+    { title: "Import Campaign", url: "/campaigns/import", icon: FileUp },
     { title: "Prospects", url: "/prospects", icon: Users },
     { title: "Emails", url: "/emails", icon: Mail },
     { title: "Mailboxes", url: "/mailboxes", icon: Mailbox },

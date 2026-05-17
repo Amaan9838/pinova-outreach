@@ -14,7 +14,10 @@
     "test:schema": "jest --config tests/setup/jest.config.js tests/schema/",
     "validate-schema": "node scripts/validate-schemas.js",
     "check-performance": "node scripts/performance-check.js",
-    "error-report": "node scripts/error-report.js"
+    "error-report": "node scripts/error-report.js",
+    "worker:inbox": "node workers/inbox-worker.js",
+    "worker:outreach": "node workers/outreach-worker.js",
+    "seed:campaign-preset": "node scripts/seed-default-campaign-preset.js"
   },
   "dependencies": {
     "@anthropic-ai/foundry-sdk": "^0.2.0",
