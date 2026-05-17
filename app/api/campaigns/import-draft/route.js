@@ -87,7 +87,7 @@ export async function POST(request) {
     if (body.replyTemplate) {
       presetData.replyTemplate = {
         enabled: body.replyTemplate.enabled !== false,
-        subject: body.replyTemplate.subject || presetData.replyTemplate?.subject || 'Re: Website preview',
+        subject: body.replyTemplate.subject || presetData.replyTemplate?.subject || '',
         body: body.replyTemplate.body || presetData.replyTemplate?.body || ''
       };
     }

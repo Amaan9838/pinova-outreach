@@ -55,7 +55,7 @@ const CampaignPresetSchema = new mongoose.Schema({
   },
   replyTemplate: {
     enabled: { type: Boolean, default: true },
-    subject: { type: String, default: 'Re: Website preview' },
+    subject: { type: String, default: '' },
     body: {
       type: String,
       default: [

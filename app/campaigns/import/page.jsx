@@ -33,7 +33,7 @@ export default function CampaignImportPage() {
   const [result, setResult] = useState(null);
   const [replyTemplate, setReplyTemplate] = useState({
     enabled: true,
-    subject: 'Re: Website preview',
+    subject: '',
     body: DEFAULT_REPLY_TEMPLATE
   });
 
@@ -152,9 +152,12 @@ export default function CampaignImportPage() {
             <Input
               value={replyTemplate.subject}
               onChange={(e) => setReplyTemplate({ ...replyTemplate, subject: e.target.value })}
-              placeholder="Reply subject"
+              placeholder="Leave blank to use the same email thread subject"
               className="border-zinc-800 bg-zinc-900"
             />
+            <p className="text-xs text-zinc-500">
+              Leave subject blank to reply with the original email thread subject. That is best for Gmail/Outlook threading.
+            </p>
             <Textarea
               value={replyTemplate.body}
               onChange={(e) => setReplyTemplate({ ...replyTemplate, body: e.target.value })}
