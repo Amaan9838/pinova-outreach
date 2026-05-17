@@ -10,13 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 const DEFAULT_REPLY_TEMPLATE = [
-  '{{firstName}},',
+  'Hey {{firstName}},',
   '',
-  'Got your reply, thank you.',
+  'Thanks for getting back to me, appreciate it.',
   '',
-  'I can send over the redesigned version within the next hour. The idea is simple: keep the brand premium, make the site easy for relocating and out-of-state buyers to access, and remove the friction that is currently blocking people before they even see the listings.',
-  '',
-  'I will send you the preview link shortly.',
+  "What's your situation looking like right now? Happy to keep this relevant to wherever you're at.",
   '',
   '- {{senderName}}'
 ].join('\n');
