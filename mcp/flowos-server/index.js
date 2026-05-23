@@ -18,7 +18,6 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { z } from 'zod';
 import { createServer } from 'http';
-import { randomUUID } from 'crypto';
 
 const API_URL = process.env.FLOWOS_API_URL || 'http://localhost:3000/api/flow';
 const HTTP_PORT = parseInt(process.env.PORT || '3001', 10);
@@ -394,9 +393,8 @@ RULES: Actions must be SPECIFIC. Not "work on proposal" → "Write pricing secti
 
 async function main() {
   if (useHttp) {
-    // Session-based HTTP mode for Claude.ai web connector
-    const sessions = new Map();
-
+    // Stateless HTTP mode — each request gets its own server+transport
+    // No sessions, no race conditions, works perfectly with Claude.ai
     const httpServer = createServer(async (req, res) => {
       // CORS
       res.setHeader('Access-Control-Allow-Origin', '*');
@@ -415,7 +413,7 @@ async function main() {
       // Health check
       if (url.pathname === '/' || url.pathname === '/health') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ status: 'ok', server: 'flowos-mcp', transport: 'http' }));
+        res.end(JSON.stringify({ status: 'ok', server: 'flowos-mcp', transport: 'http-stateless' }));
         return;
       }
 
@@ -425,51 +423,32 @@ async function main() {
         return;
       }
 
+      // Stateless mode: only POST is supported (no GET for SSE, no DELETE for sessions)
+      if (req.method === 'GET') {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'SSE not supported in stateless mode. Use POST.' }));
+        return;
+      }
+
+      if (req.method === 'DELETE') {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Session termination not supported in stateless mode.' }));
+        return;
+      }
+
       try {
-        // Check for existing session
-        const sessionId = req.headers['mcp-session-id'];
-
-        if (sessionId && sessions.has(sessionId)) {
-          const transport = sessions.get(sessionId);
-          await transport.handleRequest(req, res);
-          return;
-        }
-
-        // Handle DELETE (session termination)
-        if (req.method === 'DELETE') {
-          if (sessionId && sessions.has(sessionId)) {
-            const transport = sessions.get(sessionId);
-            await transport.handleRequest(req, res);
-            sessions.delete(sessionId);
-          } else {
-            res.writeHead(404);
-            res.end('Session not found');
-          }
-          return;
-        }
-
-        // New session — create fresh server + transport
+        // Fresh server + transport per request — no shared state
+        const server = createFlowOSServer();
         const transport = new StreamableHTTPServerTransport({
-          sessionIdGenerator: () => randomUUID(),
+          sessionIdGenerator: undefined, // stateless — no sessions
         });
 
-        const server = createFlowOSServer();
+        res.on('close', () => {
+          transport.close().catch(() => {});
+          server.close().catch(() => {});
+        });
+
         await server.connect(transport);
-
-        // Store the session
-        if (transport.sessionId) {
-          sessions.set(transport.sessionId, transport);
-          console.error(`New session: ${transport.sessionId}`);
-        }
-
-        // Clean up on close
-        transport.onclose = () => {
-          if (transport.sessionId) {
-            sessions.delete(transport.sessionId);
-            console.error(`Session closed: ${transport.sessionId}`);
-          }
-        };
-
         await transport.handleRequest(req, res);
       } catch (error) {
         console.error('MCP HTTP error:', error);
@@ -481,7 +460,7 @@ async function main() {
     });
 
     httpServer.listen(HTTP_PORT, () => {
-      console.error(`FlowOS MCP Server running on http://localhost:${HTTP_PORT}/mcp`);
+      console.error(`FlowOS MCP Server running on http://localhost:${HTTP_PORT}/mcp (stateless)`);
       console.error(`Health: http://localhost:${HTTP_PORT}/health`);
       console.error(`\nFor Claude.ai → ngrok http ${HTTP_PORT}`);
       console.error(`Then paste: https://<ngrok-id>.ngrok-free.app/mcp`);
