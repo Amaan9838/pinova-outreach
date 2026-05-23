@@ -1,0 +1,13 @@
+{
+  "name": "flowos-mcp-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "MCP server for FlowOS GTD system — lets AI assistants read/write your GTD data",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  }
+}
