@@ -58,72 +58,10 @@ async function apiPut(path, body) {
 }
 
 // ── SOPs ─────────────────────────────────────────────────────
-
-const SOPS = {
-  outbound_prospect: {
-    name: 'Outbound — Prospect to Campaign', area: 'outbound',
-    description: 'Find, qualify, and reach out to a new prospect via cold email campaign.',
-    steps: [
-      { text: 'Research {name} and their company — website, LinkedIn, team size, tech stack', energy: 'medium' },
-      { text: 'Qualify {name} — decision maker? Right company size? Clear need for AI CRM?', energy: 'low' },
-      { text: 'Write personalized cold email for {name} — reference their specific pain point', energy: 'medium' },
-      { text: 'Create campaign in Pinova for {name}', energy: 'low' },
-      { text: 'Add {name} email to campaign and launch', energy: 'low' },
-    ],
-  },
-  outbound_close: {
-    name: 'Outbound — Close Deal', area: 'outbound',
-    description: 'Convert a positive reply into a paying customer.',
-    steps: [
-      { text: 'Research {name}\'s current website thoroughly', energy: 'medium' },
-      { text: 'Build demo homepage for {name} using base template', energy: 'high' },
-      { text: 'Send demo site link to {name} with walkthrough message', energy: 'low' },
-      { text: 'Follow up with {name} after 2 days if no response', energy: 'low' },
-      { text: 'Schedule call with {name} to discuss demo feedback', energy: 'low' },
-      { text: 'Address {name}\'s feedback and make requested changes', energy: 'medium' },
-      { text: 'Send final proposal with pricing to {name}', energy: 'medium' },
-      { text: 'Follow up on proposal — close or handle objections', energy: 'low' },
-    ],
-  },
-  inbound_lead: {
-    name: 'Inbound — Qualify & Convert', area: 'inbound',
-    description: 'Someone showed interest. Qualify and move to close.',
-    steps: [
-      { text: 'Research {name} — their profile, company, and how they found us', energy: 'medium' },
-      { text: 'Qualify {name} — right fit? Decision maker? Budget?', energy: 'low' },
-      { text: 'Reply to {name} with personalized message — ask about their current pain', energy: 'medium' },
-      { text: 'Engage with {name}\'s recent social posts (like, comment meaningfully)', energy: 'low' },
-      { text: 'Share relevant case study or resource with {name}', energy: 'low' },
-      { text: 'Propose a quick demo call with {name}', energy: 'low' },
-    ],
-  },
-  delivery_onboard: {
-    name: 'Delivery — Client Onboarding', area: 'delivery',
-    description: 'Onboard a new client — build their site, set up Pinova, launch.',
-    steps: [
-      { text: 'Research {name}\'s brand, competitors, and target audience deeply', energy: 'high' },
-      { text: 'Build client homepage for {name} using template — customize colors, copy, images', energy: 'high' },
-      { text: 'Set up {name}\'s Pinova account — mailboxes, domains, warm-up', energy: 'medium' },
-      { text: 'Send site draft to {name} for review', energy: 'low' },
-      { text: 'Implement {name}\'s revision requests', energy: 'medium' },
-      { text: 'Launch {name}\'s site and confirm everything working', energy: 'low' },
-      { text: 'Write onboarding email to {name} with docs and next steps', energy: 'medium' },
-    ],
-  },
-  ops_new_mailbox: {
-    name: 'Ops — New Mailbox Setup', area: 'ops',
-    description: 'Set up a new sending mailbox with proper deliverability.',
-    steps: [
-      { text: 'Purchase domain for new mailbox', energy: 'low' },
-      { text: 'Set up DNS records — SPF, DKIM, DMARC', energy: 'medium' },
-      { text: 'Create email account on the domain', energy: 'low' },
-      { text: 'Add mailbox to Pinova and connect', energy: 'low' },
-      { text: 'Start warm-up sequence (14 days)', energy: 'low' },
-      { text: 'Check warm-up after 7 days — inbox rate, spam complaints', energy: 'low' },
-      { text: 'Verify deliverability after 14 days — run test sends', energy: 'low' },
-    ],
-  },
-};
+async function getSopsFromApi() {
+  const data = await apiGet('/sops');
+  return data.sops || [];
+}
 
 // ── Register all tools on an McpServer instance ─────────────
 // Factory function — each HTTP session gets its own server
@@ -328,10 +266,15 @@ Energy: low (quick win <15min), medium (15-45min), high (deep work 45+min)`,
     `List available Standard Operating Procedures.`,
     {},
     async () => {
-      const formatted = Object.entries(SOPS).map(([key, sop]) =>
-        `**${sop.name}** (key: ${key})\n  ${sop.description}\n  Steps: ${sop.steps.length}`
-      ).join('\n\n');
-      return { content: [{ type: 'text', text: `Available SOPs:\n\n${formatted}` }] };
+      try {
+        const sopsList = await getSopsFromApi();
+        const formatted = sopsList.map(sop =>
+          `**${sop.label}** (key: ${sop.id})\n  ${sop.desc || ''}\n  Steps: ${sop.steps?.length || 0}`
+        ).join('\n\n');
+        return { content: [{ type: 'text', text: `Available SOPs:\n\n${formatted}` }] };
+      } catch (error) {
+        return { content: [{ type: 'text', text: `Error: ${error.message}` }] };
+      }
     }
   );
 
@@ -346,14 +289,15 @@ Use when user mentions: new prospect, positive reply, inbound lead, new client, 
     },
     async ({ sopKey, name, notes }) => {
       try {
-        const sop = SOPS[sopKey];
+        const sopsList = await getSopsFromApi();
+        const sop = sopsList.find(s => s.id === sopKey);
         if (!sop) return { content: [{ type: 'text', text: `Unknown SOP: ${sopKey}` }] };
-        const projectName = `${sop.name.split('—')[1]?.trim() || sop.name}: ${name}`;
+        const projectName = `${sop.label.split('—')[1]?.trim() || sop.label}: ${name}`;
         const projRes = await apiPost('/items', {
-          item: { text: projectName, type: 'project', area: sop.area, notes: `SOP: ${sop.name}\n${notes || ''}`.trim() },
+          item: { text: projectName, type: 'project', area: sop.area, notes: `SOP: ${sop.label}\n${notes || ''}`.trim() },
         });
         const projId = projRes.item?._id || projRes.item?.id;
-        const actions = sop.steps.map((step, i) => ({
+        const actions = (sop.steps || []).map((step, i) => ({
           text: step.text.replace(/\{name\}/g, name), type: 'action', area: sop.area,
           energy: step.energy, projectId: projId, isToday: i === 0,
         }));

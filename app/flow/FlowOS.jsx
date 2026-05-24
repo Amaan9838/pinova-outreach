@@ -28,61 +28,6 @@ const ENERGY = [
   { id: 'high', label: 'Deep work', color: '#FFB4AB', icon: '🔥' },
 ];
 
-const SOPS = [
-  { id: 'outbound_prospect', label: 'Prospect → Campaign', area: 'outbound', icon: '🎯', desc: 'Find, qualify, and cold email a new prospect.',
-    steps: [
-      { text: 'Research {name} and their company — website, LinkedIn, team size', energy: 'medium' },
-      { text: 'Qualify {name} — decision maker? Right company size? Clear need?', energy: 'low' },
-      { text: 'Write personalized cold email for {name}', energy: 'medium' },
-      { text: 'Create campaign in Pinova for {name}', energy: 'low' },
-      { text: 'Add {name} email to campaign and launch', energy: 'low' },
-    ] },
-  { id: 'outbound_close', label: 'Close Deal', area: 'outbound', icon: '🤝', desc: 'Convert positive reply into customer.',
-    steps: [
-      { text: 'Research {name}\'s current website thoroughly', energy: 'medium' },
-      { text: 'Build demo homepage for {name} using base template', energy: 'high' },
-      { text: 'Send demo site link to {name} with walkthrough', energy: 'low' },
-      { text: 'Follow up with {name} after 2 days if no response', energy: 'low' },
-      { text: 'Schedule call with {name} to discuss demo feedback', energy: 'low' },
-      { text: 'Address {name}\'s feedback and make changes', energy: 'medium' },
-      { text: 'Send final proposal with pricing to {name}', energy: 'medium' },
-      { text: 'Follow up on proposal — close or handle objections', energy: 'low' },
-    ] },
-  { id: 'inbound_lead', label: 'Qualify & Convert', area: 'inbound', icon: '📩', desc: 'Someone showed interest. Qualify and move to close.',
-    steps: [
-      { text: 'Research {name} — profile, company, how they found us', energy: 'medium' },
-      { text: 'Qualify {name} — right fit? Decision maker? Budget?', energy: 'low' },
-      { text: 'Reply to {name} with personalized message', energy: 'medium' },
-      { text: 'Engage with {name}\'s recent social posts', energy: 'low' },
-      { text: 'Share relevant case study with {name}', energy: 'low' },
-      { text: 'Propose a quick demo call with {name}', energy: 'low' },
-    ] },
-  { id: 'delivery_onboard', label: 'Client Onboarding', area: 'delivery', icon: '🚀', desc: 'Build site, set up Pinova, launch.',
-    steps: [
-      { text: 'Research {name}\'s brand, competitors, and audience', energy: 'high' },
-      { text: 'Build client homepage for {name} — customize template', energy: 'high' },
-      { text: 'Set up {name}\'s Pinova account — mailboxes, domains, warm-up', energy: 'medium' },
-      { text: 'Send site draft to {name} for review', energy: 'low' },
-      { text: 'Implement {name}\'s revision requests', energy: 'medium' },
-      { text: 'Launch {name}\'s site and confirm everything working', energy: 'low' },
-      { text: 'Write onboarding email to {name} with docs', energy: 'medium' },
-    ] },
-  { id: 'ops_new_mailbox', label: 'New Mailbox Setup', area: 'ops', icon: '📧', desc: 'Set up sending mailbox with proper deliverability.',
-    steps: [
-      { text: 'Purchase domain for {name} mailbox', energy: 'low' },
-      { text: 'Set up DNS records — SPF, DKIM, DMARC for {name}', energy: 'medium' },
-      { text: 'Create email account on {name} domain', energy: 'low' },
-      { text: 'Add {name} mailbox to Pinova and connect', energy: 'low' },
-      { text: 'Start warm-up sequence for {name} (14 days)', energy: 'low' },
-      { text: 'Check warm-up after 7 days — inbox rate, spam', energy: 'low' },
-      { text: 'Verify deliverability after 14 days — run test sends', energy: 'low' },
-    ] },
-];
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// API HELPERS
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 const api = {
   async getAll() {
     const r = await fetch('/api/flow/items?all=true');
@@ -131,6 +76,19 @@ const api = {
   async getState() {
     const r = await fetch('/api/flow/state');
     return r.json();
+  },
+  async getSops() {
+    const r = await fetch('/api/flow/sops');
+    const d = await r.json();
+    return d.sops || [];
+  },
+  async updateSops(sops) {
+    const r = await fetch('/api/flow/sops', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sops }),
+    });
+    const d = await r.json();
+    return d.sops || [];
   },
 };
 
@@ -1153,19 +1111,26 @@ function CaptureModal({ onClose, refresh }) {
 // VIEW: SOPs (Standard Operating Procedures)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-function SopsView({ items, refresh, setView }) {
+function SopsView({ items, sops, setSops, refresh, setView }) {
   const [sel, setSel] = useState(null);
   const [name, setName] = useState('');
   const [starting, setStarting] = useState(false);
 
+  // Editing state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editLabel, setEditLabel] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editSteps, setEditSteps] = useState([]);
+  const [saving, setSaving] = useState(false);
+
   const startSop = async () => {
     if (!name.trim() || !sel) return;
     setStarting(true);
-    const sop = SOPS.find(s => s.id === sel);
+    const sop = sops.find(s => s.id === sel);
     const projectName = `${sop.label}: ${name.trim()}`;
 
     // Create project
-    const projRes = await api.create({ text: projectName, type: 'project', area: sop.area, notes: `SOP: ${sop.label}` });
+    const projRes = await api.create({ text: projectName, type: 'project', area: sop.area, notes: `SOP: ${sop.label}\nDescription: ${sop.desc}` });
     const projId = itemId(projRes);
 
     // Create all actions
@@ -1181,6 +1146,109 @@ function SopsView({ items, refresh, setView }) {
     refresh(); setView('projects');
   };
 
+  const handleStartEdit = () => {
+    const sop = sops.find(s => s.id === sel);
+    if (!sop) return;
+    setEditLabel(sop.label);
+    setEditDesc(sop.desc || '');
+    setEditSteps(sop.steps.map(s => ({ ...s })));
+    setIsEditing(true);
+  };
+
+  const handleAddStep = () => {
+    setEditSteps([...editSteps, { text: '', energy: 'medium' }]);
+  };
+
+  const handleStepTextChange = (idx, text) => {
+    const newSteps = [...editSteps];
+    newSteps[idx].text = text;
+    setEditSteps(newSteps);
+  };
+
+  const handleStepEnergyChange = (idx, energy) => {
+    const newSteps = [...editSteps];
+    newSteps[idx].energy = energy;
+    setEditSteps(newSteps);
+  };
+
+  const handleRemoveStep = (idx) => {
+    const newSteps = editSteps.filter((_, i) => i !== idx);
+    setEditSteps(newSteps);
+  };
+
+  const handleSaveBlueprint = async () => {
+    if (!editLabel.trim()) return;
+    setSaving(true);
+    try {
+      const updatedSops = sops.map(s => {
+        if (s.id === sel) {
+          return {
+            ...s,
+            label: editLabel.trim(),
+            desc: editDesc.trim(),
+            steps: editSteps.filter(step => step.text.trim() !== '')
+          };
+        }
+        return s;
+      });
+      const saved = await api.updateSops(updatedSops);
+      setSops(saved);
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Failed to save blueprint:', err);
+    }
+    setSaving(false);
+  };
+
+  if (isEditing) {
+    const sop = sops.find(s => s.id === sel);
+    return (
+      <div className="ve" style={{ padding: '24px 20px', maxWidth: 520, margin: '0 auto' }}>
+        <button onClick={() => setIsEditing(false)} className="fb fb-g" style={{ marginBottom: 16, padding: '6px 12px', fontSize: 13 }}>← Cancel Edit</button>
+        <h2 style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-display)', margin: '0 0 16px', letterSpacing: '-0.02em' }}>Edit Blueprint: {sop.label}</h2>
+        
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontSize: 13, color: C.t2, marginBottom: 6, fontWeight: 600 }}>SOP Label</div>
+          <input className="fi" value={editLabel} onChange={e => setEditLabel(e.target.value)} placeholder="e.g. Prospect → Campaign" style={{ marginBottom: 14 }} />
+          
+          <div style={{ fontSize: 13, color: C.t2, marginBottom: 6, fontWeight: 600 }}>Description</div>
+          <textarea className="fi" value={editDesc} onChange={e => setEditDesc(e.target.value)} placeholder="What does this SOP do?" rows={2} style={{ resize: 'vertical', lineHeight: 1.5, marginBottom: 14 }} />
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <SectionTitle right={<button onClick={handleAddStep} className="fch" style={{ background: `${C.primary}15`, color: C.primary, border: `1px solid ${C.primary}30` }}>+ Add Step</button>}>Blueprint Steps</SectionTitle>
+          
+          {editSteps.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '20px 10px', color: C.t3, fontSize: 13, fontStyle: 'italic' }}>No steps. Add one!</div>
+          ) : (
+            editSteps.map((step, idx) => (
+              <div key={idx} className="fc" style={{ marginBottom: 10, padding: 12, border: `1px solid ${C.border2}` }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: C.t3 }}>Step {idx + 1}</span>
+                  <div style={{ flex: 1 }} />
+                  <button onClick={() => handleRemoveStep(idx)} className="fch" style={{ background: `${C.error}12`, color: C.error, border: 'none', padding: '3px 8px', fontSize: 11 }}>Remove ×</button>
+                </div>
+                <input className="fi" value={step.text} onChange={e => handleStepTextChange(idx, e.target.value)} placeholder="Task text (use {name} for dynamic substitution)" style={{ marginBottom: 8 }} />
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {ENERGY.map(e => (
+                    <button key={e.id} type="button" className="fch" onClick={() => handleStepEnergyChange(idx, e.id)} style={{
+                      background: step.energy === e.id ? `${e.color}25` : C.s3, color: step.energy === e.id ? e.color : C.t2,
+                      border: `1px solid ${step.energy === e.id ? e.color + '40' : 'transparent'}`, flex: 1, justifyContent: 'center',
+                    }}>{e.icon} {e.label}</button>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <button className="fb fb-p" style={{ width: '100%', marginBottom: 8 }} onClick={handleSaveBlueprint} disabled={saving || !editLabel.trim()}>
+          {saving ? 'Saving...' : 'Save Blueprint ✓'}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="ve" style={{ padding: '24px 20px', maxWidth: 520, margin: '0 auto' }}>
       <h2 style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>SOPs</h2>
@@ -1189,7 +1257,7 @@ function SopsView({ items, refresh, setView }) {
       </div>
 
       {!sel ? (
-        SOPS.map(sop => {
+        sops.map(sop => {
           const areaInfo = AREAS.find(a => a.id === sop.area);
           return (
             <div key={sop.id} className="fc" onClick={() => setSel(sop.id)}
@@ -1201,7 +1269,7 @@ function SopsView({ items, refresh, setView }) {
                   <AreaChip area={sop.area} small />
                 </div>
                 <div style={{ fontSize: 12, color: C.t3 }}>{sop.desc}</div>
-                <div style={{ fontSize: 11, color: C.t4, marginTop: 2 }}>{sop.steps.length} steps</div>
+                <div style={{ fontSize: 11, color: C.t4, marginTop: 2 }}>{sop.steps?.length || 0} steps</div>
               </div>
               <span style={{ color: C.t3, fontSize: 16 }}>›</span>
             </div>
@@ -1210,10 +1278,14 @@ function SopsView({ items, refresh, setView }) {
       ) : (
         <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
           {(() => {
-            const sop = SOPS.find(s => s.id === sel);
+            const sop = sops.find(s => s.id === sel);
             return (
               <>
-                <button onClick={() => setSel(null)} className="fb fb-g" style={{ marginBottom: 16, padding: '6px 12px', fontSize: 13 }}>← All SOPs</button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <button onClick={() => setSel(null)} className="fb fb-g" style={{ padding: '6px 12px', fontSize: 13 }}>← All SOPs</button>
+                  <button onClick={handleStartEdit} className="fb fb-g" style={{ padding: '6px 12px', fontSize: 13, color: C.primary, borderColor: `${C.primary}30` }}>✏ Edit Blueprint</button>
+                </div>
+                
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                   <span style={{ fontSize: 32 }}>{sop.icon}</span>
                   <div>
@@ -1232,8 +1304,8 @@ function SopsView({ items, refresh, setView }) {
 
                 {/* Preview steps */}
                 <div style={{ marginBottom: 18 }}>
-                  <SectionTitle>{sop.steps.length} steps will be created</SectionTitle>
-                  {sop.steps.map((step, i) => (
+                  <SectionTitle>{sop.steps?.length || 0} steps will be created</SectionTitle>
+                  {(sop.steps || []).map((step, i) => (
                     <div key={i} style={{
                       display: 'flex', gap: 10, alignItems: 'flex-start', padding: '8px 0',
                       borderBottom: i < sop.steps.length - 1 ? `1px solid ${C.border}` : 'none',
@@ -1252,7 +1324,7 @@ function SopsView({ items, refresh, setView }) {
                 </div>
 
                 <button className="fb fb-p" style={{ width: '100%' }} onClick={startSop} disabled={!name.trim() || starting}>
-                  {starting ? 'Creating...' : `Start SOP → Create project with ${sop.steps.length} actions`}
+                  {starting ? 'Creating...' : `Start SOP → Create project with ${sop.steps?.length || 0} actions`}
                 </button>
               </>
             );
@@ -1311,6 +1383,7 @@ function MoreMenu({ setView, items, meta }) {
 
 export default function FlowOS() {
   const [items, setItems] = useState(null);
+  const [sops, setSops] = useState(null);
   const [meta, setMeta] = useState({ needsReview: false, daysSinceReview: null, lastReviewDate: null });
   const [view, setView] = useState('today');
   const [showCapture, setShowCapture] = useState(false);
@@ -1318,7 +1391,11 @@ export default function FlowOS() {
 
   const refresh = useCallback(async () => {
     try {
-      const [itemsRes, stateRes] = await Promise.all([api.getAll(), api.getState()]);
+      const [itemsRes, stateRes, sopsRes] = await Promise.all([
+        api.getAll(),
+        api.getState(),
+        api.getSops(),
+      ]);
       setItems(itemsRes);
       if (stateRes.state) {
         setMeta({
@@ -1327,6 +1404,7 @@ export default function FlowOS() {
           lastReviewDate: stateRes.state.lastReviewDate,
         });
       }
+      setSops(sopsRes);
     } catch (err) {
       console.error('FlowOS refresh error:', err);
     }
@@ -1335,7 +1413,7 @@ export default function FlowOS() {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  if (loading || !items) return (
+  if (loading || !items || !sops) return (
     <div style={{ background: C.bg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-body, sans-serif)', fontSize: 13, color: C.t3 }}>
       <div style={{ textAlign: 'center' }}><div style={{ fontSize: 28, marginBottom: 12 }}>⚡</div>Loading your system…</div>
     </div>
@@ -1361,7 +1439,7 @@ export default function FlowOS() {
       case 'waiting': return <WaitingView items={items} refresh={refresh} />;
       case 'someday': return <SomedayView items={items} refresh={refresh} />;
       case 'routines': return <RoutinesView items={items} refresh={refresh} />;
-      case 'sops': return <SopsView items={items} refresh={refresh} setView={setView} />;
+      case 'sops': return <SopsView items={items} sops={sops} setSops={setSops} refresh={refresh} setView={setView} />;
       case 'review': return <ReviewView items={items} meta={meta} refresh={refresh} setView={setView} />;
       case 'more': return <MoreMenu setView={setView} items={items} meta={meta} />;
       default: return <TodayView items={items} meta={meta} refresh={refresh} setView={setView} />;
