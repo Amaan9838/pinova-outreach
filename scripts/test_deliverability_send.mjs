@@ -57,9 +57,18 @@ async function runTestSend() {
     console.log(`\nSelected Mailbox: ${selectedMailbox.fromName} <${selectedMailbox.fromEmail}>`);
 
     const recipient = 'mtwebsite1@gmail.com';
-    console.log(`Sending test email to ${recipient}...`);
+    const trackingId = 'test-' + Date.now();
+    console.log(`Sending test email to ${recipient} with tracking enabled...`);
 
-    const result = await SMTPService.sendTestEmail(selectedMailbox, recipient);
+    const result = await SMTPService.sendEmail({
+      mailbox: selectedMailbox,
+      to: recipient,
+      subject: 'Test Email with Tracking from Pinova Mail System',
+      html: `<div dir="ltr">Test Email with Tracking<br><br>This is a test email with tracking enabled from your Pinova Mail System.<br><br><b>Mailbox:</b> ${selectedMailbox.fromName} (${selectedMailbox.fromEmail})<br><b>Sent at:</b> ${new Date().toLocaleString()}<br><br>If you received this email, your SMTP configuration is working correctly!</div>`,
+      text: `Test Email with Tracking - This is a test email with tracking enabled from your Pinova Mail System. Mailbox: ${selectedMailbox.fromName} (${selectedMailbox.fromEmail}). Sent at: ${new Date().toLocaleString()}. If you received this email, your SMTP configuration is working correctly!`,
+      trackingId,
+      disableTracking: false,
+    });
 
     console.log('\n--- SEND RESULT ---');
     console.log(JSON.stringify(result, null, 2));
