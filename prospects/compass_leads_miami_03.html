@@ -1,0 +1,3829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinova Outreach - Compass Leads Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #e0e7ff;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-full: 9999px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .logo-text p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.total { background-color: #eff6ff; color: #3b82f6; }
+        .stat-icon.with-links { background-color: #f0fdf4; color: #22c55e; }
+        .stat-icon.no-links { background-color: #fffbeb; color: #f59e0b; }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .controls-bar {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+            max-width: 480px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #fcfcfd;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            background-color: #fff;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background-color: #f1f5f9;
+            padding: 0.25rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .tab-btn {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 1rem;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background-color: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-count {
+            background-color: #e2e8f0;
+            color: var(--text-secondary);
+            padding: 0.125rem 0.375rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .tab-btn.active .tab-count {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .agent-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s, border-color 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-hover);
+        }
+
+        .card-header {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1.25rem;
+        }
+
+        .avatar {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .agent-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .agent-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.125rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .agent-designation {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.5rem;
+        }
+
+        .badges-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.625rem;
+            border-radius: var(--radius-full);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .badge-listings {
+            background-color: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #dcfce7;
+        }
+
+
+
+        .badge-city {
+            background-color: #f0f9ff;
+            color: #0369a1;
+            border: 1px solid #e0f2fe;
+        }
+
+        .badge-page {
+            background-color: #faf5ff;
+            color: #7e22ce;
+            border: 1px solid #f3e8ff;
+        }
+
+        .card-body {
+            padding: 0.75rem 0;
+            border-top: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .contact-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .contact-row:hover {
+            color: var(--primary);
+        }
+
+        .contact-icon {
+            width: 1rem;
+            height: 1rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .card-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .actions-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            padding: 0.625rem;
+            font-family: var(--font-family);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-primary.disabled {
+            background-color: #f1f5f9;
+            color: var(--text-muted);
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .btn-secondary {
+            background-color: white;
+            border-color: var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background-color: #f8fafc;
+        }
+
+        .socials-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            min-height: 2rem;
+        }
+
+        .social-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-right: 0.25rem;
+        }
+
+        .social-link {
+            width: 2rem;
+            height: 2rem;
+            border-radius: var(--radius-full);
+            background-color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            text-decoration: none;
+            border: 1px solid #e2e8f0;
+        }
+
+        .social-link:hover {
+            transform: scale(1.1);
+            color: white;
+        }
+
+        .social-link.instagram:hover { background-color: #e1306c; border-color: #e1306c; }
+        .social-link.linkedin:hover { background-color: #0077b5; border-color: #0077b5; }
+        .social-link.facebook:hover { background-color: #1877f2; border-color: #1877f2; }
+        .social-link.twitter:hover { background-color: #000000; border-color: #000000; }
+        .social-link.youtube:hover { background-color: #ff0000; border-color: #ff0000; }
+        .social-link.tiktok:hover { background-color: #010101; border-color: #010101; }
+        .social-link.default:hover { background-color: var(--primary); border-color: var(--primary); }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 1.75rem;
+            height: 1.75rem;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.15s;
+            opacity: 0;
+            z-index: 10;
+        }
+
+        .agent-card:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary-light);
+            background-color: var(--primary-light);
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            background-color: var(--bg-card);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .no-results-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--text-primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pagination-info {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .page-btn {
+            border: 1px solid var(--border-color);
+            background-color: white;
+            color: var(--text-secondary);
+            padding: 0.5rem 0.875rem;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background-color: #f8fafc;
+        }
+
+        .page-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .page-btn:disabled {
+            color: var(--text-muted);
+            background-color: #f1f5f9;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+        }
+
+        .page-dots {
+            padding: 0 0.5rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-icon">P</div>
+                <div class="logo-text">
+                    <h1>Pinova Outreach</h1>
+                    <p>Compass Agent Directory Explorer</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon total">🏡</div>
+                <div class="stat-info">
+                    <span id="stat-total-val" class="stat-value">0</span>
+                    <span class="stat-label">Total Prospects</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon with-links">🔗</div>
+                <div class="stat-info">
+                    <span id="stat-with-links-val" class="stat-value">0</span>
+                    <span class="stat-label">Has Website/Socials (Cat A)</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon no-links">❓</div>
+                <div class="stat-info">
+                    <span id="stat-no-links-val" class="stat-value">0</span>
+                    <span class="stat-label">No Links (Cat B)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls-bar">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('all')">
+                    All Leads <span id="count-all" class="tab-count">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('with-links')">
+                    Category A: Has Links <span id="count-with-links" class="tab-count">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('no-links')">
+                    Category B: No Links <span id="count-no-links" class="tab-count">0</span>
+                </button>
+            </div>
+            
+            <div class="search-box">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by name, designation, email..." oninput="handleSearch(this.value)">
+            </div>
+        </div>
+        
+        <div id="agentGrid" class="agent-grid"></div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationContainer" class="pagination-container" style="display: none;">
+            <div id="paginationInfo" class="pagination-info">Showing 0-0 of 0 prospects</div>
+            <div id="paginationControls" class="pagination-controls"></div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast">Agent details copied to clipboard!</div>
+
+    <script>
+        const leadsData = [
+  {
+    "id": 0,
+    "name": "Todd Nordstrom",
+    "email": "todd.nordstrom@compass.com",
+    "phone": "3057904008",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/todd-nordstrom/",
+    "designation": "Realtor",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [
+      "https://www.linkedin.com/in/toddnordstrom/",
+      "https://www.facebook.com/todd.nordstrom"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 1,
+    "name": "Miriam Novotny PA",
+    "email": "miriam.novotny@compass.com",
+    "phone": "3059429684",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/miriam-novotny/",
+    "designation": "Realtor",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [
+      "https://www.facebook.com/sellingislandlife/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 2,
+    "name": "Osmany Mondaca",
+    "email": "nxtlvl@compass.com",
+    "phone": "305.490.8840",
+    "listings": 23,
+    "website": "",
+    "compass": "https://www.compass.com/agents/Osmany-Mondaca",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [
+      "https://www.instagram.com/osmanymondaca/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 3,
+    "name": "Dhavy Ocampo",
+    "email": "dhavy.ocampo@compass.com",
+    "phone": "7866608465",
+    "listings": 12,
+    "website": "",
+    "compass": "https://www.compass.com/agents/dhavy-ocampo/",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 4,
+    "name": "Juliano Oliveira",
+    "email": "juliano.oliveira@compass.com",
+    "phone": "6462661839",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/juliano-oliveira/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [
+      "https://www.linkedin.com/in/juliano-oliveira-99a86a73/",
+      "https://www.facebook.com/oliveirajulianorealtor/",
+      "https://www.instagram.com/oliveira_juliano_/",
+      "https://twitter.com/Ju_oliveira0202"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 5,
+    "name": "Natalie Ortega",
+    "email": "natalie.ortega@compass.com",
+    "phone": "3058986756",
+    "listings": 10,
+    "website": "",
+    "compass": "https://www.compass.com/agents/natalie-ortega/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [
+      "https://www.facebook.com/natortega77/",
+      "https://www.instagram.com/natalie.ortega.realtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 6,
+    "name": "Sandra Osorio",
+    "email": "sandra.osorio@compass.com",
+    "phone": "3058774453",
+    "listings": 21,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sandra-osorio/",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [
+      "https://www.linkedin.com/in/sandraosoriomangini/",
+      "https://www.facebook.com/SandraOsorioMiami",
+      "https://www.instagram.com/sandrarealestateagent_/?hl=en",
+      "https://twitter.com/SandrasTeamMiam"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 7,
+    "name": "Juliana Ospina",
+    "email": "juliana.ospina@compass.com",
+    "phone": "3054589446",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/juliana-ospina/",
+    "designation": "Realtor\u00ae",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [
+      "https://www.facebook.com/julianaospinarealestate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 8,
+    "name": "Lizzie Padro",
+    "email": "lizzie.padro@compass.com",
+    "phone": "3057424323",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/lizzie-padro/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [
+      "https://www.facebook.com/lizziempadro",
+      "https://www.instagram.com/lizziepadro/",
+      "https://twitter.com/LizzieMabel"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 9,
+    "name": "Elias Palacios",
+    "email": "elias.palacios@compass.com",
+    "phone": "9542427381",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/elias-palacios/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [
+      "https://www.facebook.com/Elias-I-Palacios-PA-479142078915152/",
+      "https://www.instagram.com/eliasmiamirealtor/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 10,
+    "name": "Judy Palladino",
+    "email": "judy.palladino@compass.com",
+    "phone": "3052900303",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/judy-palladino/",
+    "designation": "Realtor",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 11,
+    "name": "Pam Thomes",
+    "email": "pamandtoni@compass.com",
+    "phone": "561.716.7526",
+    "listings": 10,
+    "website": "https://www.pamandtoni.com/",
+    "compass": "https://www.compass.com/agents/pam-thomes",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [
+      "https://www.instagram.com/pamandtoniteam/",
+      "https://www.facebook.com/ThePamAndToniTeam/?ref=br_rs"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 12,
+    "name": "Patricia Pappaterra",
+    "email": "patricia.pappaterra@compass.com",
+    "phone": "7869728282",
+    "listings": 4,
+    "website": "https://consumer.hifello.com/lp/6836e8f40b58a100366fdc82",
+    "compass": "https://www.compass.com/agents/patricia-pappaterra/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 13,
+    "name": "Holly Parker",
+    "email": "holly.parker@compass.com",
+    "phone": "9175877288",
+    "listings": 9,
+    "website": "https://www.inman.com/2024/03/18/douglas-elliman-doles-out-ellie-awards-for-top-nyc-producers/",
+    "compass": "https://www.compass.com/agents/holly-parker/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 14,
+    "name": "Maria Parra Loughlin",
+    "email": "maria.parraloughlin@compass.com",
+    "phone": "3058782488",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/maria-parra-loughlin/",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [
+      "https://www.facebook.com/MPLIslandLiving/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 15,
+    "name": "Vinny Patalano",
+    "email": "vinny.patalano@compass.com",
+    "phone": "3059168883",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/vinny-patalano/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [
+      "https://www.linkedin.com/in/vincentpatalano/",
+      "https://www.facebook.com/vinny.patalano",
+      "https://www.instagram.com/purchasewithpatalano/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 16,
+    "name": "Martine Paulin",
+    "email": "martine@compass.com",
+    "phone": "3057737100",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/martine-paulin/",
+    "designation": "REALTOR\u00ae",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 17,
+    "name": "Beatriz Pereira",
+    "email": "beatriz.pereira@compass.com",
+    "phone": "7865567506",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/beatriz-pereira/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 16,
+    "socials": [
+      "https://www.instagram.com/bea_realestatebroker?igsh=Y2M3ZmF0bnk0YXJh&utm_source=qr",
+      "https://www.linkedin.com/in/beatriz-pereira-broker/?enhance=null"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 18,
+    "name": "Robby Perez",
+    "email": "robby.perez@compass.com",
+    "phone": "3057720525",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/robby-perez/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.linkedin.com/in/robbymperez/",
+      "https://www.instagram.com/robbymperez/",
+      "https://www.facebook.com/RobbyPerezBenMossGroupCompass/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 19,
+    "name": "Alan Perez",
+    "email": "alanperez@compass.com",
+    "phone": "7186791454",
+    "listings": 3,
+    "website": "https://forbes.com.mx/alan-perez-agente-inmobiliario/",
+    "compass": "https://www.compass.com/agents/alan-perez/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.linkedin.com/in/alan-perez-8b97b991/",
+      "https://www.instagram.com/iamalanperez/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 20,
+    "name": "Cindy Summer Perez",
+    "email": "cindy.perez@compass.com",
+    "phone": "7864428895",
+    "listings": 10,
+    "website": "https://youtu.be/BgabArSNR30?si=c07oEo7VDXkgRMD-",
+    "compass": "https://www.compass.com/agents/cindy-perez/",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.youtube.com/watch?v=-xX_QiNqEwc"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 21,
+    "name": "Nina Perez-Billini",
+    "email": "nina.perezbillini@compass.com",
+    "phone": "7866037773",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/nina-perez-billini/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 22,
+    "name": "Madelyn Perfetti",
+    "email": "madelyn.perfetti@compass.com",
+    "phone": "9546732385",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/madelyn-perfetti/",
+    "designation": "Realtor",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.linkedin.com/in/madelyn-perfetti-4ab758165/",
+      "https://www.facebook.com/profile.php?id=100075596356369&sk=about",
+      "https://instagram.com/madelyn.perfetti?utm_medium=copy_link"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 23,
+    "name": "Philip Scheinfeld",
+    "email": "thephilipscheinfeldteam@compass.com",
+    "phone": "518-524-5168",
+    "listings": 13,
+    "website": "https://www.forbes.com/sites/shamahyder/2020/11/09/how-social-media-is-critical-to-succeeding-in-real-estate-in-2021/amp/",
+    "compass": "https://www.compass.com/agents/philip-scheinfeld",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.instagram.com/philipscheinfeld/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 24,
+    "name": "Francis Pimentel-Matos",
+    "email": "francis.matos@compass.com",
+    "phone": "3057331602",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/francis-pimentel-de-matos/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 25,
+    "name": "Carley Pina",
+    "email": "carleypina@compass.com",
+    "phone": "6176885334",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/carley-pina/",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.youtube.com/@Carleyinmiami",
+      "http://www.facebook.com/carleysellsmiami",
+      "https://www.instagram.com/carleyinmiami"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 26,
+    "name": "Talita Pinheiro",
+    "email": "talita.pinheiro@compass.com",
+    "phone": "3059061526",
+    "listings": 24,
+    "website": "",
+    "compass": "https://www.compass.com/agents/talita-pinheiro/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.linkedin.com/in/talita-pinheiro-b8b73761/",
+      "https://www.facebook.com/TalitaRealtor/",
+      "https://www.instagram.com/talipinheiro/",
+      "https://twitter.com/talipinheiro"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 27,
+    "name": "Wendy Harman",
+    "email": "pointb@compass.com",
+    "phone": "(508) 274-5363",
+    "listings": 11,
+    "website": "",
+    "compass": "https://www.compass.com/agents/wendy-harman",
+    "designation": "REALTOR",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.facebook.com/pointbrealty",
+      "https://www.instagram.com/pointbrealty/",
+      "https://www.linkedin.com/company/point-b-realty/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 28,
+    "name": "Milton Andrade",
+    "email": "polarisadvisors@compass.com",
+    "phone": "971.300.9362",
+    "listings": 11,
+    "website": "",
+    "compass": "https://www.compass.com/agents/milton-andrade",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.instagram.com/listingmiami/",
+      "https://www.facebook.com/MiamiMilton/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 29,
+    "name": "Micha Porat",
+    "email": "micha.porat@compass.com",
+    "phone": "3055876179",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/micha-porat/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.instagram.com/michasellsmiami/",
+      "https://www.facebook.com/micha.porat",
+      "https://www.youtube.com/@michasellsmiami7181"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 30,
+    "name": "Arthur Porosoff",
+    "email": "arthur.porosoff@compass.com",
+    "phone": "3057336066",
+    "listings": 8,
+    "website": "https://therealdeal.com/miami/2022/10/04/churchills-pub-in-little-haiti-hits-market/",
+    "compass": "https://www.compass.com/agents/arthur-porosoff/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.linkedin.com/in/multifamilymiami",
+      "https://www.facebook.com/artdavid",
+      "https://www.youtube.com/watch?v=snmbnQO4qGA"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 31,
+    "name": "BJ Posadas",
+    "email": "bj.posadas@compass.com",
+    "phone": "9548169642",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/bj-posadas/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 32,
+    "name": "Kelly Potter",
+    "email": "kelly.potter@compass.com",
+    "phone": "9542317156",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/kelly-potter/",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 33,
+    "name": "Alex Platt",
+    "email": "premiergroupfl@compass.com",
+    "phone": "954.592.2371",
+    "listings": 34,
+    "website": "https://www.inman.com/2023/03/30/broker-spotlight-alex-and-margot-platt-the-platt-group-at-compass/",
+    "compass": "https://www.compass.com/agents/alex-platt",
+    "designation": "Realtor\u00ae",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.linkedin.com/in/alex-platt-2a5b60104",
+      "https://www.facebook.com/PlattSellsProperties",
+      "https://www.instagram.com/alex.platt_/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 34,
+    "name": "Cathy Prenner",
+    "email": "cathy.prenner@compass.com",
+    "phone": "9544151057",
+    "listings": 3,
+    "website": "https://www.prenner.com/",
+    "compass": "https://www.compass.com/agents/cathy-prenner/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.facebook.com/login/?next=https%3A%2F%2Fwww.facebook.com%2Fcathy.prenner.3",
+      "https://www.instagram.com/cathyprenner/",
+      "https://www.tiktok.com/@prennerroepnackgroup"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 35,
+    "name": "Megan Probst",
+    "email": "megan.probst@compass.com",
+    "phone": "9549992875",
+    "listings": 28,
+    "website": "https://www.theprobstgroup.com/",
+    "compass": "https://www.compass.com/agents/megan-probst/",
+    "designation": "Real Estate Agent",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.instagram.com/meganprobst_compass/",
+      "https://www.facebook.com/meganprobstcompass",
+      "https://www.linkedin.com/in/megan-probst-63646b37",
+      "https://www.youtube.com/channel/UC8SldXxvgKrCD6V5YIGQZNQ?view_as=subscriber"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 36,
+    "name": "Peter Prudenzano",
+    "email": "peter.prudenzano@compass.com",
+    "phone": "3053362230",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/peter-prudenzano/",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.linkedin.com/in/peteprudenzano/",
+      "https://www.facebook.com/peter.prudenzano",
+      "https://twitter.com/PeterPrudenzano"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 37,
+    "name": "Michael P. Schnabel",
+    "email": "michael.schnabel@compass.com",
+    "phone": "3054500036",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michael-schnabel/",
+    "designation": "REALTOR\u00ae",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.linkedin.com/in/michaelschnabel/",
+      "https://www.instagram.com/michaelpschnabel/",
+      "https://www.facebook.com/michael.schnabel",
+      "https://twitter.com/SchnabelTeam"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 38,
+    "name": "Caroline Puren",
+    "email": "carolinepuren@compass.com",
+    "phone": "3054588840",
+    "listings": 5,
+    "website": "http://carolinepuren.com/",
+    "compass": "https://www.compass.com/agents/caroline-puren/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://instagram.com/cpmiamirealtor/",
+      "https://facebook.com/cpmiamirealtor/",
+      "https://www.linkedin.com/in/cpmiamirealtor"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 39,
+    "name": "Alison Pusey",
+    "email": "alison.pusey@compass.com",
+    "phone": "9543001956",
+    "listings": 2,
+    "website": "https://www.globalempowermentmission.org/?gclid=EAIaIQobChMInY6Su-S96QIVAa_ICh3XtABMEAAYASAAEgLp9PD_BwE",
+    "compass": "https://www.compass.com/agents/alison-pusey/",
+    "designation": "Realtor",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.linkedin.com/in/alison-pusey-a665588",
+      "https://www.facebook.com/SellingSouthFloridaLuxuryLiving/",
+      "https://www.instagram.com/alisonpuseycompassfl/",
+      "https://www.instagram.com/p/B58Exswgd33/?utm_source=ig_web_copy_link"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 40,
+    "name": "Bento Queiroz",
+    "email": "bento.queiroz@compass.com",
+    "phone": "7868386587",
+    "listings": 7,
+    "website": "https://therealdeal.com/miami/2022/08/29/chicago-buyer-pays-record-15m-for-planned-southwest-ranches-home//",
+    "compass": "https://www.compass.com/agents/bento-queiroz/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.instagram.com/bentoqueirozgroup/",
+      "https://www.facebook.com/Bento-Queiroz-Group-575633252892094/",
+      "https://www.linkedin.com/in/bento-queiroz-19a68628/",
+      "https://www.youtube.com/channel/UCMI8_IqwL4zem5Imxwrdjyg?view_as=subscriber"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 41,
+    "name": "Maria Quintero",
+    "email": "maria.quintero@compass.com",
+    "phone": "3054391390",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/maria-quintero/",
+    "designation": "Real Estate Agent",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 42,
+    "name": "Gabriel Quiroga",
+    "email": "gabriel.quiroga@compass.com",
+    "phone": "7862345780",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/gabriel-quiroga/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 17,
+    "socials": [
+      "https://www.instagram.com/gabrielqrealestate/",
+      "https://www.linkedin.com/in/fernando-gabriel-quiroga-55244385/",
+      "https://www.facebook.com/people/Fernando-Gabriel-Quiroga/61559049599877/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 43,
+    "name": "Cristina I. Ramirez",
+    "email": "cristina.ramirez@compass.com",
+    "phone": "3055103321",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/cristina-ramirez/",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 44,
+    "name": "Anja Randegger",
+    "email": "anja.randegger@compass.com",
+    "phone": "7868535589",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/anja-randegger/",
+    "designation": "Realtor",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [
+      "https://www.facebook.com/anjarandeggermiami/",
+      "https://www.linkedin.com/in/anjarandegger/",
+      "https://www.instagram.com/anjarandegger/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 45,
+    "name": "Christel Renaud",
+    "email": "christel.renaud@compass.com",
+    "phone": "7865124202",
+    "listings": 3,
+    "website": "https://canvasrebel.com/meet-christel-renaud/?fbclid=PAZXh0bgNhZW0CMTEAAaZxJ9LCU7dvLm3G2f4dS4cNL4zzpJhq8ZOf4ILBPYBYbUMe-NKe1KT1Xvw_aem_mBHcrMxnpoTKgTqZf-gFxQ",
+    "compass": "https://www.compass.com/agents/christel-renaud/",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [
+      "https://www.instagram.com/christel_mia_lux_living",
+      "https://www.facebook.com/profile.php?id=61564010847570",
+      "https://www.linkedin.com/in/christelrenaud/",
+      "https://www.tiktok.com/@christel_mia_lux_",
+      "https://x.com/christelmialux"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 46,
+    "name": "Renzo Renzi",
+    "email": "renzo.renzi@compass.com",
+    "phone": "7862025045",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/renzo-renzi/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 47,
+    "name": "Cassandra Repstad",
+    "email": "cassandrarepstad@compass.com",
+    "phone": "3109266820",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/cassandra-repstad/",
+    "designation": "REALTOR\u00ae",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 48,
+    "name": "Karina Reyes",
+    "email": "karina.reyes@compass.com",
+    "phone": "7865540814",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/karina-reyes/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 49,
+    "name": "Malika Rigaud",
+    "email": "malikarigaud@compass.com",
+    "phone": "5614756544",
+    "listings": 2,
+    "website": "https://www.mansionglobal.com/articles/a-beachfront-penthouse-in-south-florida-with-a-record-price-tag-84a9a34b",
+    "compass": "https://www.compass.com/agents/malika-rigaud/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [
+      "https://www.youtube.com/watch?v=LwIk5m0Rxzw"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 50,
+    "name": "Riley Smith",
+    "email": "rileysmithgroup@compass.com",
+    "phone": "305-342-1623",
+    "listings": 64,
+    "website": "https://therealdeal.com/miami/2024/11/07/top-agents-talk-miamis-luxury-market/",
+    "compass": "https://www.compass.com/agents/riley-smith",
+    "designation": "REALTOR\u00ae",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [
+      "https://www.youtube.com/channel/UCN-tgv7Zl2P839TEbhg31xA?view_as=subscriber",
+      "https://www.instagram.com/rileysmithgroup/",
+      "https://www.facebook.com/rileysmithgroup/",
+      "https://www.linkedin.com/in/rileysmithrealtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 51,
+    "name": "Tony Rios",
+    "email": "tony.rios@compass.com",
+    "phone": "3059687323",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tony-rios/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 52,
+    "name": "Eneas Rivas",
+    "email": "eneas.rivas@compass.com",
+    "phone": "3057908156",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/13902266/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 53,
+    "name": "Aldo Rivera",
+    "email": "aldo.rivera@compass.com",
+    "phone": "3059626510",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/aldo-rivera/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [
+      "https://www.facebook.com/aldo.rivera.56",
+      "https://www.instagram.com/aldoriverarealtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 54,
+    "name": "Vladimir Rochebrun",
+    "email": "vladimir.rochebrun@compass.com",
+    "phone": "3059052559",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/vladimir-rochebrun/",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [
+      "https://www.facebook.com/vladestates/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 55,
+    "name": "M Group",
+    "email": "mr@compass.com",
+    "phone": "3053431438",
+    "listings": 43,
+    "website": "https://mgroupluxury.com/",
+    "compass": "https://www.compass.com/agents/m-group/",
+    "designation": "Real Estate Agent",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [
+      "https://www.facebook.com/MGroupCompass",
+      "https://instagram.com/mgroupluxury"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 56,
+    "name": "Ramon Rodriguez",
+    "email": "ramon.rodriguez@compass.com",
+    "phone": "3058041955",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ramon-rodriguez/",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [
+      "https://www.linkedin.com/in/ramon-elis-rodriguez-8894a895",
+      "https://www.instagram.com/ramonelisrodriguez/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 57,
+    "name": "Madeleine Romanello",
+    "email": "madeleine@compass.com",
+    "phone": "3052822133",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/madeleine-romanello/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [
+      "https://www.linkedin.com/in/madeleineromanello/",
+      "https://www.instagram.com/realmiamibeach/",
+      "https://www.facebook.com/madeleineromanellogroup",
+      "https://twitter.com/realmiamibeach"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 58,
+    "name": "Andrew Roopchand",
+    "email": "andrew.roopchand@compass.com",
+    "phone": "9542794725",
+    "listings": 7,
+    "website": "https://therealdeal.com/miami/2026/05/12/tiktoks-trump-whisperer-buys-house-near-mar-a-lago/?utm_medium=social&utm_campaign=single_content_share&utm_source=share",
+    "compass": "https://www.compass.com/agents/andrew-roopchand/",
+    "designation": "REALTOR",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [
+      "https://www.linkedin.com/in/andrew-roopchand-a35944303/",
+      "https://www.instagram.com/andrew.roopchand/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 59,
+    "name": "Carlos Rospigliosi",
+    "email": "carlos.rospigliosi@compass.com",
+    "phone": "3059048048",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/carlos-rospigliosi/",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 18,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 60,
+    "name": "Audrey Ross",
+    "email": "audrey.ross@compass.com",
+    "phone": "3056614003",
+    "listings": 14,
+    "website": "https://www.miamirealestate.com/",
+    "compass": "https://www.compass.com/agents/audrey-ross/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.instagram.com/miamirealestatecom/",
+      "https://www.facebook.com/MiamiRealEstateCom",
+      "https://twitter.com/RE_miaminews",
+      "https://www.youtube.com/user/MiamiRealEstateVids"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 61,
+    "name": "Stephanie Roy",
+    "email": "stephanie.roy@compass.com",
+    "phone": "5612122545",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/stephanie-roy/",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 62,
+    "name": "Melissa Rubin",
+    "email": "melissaj@compass.com",
+    "phone": "3059847706",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/melissa-rubin/",
+    "designation": "Real Estate Professional",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.facebook.com/MJRGroupeCompass/",
+      "https://www.instagram.com/mjrgroupe/",
+      "https://www.linkedin.com/in/melissa-jane-rubin/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 63,
+    "name": "Krystyna Rudavska",
+    "email": "krystyna.rudavska@compass.com",
+    "phone": "5615422846",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/krystyna-rudavska/",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 64,
+    "name": "Stepan Rudenko",
+    "email": "stepan.rudenko@compass.com",
+    "phone": "3055376672",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/stepan-rudenko/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 65,
+    "name": "Celia Ruiz",
+    "email": "celia.ruiz@compass.com",
+    "phone": "3059651882",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/celia-ruiz/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 66,
+    "name": "Suzanne Anderson Ziskind",
+    "email": "s2group@compass.com",
+    "phone": "",
+    "listings": 2,
+    "website": "https://s2luxurygroup.com/",
+    "compass": "https://www.compass.com/agents/suzanne-anderson-ziskind",
+    "designation": "REALTOR\u00ae",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.linkedin.com/in/sandersoncoconutgroveliving/",
+      "https://www.facebook.com/people/Suzanne-Anderson-Compass/61569448222201/",
+      "https://www.instagram.com/suzanneandersonmiami/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 67,
+    "name": "Anwar Sadeek",
+    "email": "anwar.sadeek@compass.com",
+    "phone": "3055150268",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/anwar-sadeek/",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 68,
+    "name": "Brittany Saenz",
+    "email": "brittany.saenz@compass.com",
+    "phone": "8584050398",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/brittany-saenz/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 69,
+    "name": "Sheree Saint-victor",
+    "email": "sheree.saintvictor@compass.com",
+    "phone": "7549717771",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sheree-saint-victor/",
+    "designation": "REALTOR\u00ae",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.facebook.com/share/18GHofbRxX/?mibextid=wwXIfr",
+      "https://www.instagram.com/shereesaintvictor/",
+      "https://www.compass.com/agents/sheree-saint-victor/www.tiktok.com/@shereesaintvictor"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 70,
+    "name": "Jorge Salazar",
+    "email": "jorge.salazar@compass.com",
+    "phone": "3055885056",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/15186839/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 71,
+    "name": "Bea Sallabi",
+    "email": "bea.sallabi@compass.com",
+    "phone": "5613018758",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/bea-sallabi/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.linkedin.com/in/beasallabi",
+      "https://www.facebook.com/bsallabi"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 72,
+    "name": "Miguel Salvat",
+    "email": "miguel.salvat@compass.com",
+    "phone": "3059751492",
+    "listings": 10,
+    "website": "",
+    "compass": "https://www.compass.com/agents/miguel-salvat/",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 73,
+    "name": "Ali Samek Seid",
+    "email": "ali.seid@compass.com",
+    "phone": "9177674683",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ali-samek-seid/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.instagram.com/alisamekseid/?hl=en/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 74,
+    "name": "Nancy Sanabria",
+    "email": "nancy.sanabria@compass.com",
+    "phone": "3057854491",
+    "listings": 9,
+    "website": "https://www.sanabriateam.com/testimonials/",
+    "compass": "https://www.compass.com/agents/nancy-sanabria/",
+    "designation": "Realtor",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.facebook.com/NancySanabriaTeam",
+      "https://www.instagram.com/nancysanabriateam/",
+      "https://www.linkedin.com/in/nancysanabriarealestate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 75,
+    "name": "Michael Sandak",
+    "email": "msandak@compass.com",
+    "phone": "9174034447",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michael-sandak/",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 76,
+    "name": "John Sandberg",
+    "email": "jsandberg@compass.com",
+    "phone": "3055867200",
+    "listings": 4,
+    "website": "https://therealdeal.com/miami/2022/10/24/french-rapper-sells-miami-beach-home-to-grutmans-restaurant-partner/",
+    "compass": "https://www.compass.com/agents/john-sandberg/",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.instagram.com/The_Sandberg_Group",
+      "https://www.linkedin.com/in/johnsandberg"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 77,
+    "name": "Sheyla Sandoval",
+    "email": "sheyla.sandoval@compass.com",
+    "phone": "7864396199",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sheyla-sandoval/",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 78,
+    "name": "Sidonia Sandoval",
+    "email": "sidonia.sandoval@compass.com",
+    "phone": "3058460273",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sidonia-sandoval/",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 79,
+    "name": "Teresa Santana",
+    "email": "tere.santana@compass.com",
+    "phone": "9548731586",
+    "listings": 5,
+    "website": "https://www..com/concierge/teresa-santana",
+    "compass": "https://www.compass.com/agents/teresa-santana/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.linkedin.com/in/teresa-santana-42838416/",
+      "https://twitter.com/tsantana_teresa"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 80,
+    "name": "Paul Sasseville",
+    "email": "paul.sasseville@compass.com",
+    "phone": "3057107856",
+    "listings": 10,
+    "website": "https://therealdeal.com/miami/2019/08/19/580167/",
+    "compass": "https://www.compass.com/agents/paul-sasseville/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.facebook.com/SunsetHarbourMiami/",
+      "https://www.instagram.com/gosassy/?hl=en",
+      "https://www.linkedin.com/in/paul-sasseville-1307401b"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 81,
+    "name": "Philip Scheinfeld",
+    "email": "philip@compass.com",
+    "phone": "9174460523",
+    "listings": 13,
+    "website": "https://www.forbes.com/sites/shamahyder/2020/11/09/how-social-media-is-critical-to-succeeding-in-real-estate-in-2021/amp/",
+    "compass": "https://www.compass.com/agents/philip-scheinfeld/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.instagram.com/philipscheinfeld/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 82,
+    "name": "Irmascherer",
+    "email": "scherergroup@compass.com",
+    "phone": "",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/irmascherer",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.facebook.com/profile.php?id=100083583672515",
+      "https://www.instagram.com/mrsirmascherer",
+      "https://www.youtube.com/@MrsIrmaScherer"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 83,
+    "name": "Ana M. Schnabel",
+    "email": "ana.schnabel@compass.com",
+    "phone": "7862106578",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ana-m-schnabel-pa/",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.linkedin.com/in/anamschnabel/",
+      "https://www.instagram.com/anamschnabel/",
+      "https://www.facebook.com/anaschnabel",
+      "https://twitter.com/MargareBaez"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 84,
+    "name": "Michael Schnabel",
+    "email": "schnabelteam@compass.com",
+    "phone": "305.450.0036",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michael-schnabel",
+    "designation": "REALTOR\u00ae",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.linkedin.com/in/michaelschnabel/",
+      "https://www.instagram.com/michaelpschnabel/",
+      "https://www.facebook.com/michael.schnabel",
+      "https://twitter.com/SchnabelTeam"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 85,
+    "name": "Ida Schwartz",
+    "email": "ida@compass.com",
+    "phone": "3056327386",
+    "listings": 4,
+    "website": "https://www.rismedia.com/newsmaker/ida-minette-schwartz-2025/",
+    "compass": "https://www.compass.com/agents/ida-schwartz/",
+    "designation": "REALTOR",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.linkedin.com/company/the-schwartz-team",
+      "https://www.instagram.com/theschwartzteam/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 86,
+    "name": "Minette Schwartz",
+    "email": "minette@compass.com",
+    "phone": "3054396628",
+    "listings": 4,
+    "website": "https://www.rismedia.com/newsmaker/ida-minette-schwartz-2025/",
+    "compass": "https://www.compass.com/agents/minette-schwartz/",
+    "designation": "REALTOR",
+    "city": "Miami, FL",
+    "page": 19,
+    "socials": [
+      "https://www.linkedin.com/in/minetteschwartz",
+      "https://www.instagram.com/theschwartzteam/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 87,
+    "name": "Sarah Desamours",
+    "email": "sdgroup@compass.com",
+    "phone": "305.433.1639",
+    "listings": 5,
+    "website": "https://www.miamiherald.com/news/business/real-estate-news/article230122864.html/",
+    "compass": "https://www.compass.com/agents/sarah-desamours",
+    "designation": "Licensed Real Estate Salesperson",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [
+      "https://www.instagram.com/sarahdesamours/",
+      "https://www.linkedin.com/in/sarahdesamours/",
+      "https://www.facebook.com/sarahdesamours/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 88,
+    "name": "Carina Sechler",
+    "email": "carina.sechler@compass.com",
+    "phone": "5615230180",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/carina-sechler/",
+    "designation": "Realtor",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 89,
+    "name": "Stefan Segall",
+    "email": "stefan.segall@compass.com",
+    "phone": "9548151816",
+    "listings": 14,
+    "website": "",
+    "compass": "https://www.compass.com/agents/stefan-segall/",
+    "designation": "Real Estate Agent",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 90,
+    "name": "Brian Shapiro",
+    "email": "brianshapiro@compass.com",
+    "phone": "3059788655",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/15243879/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [
+      "https://www.linkedin.com/in/brian-shapiro-6543ba4?trk=people-guest_profile-result-card_result-card_full-click"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 91,
+    "name": "Teresita Bernace",
+    "email": "sheltonbernacegroup@compass.com",
+    "phone": "305.607.7212",
+    "listings": 8,
+    "website": "https://teresheltonbernace.com//",
+    "compass": "https://www.compass.com/agents/teresita-bernace",
+    "designation": "Realtor",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 92,
+    "name": "David Sherman",
+    "email": "david.sherman@compass.com",
+    "phone": "9178591695",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/david-sherman/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [
+      "https://www.facebook.com/pages/category/Real-Estate-Agent/David-Sherman-Keller-Williams-266377997547267/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 93,
+    "name": "Michelle Shurtleff",
+    "email": "michelle.shurtleff@compass.com",
+    "phone": "3052992062",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michelle-shurtleff/",
+    "designation": "Real Estate Agent",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [
+      "https://www.facebook.com/michelleshurtlefftmret",
+      "https://www.instagram.com/mshurtleffm/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 94,
+    "name": "Alexandra Sierra",
+    "email": "alexandra.sierra@compass.com",
+    "phone": "3052810175",
+    "listings": 12,
+    "website": "",
+    "compass": "https://www.compass.com/agents/alexandra-sierra/",
+    "designation": "Realtor",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [
+      "https://www.instagram.com/alexsierra_compass/",
+      "https://www.facebook.com/AlexaSierraPA/",
+      "https://www.linkedin.com/in/alexandra-sierra-0a8b619b/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 95,
+    "name": "Bragi Sigurdsson",
+    "email": "bragi.sigurdsson@compass.com",
+    "phone": "3058152771",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/bragi-sigurdsson/",
+    "designation": "Associate Broker",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 96,
+    "name": "Samuel Simpkin",
+    "email": "sam.simpkin@compass.com",
+    "phone": "9546440870",
+    "listings": 9,
+    "website": "https://www.teamsimpkin.com/",
+    "compass": "https://www.compass.com/agents/sam-simpkin/",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [
+      "https://www.facebook.com/teamsimpkin"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 97,
+    "name": "Carole Smith",
+    "email": "carole.smith@compass.com",
+    "phone": "3057101010",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/carole-smith/",
+    "designation": "SMITH FORMOSA TEAM",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [
+      "https://www.facebook.com/carolesmithrealtor/",
+      "https://www.instagram.com/carolesmithrealtor/",
+      "https://www.linkedin.com/in/carolesmith"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 98,
+    "name": "Riley Smith",
+    "email": "riley.smith@compass.com",
+    "phone": "3053421623",
+    "listings": 64,
+    "website": "https://therealdeal.com/miami/2024/11/07/top-agents-talk-miamis-luxury-market/",
+    "compass": "https://www.compass.com/agents/riley-smith/",
+    "designation": "REALTOR\u00ae",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [
+      "https://www.youtube.com/channel/UCN-tgv7Zl2P839TEbhg31xA?view_as=subscriber",
+      "https://www.instagram.com/rileysmithgroup/",
+      "https://www.facebook.com/rileysmithgroup/",
+      "https://www.linkedin.com/in/rileysmithrealtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 99,
+    "name": "Carole Smith",
+    "email": "smithformosateam@compass.com",
+    "phone": "305.775.5330",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/carole-smith",
+    "designation": "SMITH FORMOSA TEAM",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [
+      "https://www.facebook.com/carolesmithrealtor/",
+      "https://www.instagram.com/carolesmithrealtor/",
+      "https://www.linkedin.com/in/carolesmith"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 100,
+    "name": "JJ Snow Hansen",
+    "email": "jj.hansen@compass.com",
+    "phone": "3056088750",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/judith-j-hansen/",
+    "designation": "Real Estate Professional",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [
+      "https://www.instagram.com/jjsnowhansenrealestate/",
+      "https://www.linkedin.com/in/jjsnowhansen/",
+      "https://www.youtube.com/channel/UC3dVAs-sGYOMwuDfjrnEoQA"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 101,
+    "name": "Bill Sohl",
+    "email": "bill.sohl@compass.com",
+    "phone": "9546555097",
+    "listings": 14,
+    "website": "http://dynalog.catalogs.com/catalogs/50822/page/1",
+    "compass": "https://www.compass.com/agents/bill-sohl/",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [
+      "https://www.facebook.com/BillSohlBiggestinRealEstate/",
+      "https://www.instagram.com/bill_sohl/?hl=en",
+      "https://www.youtube.com/channel/UCzGOQtZmc-bv-WrmNKVh_yQ"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 102,
+    "name": "Jose R. Sosa",
+    "email": "jose.sosa@compass.com",
+    "phone": "7865567672",
+    "listings": 3,
+    "website": "https://thesosateam.net/",
+    "compass": "https://www.compass.com/agents/jose-r-sosa/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [
+      "https://www.linkedin.com/in/jose-roman-sosa-a314341/",
+      "https://www.facebook.com/jrsosaproperties",
+      "https://www.instagram.com/the_sosa_team/",
+      "https://twitter.com/JRSProperties"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 103,
+    "name": "Corina Sosa",
+    "email": "corina.sosa@compass.com",
+    "phone": "4703577603",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/maria-corina-sosa/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 104,
+    "name": "JR Sosa",
+    "email": "jr.sosa@compass.com",
+    "phone": "3052199395",
+    "listings": 4,
+    "website": "https://thesosacollection.com/",
+    "compass": "https://www.compass.com/agents/jr-sosa/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [
+      "https://www.facebook.com/jr.sosa86",
+      "https://www.instagram.com/jr_sosa/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 105,
+    "name": "Raquel Sotillo",
+    "email": "raquel.sotillo@compass.com",
+    "phone": "3059260556",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/raquel-sotillo/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 106,
+    "name": "Ashraf Spahi",
+    "email": "ash.spahi@compass.com",
+    "phone": "7863380959",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ashraf-spahi/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 107,
+    "name": "Laurie Spector",
+    "email": "spectoradvisory@compass.com",
+    "phone": "954-833-6680",
+    "listings": 14,
+    "website": "http://www.lauriespector.com/",
+    "compass": "https://www.compass.com/agents/laurie-spector",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [
+      "https://www.instagram.com/laurierichterspector/?hl=en",
+      "https://www.linkedin.com/in/laurie-spector-realtor-jd-mba?trk=author_mini-profile_title",
+      "https://www.facebook.com/BrowardProperties/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 108,
+    "name": "Jesse Spencer",
+    "email": "jesse.spencer@compass.com",
+    "phone": "3056327195",
+    "listings": 5,
+    "website": "https://therealdeal.com/miami/2017/10/30/ny-investor-sells-gables-buildings--9m/",
+    "compass": "https://www.compass.com/agents/jesse-spencer/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 20,
+    "socials": [
+      "https://www.instagram.com/jplusgroup/",
+      "https://www.facebook.com/TheJPlusGroup/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 109,
+    "name": "William Srouji",
+    "email": "william.srouji@compass.com",
+    "phone": "3059893594",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/william-srouji/",
+    "designation": "Licensed Real Estate Salesperson",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 110,
+    "name": "Sladja Stantic",
+    "email": "sladja.stantic@compass.com",
+    "phone": "3057997697",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sladja-stantic/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 111,
+    "name": "Simone Stein PA",
+    "email": "simone.weissmanstein@compass.com",
+    "phone": "3054395525",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/simone-weissman-stein/",
+    "designation": "Real Estate Agent",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [
+      "https://www.facebook.com/simone.weissman"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 112,
+    "name": "Michelle Suegart",
+    "email": "michellesuegart@compass.com",
+    "phone": "7868636330",
+    "listings": 7,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michelle-suegart/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 113,
+    "name": "Susan Hurley",
+    "email": "susanhurleyhomes@compass.com",
+    "phone": "(314) 308-6636",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/susan-hurley",
+    "designation": "Real Estate Agent",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [
+      "https://www.facebook.com/susanhurleyrealestate/",
+      "https://www.instagram.com/susanhurleyhomes/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 114,
+    "name": "Talita Pinheiro",
+    "email": "talitapinheiroteam@compass.com",
+    "phone": "305.906.1526",
+    "listings": 24,
+    "website": "",
+    "compass": "https://www.compass.com/agents/talita-pinheiro",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [
+      "https://www.linkedin.com/in/talita-pinheiro-b8b73761/",
+      "https://www.facebook.com/TalitaRealtor/",
+      "https://www.instagram.com/talipinheiro/",
+      "https://twitter.com/talipinheiro"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 115,
+    "name": "Bea Citron",
+    "email": "teamcitron@compass.com",
+    "phone": "305.606.7993",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/bea-citron",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 116,
+    "name": "Karyna Texeira",
+    "email": "karyna.texeira@compass.com",
+    "phone": "7864284350",
+    "listings": 15,
+    "website": "",
+    "compass": "https://www.compass.com/agents/karyna-texeira/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [
+      "https://www.instagram.com/karytexe/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 117,
+    "name": "Teresita Thaler",
+    "email": "t.thaler@compass.com",
+    "phone": "3058779380",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/teresita-thaler/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 118,
+    "name": "Orlando Abella",
+    "email": "abellagroup@compass.com",
+    "phone": "3055050489",
+    "listings": 2,
+    "website": "https://theabellagroup.com/",
+    "compass": "https://www.compass.com/agents/orlando-abella",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [
+      "https://www.instagram.com/theabellagroupcompass/?hl=en",
+      "https://www.facebook.com/theabellagroupcompass/",
+      "https://www.linkedin.com/in/iliana-abella-437b12170/",
+      "https://www.youtube.com/channel/UCfw3yRcCzHeDHs_-7pnpK3w"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 119,
+    "name": "Alejandro Alvarez",
+    "email": "thealexteam@compass.com",
+    "phone": "9546991639",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/alejandro-alvarez",
+    "designation": "Realtor\u00ae",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [
+      "https://www.linkedin.com/in/alejandro-alvarez-92aa0a10a/",
+      "https://www.facebook.com/profile.php?id=587632400"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 120,
+    "name": "Adam Bursztein",
+    "email": "apgroup@compass.com",
+    "phone": "305.935.5766",
+    "listings": 12,
+    "website": "",
+    "compass": "https://www.compass.com/agents/adam-bursztein",
+    "designation": "REALTOR",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [
+      "https://www.linkedin.com/in/adambursztein/",
+      "https://www.facebook.com/EquityAdvisorTeam/?ref=page_internal",
+      "https://www.instagram.com/southfliving/",
+      "https://www.youtube.com/@ListwithAP"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 121,
+    "name": "Heidi Lequerique",
+    "email": "theboutiquecollective@compass.com",
+    "phone": "786.556.7506",
+    "listings": 12,
+    "website": "",
+    "compass": "https://www.compass.com/agents/heidi-lequerique",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 122,
+    "name": "Aaron Buchbinder",
+    "email": "thebuchbindergroup@compass.com",
+    "phone": "561-350-7352",
+    "listings": 7,
+    "website": "https://thebuchbindergroupfl.com//",
+    "compass": "https://www.compass.com/agents/aaron-buchbinder",
+    "designation": "Realtor",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [
+      "https://www.linkedin.com/in/aaron-buchbinder-78ba847/",
+      "https://www.instagram.com/thebuchbindergroup/?hl=en",
+      "https://www.facebook.com/TheBuchbinderGroup/%22",
+      "https://www.instagram.com/p/CwA_1wXREcc/?igshid=MzRlODBiNWFlZA%3D%3D"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 123,
+    "name": "Chad Carroll",
+    "email": "thechadcarrollgroup@compass.com",
+    "phone": "305.400.9507",
+    "listings": 47,
+    "website": "",
+    "compass": "https://www.compass.com/agents/chad-carroll",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [
+      "https://www.linkedin.com/in/chadcarroll1/",
+      "https://www.facebook.com/ChadCarrollOfficial/",
+      "https://www.instagram.com/chadcarroll/?hl=en",
+      "https://twitter.com/chadcarrollmia?lang=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 124,
+    "name": "Giancarlo Cuffia",
+    "email": "thecuffiagroup@compass.com",
+    "phone": "954.593.8352",
+    "listings": 7,
+    "website": "https://www.thecuffiagroup.com//",
+    "compass": "https://www.compass.com/agents/giancarlo-cuffia",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [
+      "https://www.facebook.com/GiancarloCuffiaTheCuffiaGroup/",
+      "https://www.instagram.com/giancarlothecuffiagroup/",
+      "https://www.linkedin.com/in/giancarlo-cuffia-89977b35"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 125,
+    "name": "Andy Daro",
+    "email": "daroteam@compass.com",
+    "phone": "(917) 696-7141",
+    "listings": 9,
+    "website": "",
+    "compass": "https://www.compass.com/agents/andy-daro",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [
+      "https://www.facebook.com/andy.rotondaro/",
+      "https://www.instagram.com/andydaro/",
+      "https://www.linkedin.com/in/andy-daro-b7838471/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 126,
+    "name": "Leticia Achils",
+    "email": "thehopkinsteam@compass.com",
+    "phone": "954-915-8011",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/leticia-achils",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [
+      "https://www.linkedin.com/in/lachils23",
+      "https://twitter.com/lachils"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 127,
+    "name": "Elliot Koolik",
+    "email": "thekoolikgroup@compass.com",
+    "phone": "561-843-0918",
+    "listings": 21,
+    "website": "https://koolik.com/market-report/Boca-Raton/2680037/",
+    "compass": "https://www.compass.com/agents/elliot-koolik",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [
+      "https://www.linkedin.com/company/thekoolikgroup",
+      "https://www.facebook.com/TheKoolikGroup/",
+      "https://www.instagram.com/thekoolikgroup/",
+      "https://www.tiktok.com/@thekoolikgroup",
+      "https://www.youtube.com/watch?v=0mkyHye-WwQ"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 128,
+    "name": "Adam Levy",
+    "email": "levygroup@compass.com",
+    "phone": "305.389.3959",
+    "listings": 4,
+    "website": "https://trsmag.com/top-crs-real-estate-producers/",
+    "compass": "https://www.compass.com/agents/adam-levy",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [
+      "https://www.instagram.com/thelevygroup/",
+      "https://www.facebook.com/TheLevyGroup/",
+      "https://www.linkedin.com/in/adamlevyrealtor/",
+      "https://twitter.com/thelevygroup",
+      "https://www.youtube.com/user/TheLevyGroup"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 129,
+    "name": "Todd Lewin",
+    "email": "lrteam@compass.com",
+    "phone": "347-880-0349",
+    "listings": 12,
+    "website": "https://therealdeal.com/new-york/2025/01/20/combo-unit-at-50-w-66th-st-leads-manhattans-luxury-market/",
+    "compass": "https://www.compass.com/agents/todd-lewin",
+    "designation": "Associate Broker",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [
+      "https://www.instagram.com/todd_lewin/",
+      "https://www.instagram.com/thelewinrubinteam/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 130,
+    "name": "Candice Goldberg",
+    "email": "thelifestylegroup@compass.com",
+    "phone": "",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/candice-goldberg",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 21,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 131,
+    "name": "Matt Mckee",
+    "email": "mckeegroup@compass.com",
+    "phone": "407.948.0658",
+    "listings": 11,
+    "website": "http://www.themckeegroup.com/",
+    "compass": "https://www.compass.com/agents/matt-mckee",
+    "designation": "Realtor",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [
+      "https://www.instagram.com/mckee.group/",
+      "https://www.facebook.com/mckeegroupcompass/",
+      "https://www.linkedin.com/in/mckeematt/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 132,
+    "name": "Megann Lucaj",
+    "email": "561agent@compass.com",
+    "phone": "",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/megann-lucaj",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [
+      "https://www.linkedin.com/in/megann-lucaj-015824103",
+      "https://www.facebook.com/MegannLucajRE/",
+      "https://twitter.com/meglucaj?lang=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 133,
+    "name": "Joanna Jimenez",
+    "email": "theopesgroup@compass.com",
+    "phone": "305.302.6384",
+    "listings": 8,
+    "website": "https://g.co/kgs/qCuQT84",
+    "compass": "https://www.compass.com/agents/joanna-jimenez",
+    "designation": "REALTOR\u00ae",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [
+      "https://www.facebook.com/opesrealestategroup/",
+      "https://www.instagram.com/joannajimenez_miami/",
+      "https://www.linkedin.com/in/joanna-jimenez-4011719/",
+      "https://www.youtube.com/theopesgroup"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 134,
+    "name": "Cathy Prenner",
+    "email": "prennerroepnackgroup@compass.com",
+    "phone": "954.415.1057",
+    "listings": 3,
+    "website": "https://www.prenner.com/",
+    "compass": "https://www.compass.com/agents/cathy-prenner",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [
+      "https://www.facebook.com/login/?next=https%3A%2F%2Fwww.facebook.com%2Fcathy.prenner.3",
+      "https://www.instagram.com/cathyprenner/",
+      "https://www.tiktok.com/@prennerroepnackgroup"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 135,
+    "name": "Megan Probst",
+    "email": "theprobstgroup@compass.com",
+    "phone": "954.999.2875",
+    "listings": 28,
+    "website": "https://www.theprobstgroup.com/",
+    "compass": "https://www.compass.com/agents/megan-probst",
+    "designation": "Real Estate Agent",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [
+      "https://www.instagram.com/meganprobst_compass/",
+      "https://www.facebook.com/meganprobstcompass",
+      "https://www.linkedin.com/in/megan-probst-63646b37",
+      "https://www.youtube.com/channel/UC8SldXxvgKrCD6V5YIGQZNQ?view_as=subscriber"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 136,
+    "name": "Gladys Bautista",
+    "email": "thesantanagroup@compass.com",
+    "phone": "(954) 465-5321",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/gladys-bautista",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [
+      "https://www.facebook.com/gladysbautistacompass/?modal=admin_todo_tour",
+      "https://www.instagram.com/gladys.s.bautista.9/",
+      "https://www.linkedin.com/in/gladysglobalrealestate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 137,
+    "name": "Ida Schwartz",
+    "email": "theschwartzteam@compass.com",
+    "phone": "305.632.7386",
+    "listings": 4,
+    "website": "https://www.rismedia.com/newsmaker/ida-minette-schwartz-2025/",
+    "compass": "https://www.compass.com/agents/ida-schwartz",
+    "designation": "REALTOR",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [
+      "https://www.linkedin.com/company/the-schwartz-team",
+      "https://www.instagram.com/theschwartzteam/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 138,
+    "name": "Elise Messing",
+    "email": "thesmgroup@compass.com",
+    "phone": "(305)-987-6996",
+    "listings": 3,
+    "website": "https://www.google.com/maps/place/The+Sherman+Messing+Group+at+COMPASS+%7C+South+Florida/@27.041351,-80.7516975,8z/data=!3m1!4b1!4m6!3m5!1s0x64fd8b2696561e0b:0x996bb50462e6f08!8m2!3d27.041351!4d-80.7516975!16s%2Fg%2F11t5jkdwl7?entry=ttu&g_ep=EgoyMDI1MDMwOC4wIKXMDSoASAFQAw%3D%3D",
+    "compass": "https://www.compass.com/agents/elise-messing/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [
+      "https://www.facebook.com/ShermanMessingatCompass/",
+      "https://www.instagram.com/sherman_messing_group/",
+      "https://www.linkedin.com/in/smgatcompass/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 139,
+    "name": "Jose R Sosa",
+    "email": "thesosateam@compass.com",
+    "phone": "786-556-7672",
+    "listings": 3,
+    "website": "https://thesosateam.net/",
+    "compass": "https://www.compass.com/agents/jose-r-sosa",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [
+      "https://www.linkedin.com/in/jose-roman-sosa-a314341/",
+      "https://www.facebook.com/jrsosaproperties",
+      "https://www.instagram.com/the_sosa_team/",
+      "https://twitter.com/JRSProperties"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 140,
+    "name": "Lindsay Neuren",
+    "email": "speedneurengroup@compass.com",
+    "phone": "(512) 913-6987",
+    "listings": 7,
+    "website": "https://www.bizjournals.com/austin/news/2023/03/10/top-realtors-speed-neuren-group.html?b=1678472316^22215073",
+    "compass": "https://www.compass.com/agents/lindsay-neuren",
+    "designation": "Realtor\u00ae",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [
+      "https://www.linkedin.com/in/lindsay-neuren-11b38712",
+      "https://www.instagram.com/lindsayatxrealtor/",
+      "https://www.facebook.com/LindsayAustinRealtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 141,
+    "name": "Adriana Faerman",
+    "email": "theteammiami@compass.com",
+    "phone": "305.773.0253",
+    "listings": 4,
+    "website": "https://communitynewspapers.com/aventura-news/miami-dolphins-luncheon-hosted-by-coconut-grove-bank-kai-at-bay-harbor-one-sothebys-featuring-nfl-legend-nat-moore-and-dolphins-cmo-jeremy-walls/",
+    "compass": "https://www.compass.com/agents/adriana-faerman",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [
+      "https://www.instagram.com/adrianafaerman/",
+      "https://www.linkedin.com/in/adriana-faerman-b99bb610/",
+      "https://www.facebook.com/AdrianaCharlesTeam"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 142,
+    "name": "Martine Paulin",
+    "email": "wellnest@compass.com",
+    "phone": "",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/martine-paulin",
+    "designation": "REALTOR\u00ae",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 143,
+    "name": "Cintia Thormann",
+    "email": "cintia.thormann@compass.com",
+    "phone": "9547985533",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/cintia-thormann/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 144,
+    "name": "Flavia Caltabiano",
+    "email": "tc@compass.com",
+    "phone": "954.512.3323",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/flavia-caltabiano",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 145,
+    "name": "Yvette Toledo-Baste",
+    "email": "yvette.toledobaste@compass.com",
+    "phone": "7864720626",
+    "listings": 7,
+    "website": "",
+    "compass": "https://www.compass.com/agents/yvette-toledo-baste/",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 146,
+    "name": "Eric Torrente",
+    "email": "eric.torrente@compass.com",
+    "phone": "3055627445",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/eric-torrente/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 147,
+    "name": "Andres Torrente",
+    "email": "andres.torrente@compass.com",
+    "phone": "9546965286",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/andres-torrente/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [
+      "https://www.facebook.com/torrente.realresults",
+      "https://www.instagram.com/torrente_realestate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 148,
+    "name": "Mahriah Tucker",
+    "email": "mahriah.tucker@compass.com",
+    "phone": "9542544945",
+    "listings": 7,
+    "website": "https://www.linkedin.cn/in/mahriah-tucker-4b37132/",
+    "compass": "https://www.compass.com/agents/mahriah-tucker/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 149,
+    "name": "Karina Ugarte",
+    "email": "karina.ugarte@compass.com",
+    "phone": "3057907474",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/karina-ugarte/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [
+      "https://www.instagram.com/karinasellsmiami/",
+      "https://www.linkedin.com/in/karinaugarte/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 150,
+    "name": "Louis Urbina",
+    "email": "louis.urbina@compass.com",
+    "phone": "7863557423",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/louis-urbina/",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 151,
+    "name": "Lely Urbina",
+    "email": "lely.urbina@compass.com",
+    "phone": "7863909722",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/lely-urbina/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 152,
+    "name": "Diego Valencia",
+    "email": "diego.val@compass.com",
+    "phone": "9542969189",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/diego-valencia/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 22,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 153,
+    "name": "Taylor Valente",
+    "email": "taylor.valente@compass.com",
+    "phone": "9547890231",
+    "listings": 12,
+    "website": "",
+    "compass": "https://www.compass.com/agents/taylor-valente/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 23,
+    "socials": [
+      "https://www.linkedin.com/in/taylor-valente-a2a64482/",
+      "https://www.facebook.com/TaylorValenteRealEstate",
+      "https://www.instagram.com/taylor_abodegroup/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 154,
+    "name": "Maya Vander",
+    "email": "maya.vander@compass.com",
+    "phone": "3109023682",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/maya-van-der-miller/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 23,
+    "socials": [
+      "https://www.instagram.com/themayavander/",
+      "https://www.facebook.com/maya.vander/",
+      "https://www.linkedin.com/in/maya-vander-b5395056/",
+      "https://www.youtube.com/@themayavander"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 155,
+    "name": "Diego Vergara",
+    "email": "d.vergara@compass.com",
+    "phone": "7862475404",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/diego-vergara_miami/",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 23,
+    "socials": [
+      "https://www.facebook.com/Vergararealtors",
+      "https://www.instagram.com/vergararealtors/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 156,
+    "name": "Carol Vergel",
+    "email": "carol.vergel@compass.com",
+    "phone": "3059847575",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/carol-vergel/",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 23,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 157,
+    "name": "Andrea Viana",
+    "email": "andrea.viana@compass.com",
+    "phone": "9542535592",
+    "listings": 2,
+    "website": "http://www.miamiherald.com/news/business/real-estate-news/article155889004.html",
+    "compass": "https://www.compass.com/agents/andrea-viana/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 23,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 158,
+    "name": "Ignacio Villanueva",
+    "email": "ignacio@compass.com",
+    "phone": "9177036010",
+    "listings": 7,
+    "website": "https://www.miamiherald.com/news/nation-world/national/article255177632.html",
+    "compass": "https://www.compass.com/agents/ignacio-villanueva/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 23,
+    "socials": [
+      "https://www.linkedin.com/in/ignacio-villanueva-36b00714/",
+      "https://www.instagram.com/browsing4housing/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 159,
+    "name": "Claudia Villar",
+    "email": "cvillar@compass.com",
+    "phone": "3058733335",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/claudia-villar/",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 23,
+    "socials": [
+      "https://twitter.com/CVillarMiami",
+      "https://instagram.com/cvillarmiami",
+      "https://www.facebook.com/claudia.villar.399",
+      "https://linkedin.com/in/cvillarmiami"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 160,
+    "name": "Ana Gajardo",
+    "email": "vitoandana@compass.com",
+    "phone": "954.401.9450",
+    "listings": 12,
+    "website": "https://www.vitoandana.com/",
+    "compass": "https://www.compass.com/agents/ana-gajardo",
+    "designation": "real estate professional",
+    "city": "Miami, FL",
+    "page": 23,
+    "socials": [
+      "https://www.instagram.com/vito_and_ana/",
+      "https://www.youtube.com/@VitoandAna"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 161,
+    "name": "Tatiana Volpini Everett",
+    "email": "tati.everett@compass.com",
+    "phone": "3052995553",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tatiana-volpini-everett/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 23,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 162,
+    "name": "Lucas Gomez",
+    "email": "voyagefl@compass.com",
+    "phone": "",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/lucas-gomez",
+    "designation": "Realtor",
+    "city": "Miami, FL",
+    "page": 23,
+    "socials": [
+      "https://www.linkedin.com/in/lucas-gomezt",
+      "https://www.facebook.com/lucas.gomezt",
+      "https://www.instagram.com/lucasgomezfl/",
+      "https://twitter.com/lucasgomezfl"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 163,
+    "name": "Yaakov Waldman",
+    "email": "yaakov.waldman@compass.com",
+    "phone": "9543268080",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/yaakov-waldman/",
+    "designation": "real estate agent",
+    "city": "Miami, FL",
+    "page": 23,
+    "socials": [
+      "https://www.instagram.com/yaakov_waldman/",
+      "https://www.linkedin.com/in/yaakov-waldman-57255422/",
+      "https://www.facebook.com/yaakov.waldman"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 164,
+    "name": "Lori Warriner",
+    "email": "lori.warriner@compass.com",
+    "phone": "3055051971",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/lori-warriner/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 23,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 165,
+    "name": "Janelle Widi",
+    "email": "janelle.widi@compass.com",
+    "phone": "7864868560",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/janelle-widi/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 23,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 166,
+    "name": "Louis Wintters",
+    "email": "louis.wintters@compass.com",
+    "phone": "3053006813",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/louis-wintters/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 23,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 167,
+    "name": "Sarahy Yanez",
+    "email": "sarahy.yanez@compass.com",
+    "phone": "7863141721",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sarahy-yanez/",
+    "designation": "realtor",
+    "city": "Miami, FL",
+    "page": 23,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 168,
+    "name": "Mauro Zaretti",
+    "email": "mauro.zaretti@compass.com",
+    "phone": "7862693715",
+    "listings": 7,
+    "website": "",
+    "compass": "https://www.compass.com/agents/mauro-zaretti/",
+    "designation": "REALTOR\u00ae",
+    "city": "Miami, FL",
+    "page": 24,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 169,
+    "name": "Spencer Zorn",
+    "email": "spencerzorn@compass.com",
+    "phone": "3057989933",
+    "listings": 3,
+    "website": "https://www.mansionglobal.com/articles/an-angular-architectural-gem-in-florida-asks-nearly-11-million-de9222b6",
+    "compass": "https://www.compass.com/agents/spencer-zorn/",
+    "designation": "licensed real estate broker",
+    "city": "Miami, FL",
+    "page": 24,
+    "socials": [
+      "https://www.linkedin.com/in/spencer-zorn/",
+      "https://www.facebook.com/spencerzornrealestate/",
+      "https://www.instagram.com/spencerzorn/"
+    ],
+    "has_links": true
+  }
+];
+        
+        const gradients = [
+            'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)',
+            'linear-gradient(135deg, #F6D365 0%, #FDA085 100%)',
+            'linear-gradient(135deg, #A1C4FD 0%, #C2E9FB 100%)',
+            'linear-gradient(135deg, #76B2FE 0%, #B2D8FF 100%)',
+            'linear-gradient(135deg, #E0C3FC 0%, #8EC5FC 100%)',
+            'linear-gradient(135deg, #F093FB 0%, #F5576C 100%)',
+            'linear-gradient(135deg, #5EEAD4 0%, #14B8A6 100%)',
+            'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)',
+            'linear-gradient(135deg, #C084FC 0%, #A855F7 100%)',
+            'linear-gradient(135deg, #93C5FD 0%, #3B82F6 100%)'
+        ];
+
+        function getGradient(name) {
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const idx = Math.abs(hash) % gradients.length;
+            return gradients[idx];
+        }
+
+        function getInitials(name) {
+            if (!name) return 'A';
+            const parts = name.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+            return name[0].toUpperCase();
+        }
+
+        function getPlatformName(url) {
+            const urlLower = url.toLowerCase();
+            if (urlLower.includes('instagram.com')) return 'instagram';
+            if (urlLower.includes('linkedin.com')) return 'linkedin';
+            if (urlLower.includes('facebook.com')) return 'facebook';
+            if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) return 'twitter';
+            if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
+            if (urlLower.includes('tiktok.com')) return 'tiktok';
+            return 'default';
+        }
+
+
+
+        function getSocialIconSvg(platform) {
+            const svgs = {
+                instagram: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>',
+                linkedin: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>',
+                facebook: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>',
+                twitter: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z M4 20l6.768 -6.768 M20 4l-6.768 6.768"></path></svg>',
+                youtube: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>',
+                tiktok: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>',
+                default: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>'
+            };
+            return svgs[platform] || svgs.default;
+        }
+
+        let activeTab = 'all';
+        let searchQuery = '';
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        function renderLeads() {
+            const grid = document.getElementById('agentGrid');
+            grid.innerHTML = '';
+            
+            let filtered = leadsData.filter(lead => {
+                if (activeTab === 'with-links' && !lead.has_links) return false;
+                if (activeTab === 'no-links' && lead.has_links) return false;
+                
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    const nameMatch = lead.name.toLowerCase().includes(q);
+                    const desigMatch = (lead.designation || '').toLowerCase().includes(q);
+                    const emailMatch = (lead.email || '').toLowerCase().includes(q);
+                    const cityMatch = (lead.city || '').toLowerCase().includes(q);
+                    const pageMatch = String(lead.page || '').includes(q);
+                    return nameMatch || desigMatch || emailMatch || cityMatch || pageMatch;
+                }
+                return true;
+            });
+            
+            const allCount = leadsData.length;
+            const withLinksCount = leadsData.filter(l => l.has_links).length;
+            const noLinksCount = allCount - withLinksCount;
+            
+            document.getElementById('count-all').innerText = allCount;
+            document.getElementById('count-with-links').innerText = withLinksCount;
+            document.getElementById('count-no-links').innerText = noLinksCount;
+            
+            document.getElementById('stat-total-val').innerText = allCount;
+            document.getElementById('stat-with-links-val').innerText = withLinksCount;
+            document.getElementById('stat-no-links-val').innerText = noLinksCount;
+            
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+            
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+            
+            if (totalItems === 0) {
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <span class="no-results-icon">🔍</span>
+                        <h3>No prospects found</h3>
+                        <p>Try adjusting your filters or search keywords.</p>
+                    </div>
+                `;
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+                document.getElementById('paginationInfo').innerText = `Showing ${startIdx + 1}-${endIdx} of ${totalItems} prospects`;
+            }
+            
+            const pageData = filtered.slice(startIdx, endIdx);
+            
+            pageData.forEach(lead => {
+                const initials = getInitials(lead.name);
+                const gradient = getGradient(lead.name);
+                
+                let webButtonHtml = '';
+                if (lead.website) {
+                    webButtonHtml = `<a href="${lead.website}" target="_blank" class="btn btn-primary">Website</a>`;
+                } else {
+                    webButtonHtml = `<button class="btn btn-primary disabled" disabled>No Website</button>`;
+                }
+                
+                let socialsHtml = '';
+                if (lead.socials && lead.socials.length > 0) {
+                    socialsHtml += `<span class="social-label">Socials:</span>`;
+                    lead.socials.forEach(url => {
+                        const platform = getPlatformName(url);
+                        const iconSvg = getSocialIconSvg(platform);
+                        socialsHtml += `
+                            <a href="${url}" target="_blank" class="social-link ${platform}" title="${platform.charAt(0).toUpperCase() + platform.slice(1)}: ${url}">
+                                ${iconSvg}
+                            </a>
+                        `;
+                    });
+                } else {
+                    socialsHtml = `<span class="social-label" style="color: #94a3b8;">No socials on Compass</span>`;
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                card.style.cursor = 'pointer';
+                card.onclick = (e) => {
+                    if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.copy-btn')) {
+                        return;
+                    }
+                    window.open(lead.compass, '_blank');
+                };
+                
+                card.innerHTML = `
+                    <button class="copy-btn" onclick="copyAgentInfo(${lead.id}, event)" title="Copy agent info">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    </button>
+                    <div class="card-header">
+                        <div class="avatar" style="background: ${gradient}">${initials}</div>
+                        <div class="agent-meta">
+                            <div class="agent-name" title="${lead.name}">${lead.name}</div>
+                            <div class="agent-designation" title="${lead.designation || 'Real Estate Agent'}">${lead.designation || 'Real Estate Agent'}</div>
+                            <div class="badges-container">
+                                <span class="badge badge-listings">🏡 ${lead.listings} Listings</span>
+                                ${lead.city ? `<span class="badge badge-city">📍 ${lead.city}</span>` : ''}
+                                ${lead.page ? `<span class="badge badge-page">📄 Page ${lead.page}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        ${lead.email ? `
+                        <a href="mailto:${lead.email}" class="contact-row">
+                            <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            <span>${lead.email}</span>
+                        </a>` : ''}
+                        ${lead.phone ? `
+                        <a href="tel:${lead.phone}" class="contact-row">
+                            <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                            <span>${lead.phone}</span>
+                        </a>` : ''}
+                    </div>
+                    <div class="card-footer">
+                        <div class="actions-row">
+                            <a href="${lead.compass}" target="_blank" class="btn btn-secondary">Compass Profile</a>
+                            ${webButtonHtml}
+                        </div>
+                        <div class="socials-row">
+                            ${socialsHtml}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            renderPaginationControls(totalPages);
+        }
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            const activeBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabName));
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            currentPage = 1;
+            renderLeads();
+        }
+
+        function handleSearch(val) {
+            searchQuery = val;
+            currentPage = 1;
+            renderLeads();
+        }
+
+        function renderPaginationControls(totalPages) {
+            const controls = document.getElementById('paginationControls');
+            controls.innerHTML = '';
+            
+            if (totalPages <= 1) {
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+            }
+            
+            // Prev Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.innerHTML = '&larr; Prev';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(prevBtn);
+            
+            // Smart visible buttons logic
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            
+            if (endPage - startPage + 1 < maxVisible) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+            
+            if (startPage > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.className = 'page-btn';
+                firstBtn.innerText = '1';
+                firstBtn.onclick = () => { currentPage = 1; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(firstBtn);
+                
+                if (startPage > 2) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                btn.innerText = i;
+                btn.onclick = () => {
+                    currentPage = i;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+                controls.appendChild(btn);
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+                
+                const lastBtn = document.createElement('button');
+                lastBtn.className = 'page-btn';
+                lastBtn.innerText = totalPages;
+                lastBtn.onclick = () => { currentPage = totalPages; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(lastBtn);
+            }
+            
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.innerHTML = 'Next &rarr;';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(nextBtn);
+        }
+
+        function copyAgentInfo(id, event) {
+            const lead = leadsData.find(l => l.id === id);
+            if (!lead) return;
+            
+            const text = lead.name + '\n' + 
+                         (lead.designation || 'Real Estate Agent') + '\n' +
+                         'Email: ' + (lead.email || 'None') + '\n' +
+                         'Phone: ' + (lead.phone || 'None') + '\n' +
+                         'Website: ' + (lead.website || 'None') + '\n' +
+                         'Compass: ' + lead.compass;
+                         
+            const btn = event.currentTarget;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Agent details copied to clipboard!');
+                const originalSvg = btn.innerHTML;
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                setTimeout(() => { btn.innerHTML = originalSvg; }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderLeads();
+        });
+    </script>
+</body>
+</html>

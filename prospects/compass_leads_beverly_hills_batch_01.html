@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinova Outreach - Compass Leads Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #e0e7ff;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-full: 9999px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .logo-text p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.total { background-color: #eff6ff; color: #3b82f6; }
+        .stat-icon.with-links { background-color: #f0fdf4; color: #22c55e; }
+        .stat-icon.no-links { background-color: #fffbeb; color: #f59e0b; }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .controls-bar {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+            max-width: 480px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #fcfcfd;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            background-color: #fff;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background-color: #f1f5f9;
+            padding: 0.25rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .tab-btn {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 1rem;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background-color: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-count {
+            background-color: #e2e8f0;
+            color: var(--text-secondary);
+            padding: 0.125rem 0.375rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .tab-btn.active .tab-count {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .agent-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s, border-color 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-hover);
+        }
+
+        .card-header {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1.25rem;
+        }
+
+        .avatar {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .agent-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .agent-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.125rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .agent-designation {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.5rem;
+        }
+
+        .badges-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.625rem;
+            border-radius: var(--radius-full);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .badge-listings {
+            background-color: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #dcfce7;
+        }
+
+
+
+        .badge-city {
+            background-color: #f0f9ff;
+            color: #0369a1;
+            border: 1px solid #e0f2fe;
+        }
+
+        .badge-page {
+            background-color: #faf5ff;
+            color: #7e22ce;
+            border: 1px solid #f3e8ff;
+        }
+
+        .card-body {
+            padding: 0.75rem 0;
+            border-top: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .contact-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .contact-row:hover {
+            color: var(--primary);
+        }
+
+        .contact-icon {
+            width: 1rem;
+            height: 1rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .card-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .actions-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            padding: 0.625rem;
+            font-family: var(--font-family);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-primary.disabled {
+            background-color: #f1f5f9;
+            color: var(--text-muted);
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .btn-secondary {
+            background-color: white;
+            border-color: var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background-color: #f8fafc;
+        }
+
+        .socials-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            min-height: 2rem;
+        }
+
+        .social-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-right: 0.25rem;
+        }
+
+        .social-link {
+            width: 2rem;
+            height: 2rem;
+            border-radius: var(--radius-full);
+            background-color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            text-decoration: none;
+            border: 1px solid #e2e8f0;
+        }
+
+        .social-link:hover {
+            transform: scale(1.1);
+            color: white;
+        }
+
+        .social-link.instagram:hover { background-color: #e1306c; border-color: #e1306c; }
+        .social-link.linkedin:hover { background-color: #0077b5; border-color: #0077b5; }
+        .social-link.facebook:hover { background-color: #1877f2; border-color: #1877f2; }
+        .social-link.twitter:hover { background-color: #000000; border-color: #000000; }
+        .social-link.youtube:hover { background-color: #ff0000; border-color: #ff0000; }
+        .social-link.tiktok:hover { background-color: #010101; border-color: #010101; }
+        .social-link.default:hover { background-color: var(--primary); border-color: var(--primary); }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 1.75rem;
+            height: 1.75rem;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.15s;
+            opacity: 0;
+            z-index: 10;
+        }
+
+        .agent-card:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary-light);
+            background-color: var(--primary-light);
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            background-color: var(--bg-card);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .no-results-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--text-primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pagination-info {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .page-btn {
+            border: 1px solid var(--border-color);
+            background-color: white;
+            color: var(--text-secondary);
+            padding: 0.5rem 0.875rem;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background-color: #f8fafc;
+        }
+
+        .page-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .page-btn:disabled {
+            color: var(--text-muted);
+            background-color: #f1f5f9;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+        }
+
+        .page-dots {
+            padding: 0 0.5rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-icon">P</div>
+                <div class="logo-text">
+                    <h1>Pinova Outreach</h1>
+                    <p>Compass Agent Directory Explorer</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon total">🏡</div>
+                <div class="stat-info">
+                    <span id="stat-total-val" class="stat-value">0</span>
+                    <span class="stat-label">Total Prospects</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon with-links">🔗</div>
+                <div class="stat-info">
+                    <span id="stat-with-links-val" class="stat-value">0</span>
+                    <span class="stat-label">Has Website/Socials (Cat A)</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon no-links">❓</div>
+                <div class="stat-info">
+                    <span id="stat-no-links-val" class="stat-value">0</span>
+                    <span class="stat-label">No Links (Cat B)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls-bar">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('all')">
+                    All Leads <span id="count-all" class="tab-count">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('with-links')">
+                    Category A: Has Links <span id="count-with-links" class="tab-count">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('no-links')">
+                    Category B: No Links <span id="count-no-links" class="tab-count">0</span>
+                </button>
+            </div>
+            
+            <div class="search-box">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by name, designation, email..." oninput="handleSearch(this.value)">
+            </div>
+        </div>
+        
+        <div id="agentGrid" class="agent-grid"></div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationContainer" class="pagination-container" style="display: none;">
+            <div id="paginationInfo" class="pagination-info">Showing 0-0 of 0 prospects</div>
+            <div id="paginationControls" class="pagination-controls"></div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast">Agent details copied to clipboard!</div>
+
+    <script>
+        const leadsData = [
+  {
+    "id": 0,
+    "name": "David A. Berg",
+    "email": "david.berg@compass.com",
+    "phone": "3105003931",
+    "listings": 31,
+    "website": "http://smithandberg.com/",
+    "compass": "https://www.compass.com/agents/david-berg/",
+    "designation": "real estate professional",
+    "city": "Beverly Hills, CA",
+    "page": 1,
+    "socials": [
+      "https://www.instagram.com/smithandberg/",
+      "https://www.linkedin.com/in/smith-and-berg-partners-74a864132/",
+      "https://www.youtube.com/@smithandberg",
+      "https://www.facebook.com/SmithAndBergRealEstate"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 1,
+    "name": "York Adkins",
+    "email": "york.adkins@compass.com",
+    "phone": "3107466510",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/york-adkins/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 2,
+    "name": "Lorin Ruttenberg",
+    "email": "aotchomes@compass.com",
+    "phone": "",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/lorin-ruttenberg",
+    "designation": "Realtor",
+    "city": "Beverly Hills, CA",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 3,
+    "name": "Ann Marie Ahern",
+    "email": "annmarie.ahern@compass.com",
+    "phone": "8183597376",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ann-marie-ahern/",
+    "designation": "REALTOR\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 4,
+    "name": "Atif Ahmad",
+    "email": "atif.ahmad@compass.com",
+    "phone": "4246530508",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/atif-ahmad/",
+    "designation": "real estate agent",
+    "city": "Beverly Hills, CA",
+    "page": 1,
+    "socials": [
+      "https://www.instagram.com/agentatif/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 5,
+    "name": "Kristin Alexander",
+    "email": "kristin.alexander@compass.com",
+    "phone": "9493009166",
+    "listings": 3,
+    "website": "https://kristinlalexander.com/",
+    "compass": "https://www.compass.com/agents/kristin-alexander/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 1,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 6,
+    "name": "Kyle Amicucci",
+    "email": "k.amicucci@compass.com",
+    "phone": "3108243474",
+    "listings": 3,
+    "website": "https://www.wsj.com/real-estate/luxury-homes/adriana-lima-los-angeles-home-085440bd?st=HBnPnJ&reflink=article_copyURL_share",
+    "compass": "https://www.compass.com/agents/kyle-amicucci/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 1,
+    "socials": [
+      "https://www.instagram.com/kyleamicucci/",
+      "https://www.linkedin.com/in/kyle-amicucci/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 7,
+    "name": "Brent Ander",
+    "email": "brent.ander@compass.com",
+    "phone": "3233699202",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/brent-ander/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 8,
+    "name": "Lucas Arias",
+    "email": "lucas.arias@compass.com",
+    "phone": "9092439587",
+    "listings": 2,
+    "website": "https://aarealestateadvisory.com/",
+    "compass": "https://www.compass.com/agents/lucas-arias/",
+    "designation": "Realtor\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 1,
+    "socials": [
+      "https://www.facebook.com/lucasallenarias/",
+      "https://www.linkedin.com/in/lucas-arias-844303138/",
+      "https://www.instagram.com/the.lucasarias/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 9,
+    "name": "Fiora Aston",
+    "email": "fiora.aston@compass.com",
+    "phone": "3104803585",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/fiora-aston/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 10,
+    "name": "Victoria Ascarrunz",
+    "email": "avregroup@compass.com",
+    "phone": "",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/victoria-ascarrunz",
+    "designation": "Realtor\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 11,
+    "name": "Leslie Rae Bega",
+    "email": "leslierae.bega@compass.com",
+    "phone": "3106006615",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/leslie-rae-bega/",
+    "designation": "REALTOR\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 1,
+    "socials": [
+      "https://www.instagram.com/leslieraebega/?hl=en",
+      "https://www.youtube.com/@LeslieRaeBega"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 12,
+    "name": "John Bercsi",
+    "email": "john.bercsi@compass.com",
+    "phone": "3104096667",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/john-bercsi/",
+    "designation": "realtor",
+    "city": "Beverly Hills, CA",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 13,
+    "name": "Monet Berger",
+    "email": "monet.berger@compass.com",
+    "phone": "3104981195",
+    "listings": 4,
+    "website": "https://lamag.com/real-estate-all-stars/",
+    "compass": "https://www.compass.com/agents/monet-berger/",
+    "designation": "Real Estate Agent",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [
+      "https://www.instagram.com/monetberger_realestate/",
+      "https://www.facebook.com/photo?fbid=1836383213062468&set=5-things-mentor-monet-berger-learned-through-mentoring-a-vista-youth__1-business"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 14,
+    "name": "Max Berger",
+    "email": "max.berger@compass.com",
+    "phone": "8183214972",
+    "listings": 12,
+    "website": "",
+    "compass": "https://www.compass.com/agents/max-berger/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 15,
+    "name": "Michael Bergin",
+    "email": "michael.bergin@compass.com",
+    "phone": "3106000715",
+    "listings": 8,
+    "website": "https://issuu.com/moontidemedia/docs/vb_septoct2019_digi/116",
+    "compass": "https://www.compass.com/agents/michael-bergin/",
+    "designation": "real estate agent",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [
+      "https://www.facebook.com/michaelberginrealestate/",
+      "https://www.instagram.com/themichaelbergin/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 16,
+    "name": "Charles Black",
+    "email": "charlesblack@compass.com",
+    "phone": "3108006385",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/charles-black/",
+    "designation": "Realtor",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/charlesblack3/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 17,
+    "name": "Lauren Blankenship",
+    "email": "lauren.blankenship@compass.com",
+    "phone": "3107755854",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/lauren-blankenship/",
+    "designation": "Realtor",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/laurensblankenship"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 18,
+    "name": "Adam Brawer",
+    "email": "adam.brawer@compass.com",
+    "phone": "3102798259",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/adam-brawer/",
+    "designation": "REALTOR\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 19,
+    "name": "James Bremner",
+    "email": "james.bremner@compass.com",
+    "phone": "3104220858",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/james-bremner/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 20,
+    "name": "Jordan Bridges",
+    "email": "jordan.bridges@compass.com",
+    "phone": "3104935743",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jordan-bridges/",
+    "designation": "Realtor",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [
+      "https://www.facebook.com/jbridges.la/",
+      "https://instagram.com/jbridges.la/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 21,
+    "name": "Or Brodsky",
+    "email": "or.brodsky@compass.com",
+    "phone": "3106232319",
+    "listings": 11,
+    "website": "",
+    "compass": "https://www.compass.com/agents/or-brodsky/",
+    "designation": "REALTOR\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [
+      "https://www.facebook.com/brodskyestates/",
+      "https://www.instagram.com/thebrodskygroup/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 22,
+    "name": "Colby Brown",
+    "email": "colby.brown@compass.com",
+    "phone": "3108724534",
+    "listings": 2,
+    "website": "https://www.dwell.com/article/midcentury-courtyard-home-la-canada-los-angeles-real-estate-70ba5d60",
+    "compass": "https://www.compass.com/agents/colby-brown/",
+    "designation": "Real Estate Agent",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [
+      "https://www.instagram.com/colbybrown.la/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 23,
+    "name": "Danny Brown",
+    "email": "danny.brown@compass.com",
+    "phone": "3109017405",
+    "listings": 2,
+    "website": "https://www.dannybrownla.com/",
+    "compass": "https://www.compass.com/agents/danny-brown/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [
+      "https://www.instagram.com/dannybrownla/?hl=en",
+      "https://www.facebook.com/profile.php?id=691355030",
+      "https://www.linkedin.com/in/dannybrownhomes",
+      "https://www.youtube.com/c/DannyBrownpodcast"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 24,
+    "name": "Erik Brown",
+    "email": "erik.brown@compass.com",
+    "phone": "4243336697",
+    "listings": 6,
+    "website": "https://www.erikrbrown.com/beverly-hills/",
+    "compass": "https://www.compass.com/agents/erik-brown/",
+    "designation": "real estate agent",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/theerikbrown",
+      "https://www.facebook.com/theerikbrown/",
+      "https://www.instagram.com/theerikbrown/",
+      "https://twitter.com/theerikbrown?lang=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 25,
+    "name": "Alex Brunkhorst",
+    "email": "alex.brunkhorst@compass.com",
+    "phone": "3102517721",
+    "listings": 2,
+    "website": "https://sportsentertainmentdivision.com/report/",
+    "compass": "https://www.compass.com/agents/alex-brunkhorst/",
+    "designation": "Licensed Real Estate Salesperson",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [
+      "https://www.instagram.com/alexbrunkhorst1/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 26,
+    "name": "Andrew Buss",
+    "email": "andrew.buss@compass.com",
+    "phone": "3104874437",
+    "listings": 9,
+    "website": "",
+    "compass": "https://www.compass.com/agents/andrew-buss/",
+    "designation": "realtor",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 27,
+    "name": "Joe Carrabba",
+    "email": "joe.carrabba@compass.com",
+    "phone": "3233021771",
+    "listings": 3,
+    "website": "https://share.google/vGxpl6Uj5KHBpMYyv",
+    "compass": "https://www.compass.com/agents/joe-carrabba/",
+    "designation": "Real Estate Agent",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [
+      "https://www.instagram.com/carrabbagroup/",
+      "https://www.linkedin.com/in/joe-carrabba-a26548/",
+      "https://www.facebook.com/carrabbagroup"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 28,
+    "name": "Monique Carrabba",
+    "email": "monique.carrabba@compass.com",
+    "phone": "3238992900",
+    "listings": 3,
+    "website": "https://share.google/vGxpl6Uj5KHBpMYyv",
+    "compass": "https://www.compass.com/agents/monique-carrabba/",
+    "designation": "Real Estate Agent",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [
+      "https://www.instagram.com/carrabbagroup/",
+      "https://www.linkedin.com/in/monique-carrabba-9532117",
+      "https://www.facebook.com/carrabbagroup"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 29,
+    "name": "Joe Carrabba",
+    "email": "carrabbagroup@compass.com",
+    "phone": "323.899.2900",
+    "listings": 3,
+    "website": "https://share.google/vGxpl6Uj5KHBpMYyv",
+    "compass": "https://www.compass.com/agents/joe-carrabba",
+    "designation": "Real Estate Agent",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [
+      "https://www.instagram.com/carrabbagroup/",
+      "https://www.linkedin.com/in/joe-carrabba-a26548/",
+      "https://www.facebook.com/carrabbagroup"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 30,
+    "name": "Jacqueline Carroll",
+    "email": "jacqueline.carroll@compass.com",
+    "phone": "9177573442",
+    "listings": 9,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jacqueline-carroll/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 31,
+    "name": "Michael Carter",
+    "email": "michael.carter@compass.com",
+    "phone": "3105084528",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michael-carter/",
+    "designation": "real estate professional",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/michael-carter-a45a626/",
+      "https://www.facebook.com/MichaelCarterLuxuryRealEstate"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 32,
+    "name": "Erica Carter Walden",
+    "email": "erica.carter@compass.com",
+    "phone": "3235415392",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/erica-carter-walden/",
+    "designation": "realtor",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [
+      "https://www.facebook.com/ericacarterrealestate/",
+      "https://www.instagram.com/ericacarterwalden/",
+      "https://twitter.com/EricaCarterWal1"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 33,
+    "name": "Gia Casty",
+    "email": "gia@compass.com",
+    "phone": "3108243550",
+    "listings": 4,
+    "website": "http://www.castyliving.com/",
+    "compass": "https://www.compass.com/agents/gia-casty/",
+    "designation": "Realtor\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 2,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 34,
+    "name": "Michael Cohen",
+    "email": "mike.cohen@compass.com",
+    "phone": "3106220512",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/mike-cohen/",
+    "designation": "Real Estate Agent",
+    "city": "Beverly Hills, CA",
+    "page": 3,
+    "socials": [
+      "https://www.instagram.com/socalbymike",
+      "https://www.twitter.com/MichaelBCohen"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 35,
+    "name": "Luke Cohen",
+    "email": "luke.cohen@compass.com",
+    "phone": "4243944885",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/luke-cohen/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 36,
+    "name": "Christophe Collet",
+    "email": "christophe.collet@compass.com",
+    "phone": "3107392466",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/christophe-collet/",
+    "designation": "realtor",
+    "city": "Beverly Hills, CA",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/christophe-collet-91a03715/?locale=en_US",
+      "https://twitter.com/colletchristo"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 37,
+    "name": "Jana Conley",
+    "email": "jana.conley@compass.com",
+    "phone": "3102799011",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jana-conley/",
+    "designation": "REALTOR\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 3,
+    "socials": [
+      "https://www.instagram.com/janasees/",
+      "https://www.facebook.com/pages/category/Real-Estate/Jana-Conley-Homes-139050006119215/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 38,
+    "name": "Lorena Costino",
+    "email": "lorena.costino@compass.com",
+    "phone": "3233592950",
+    "listings": 4,
+    "website": "https://www.gavenscostino.com/",
+    "compass": "https://www.compass.com/agents/lorena-costino/",
+    "designation": "Realtor\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 3,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 39,
+    "name": "Evan Cowitt",
+    "email": "evan.cowitt@compass.com",
+    "phone": "3104866228",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/evan-cowitt/",
+    "designation": "REALTOR\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/evancowitt/",
+      "https://www.facebook.com/evancowittrealtor",
+      "https://www.instagram.com/evancowitt/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 40,
+    "name": "Michaelangelo Cruz",
+    "email": "michaelangelo.cruz@compass.com",
+    "phone": "8184722570",
+    "listings": 4,
+    "website": "https://www.michaelangelocruz.com/",
+    "compass": "https://www.compass.com/agents/michaelangelo-cruz/",
+    "designation": "Realtor\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 3,
+    "socials": [
+      "https://www.instagram.com/blahblahmichael/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 41,
+    "name": "Valerie Cuny-Tencanera",
+    "email": "valerie.cuny@compass.com",
+    "phone": "3105295065",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/valerie-cuny/",
+    "designation": "Real Estate Agent",
+    "city": "Beverly Hills, CA",
+    "page": 3,
+    "socials": [
+      "https://www.instagram.com/cunyvalerie/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 42,
+    "name": "Thomas Davila",
+    "email": "tom.davila@compass.com",
+    "phone": "3233278292",
+    "listings": 14,
+    "website": "https://rarepropertiesinc.com/",
+    "compass": "https://www.compass.com/agents/tom-davila/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 3,
+    "socials": [
+      "https://www.facebook.com/RarePropertiesInc",
+      "https://www.instagram.com/tomdavila/",
+      "https://twitter.com/RAREproperty",
+      "https://www.linkedin.com/in/tomdavila/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 43,
+    "name": "Mike Deasy",
+    "email": "mike.deasy@compass.com",
+    "phone": "3102758880",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/3899317/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 44,
+    "name": "Kennon Earl",
+    "email": "kennon.earl@compass.com",
+    "phone": "2132809620",
+    "listings": 5,
+    "website": "https://rarepropertiesinc.com/",
+    "compass": "https://www.compass.com/agents/kennon-earl/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 3,
+    "socials": [
+      "https://www.facebook.com/KennonEarl/",
+      "https://www.instagram.com/kennon.earl/",
+      "https://twitter.com/RAREproperty"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 45,
+    "name": "Jerry Ferris",
+    "email": "jerry.ferris@compass.com",
+    "phone": "3109028386",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jerry-ferris/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 46,
+    "name": "Angelo Fierro",
+    "email": "angelo.fierro@compass.com",
+    "phone": "3238215353",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/angelo-fierro/",
+    "designation": "Realtor\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 47,
+    "name": "Josh Flagg",
+    "email": "josh.flagg@compass.com",
+    "phone": "3109039492",
+    "listings": 18,
+    "website": "",
+    "compass": "https://www.compass.com/agents/josh-flagg/",
+    "designation": "real estate agent",
+    "city": "Beverly Hills, CA",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 48,
+    "name": "Sergio Flores",
+    "email": "sergio.flores@compass.com",
+    "phone": "3109224026",
+    "listings": 5,
+    "website": "https://www.google.com/search?q=omni+homes+los+feliz&rlz=1C1CHFX_enUS571US571&oq=omni+homes+los+feliz&aqs=chrome..69i57j0i22i30l2j0i390.14440j0j7&sourceid=chrome&ie=UTF-8#lrd=0x80c2c0afd6300001:0x3d38934e9716f7c8,1,,,",
+    "compass": "https://www.compass.com/agents/sergio-flores/",
+    "designation": "REALTOR\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 4,
+    "socials": [
+      "https://www.facebook.com/OMNIHomeSource",
+      "https://www.instagram.com/sergiofloresreg/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 49,
+    "name": "Sally Forster Jones",
+    "email": "sally.jones@compass.com",
+    "phone": "3105792200",
+    "listings": 44,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sally-forster-jones/",
+    "designation": "Real Estate Agent",
+    "city": "Beverly Hills, CA",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 50,
+    "name": "Geoffrey Frid",
+    "email": "geoffrey.frid@compass.com",
+    "phone": "3102706225",
+    "listings": 2,
+    "website": "https://www.geoffreyfrid.com/",
+    "compass": "https://www.compass.com/agents/geoffrey-frid/",
+    "designation": "real estate agent",
+    "city": "Beverly Hills, CA",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/geoffreyfrid/",
+      "https://www.facebook.com/geoffrey.frid"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 51,
+    "name": "Joshua F. Smith",
+    "email": "joshua.smith@compass.com",
+    "phone": "3108715528",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/joshua-smith/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 52,
+    "name": "Carl Gambino",
+    "email": "carl.gambino@compass.com",
+    "phone": "6464651766",
+    "listings": 99,
+    "website": "https://www.thegambinogroup.com/",
+    "compass": "https://www.compass.com/agents/carl-gambino/",
+    "designation": "Real Estate Agent",
+    "city": "Beverly Hills, CA",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/carlgambino.realestate/",
+      "https://www.instagram.com/gambinogroup/",
+      "https://www.youtube.com/@gambinogroup",
+      "https://www.tiktok.com/@carlgambino.realestate?_r=1&_t=ZP-92kPw6hy9KI",
+      "https://www.tiktok.com/@gambinogroup?_r=1&_t=ZP-92kPw6hy9KI",
+      "https://www.youtube.com/watch?v=v9EdmFIelkk"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 53,
+    "name": "Carl Gambino",
+    "email": "gambinola@compass.com",
+    "phone": "646.465.1766",
+    "listings": 99,
+    "website": "https://www.thegambinogroup.com/",
+    "compass": "https://www.compass.com/agents/carl-gambino/",
+    "designation": "Real Estate Agent",
+    "city": "Beverly Hills, CA",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/carlgambino.realestate/",
+      "https://www.instagram.com/gambinogroup/",
+      "https://www.youtube.com/@gambinogroup",
+      "https://www.tiktok.com/@carlgambino.realestate?_r=1&_t=ZP-92kPw6hy9KI",
+      "https://www.tiktok.com/@gambinogroup?_r=1&_t=ZP-92kPw6hy9KI",
+      "https://www.youtube.com/watch?v=v9EdmFIelkk"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 54,
+    "name": "Carl Gambino",
+    "email": "gambinonyc@compass.com",
+    "phone": "",
+    "listings": 99,
+    "website": "https://www.thegambinogroup.com/",
+    "compass": "https://www.compass.com/agents/carl-gambino",
+    "designation": "Real Estate Agent",
+    "city": "Beverly Hills, CA",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/carlgambino.realestate/",
+      "https://www.instagram.com/gambinogroup/",
+      "https://www.youtube.com/@gambinogroup",
+      "https://www.tiktok.com/@carlgambino.realestate?_r=1&_t=ZP-92kPw6hy9KI",
+      "https://www.tiktok.com/@gambinogroup?_r=1&_t=ZP-92kPw6hy9KI",
+      "https://www.youtube.com/watch?v=v9EdmFIelkk"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 55,
+    "name": "Robin Gaur",
+    "email": "robin.gaur@compass.com",
+    "phone": "8188368337",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/robin-gaur/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/robinkgaur",
+      "https://www.facebook.com/robin.gaur/",
+      "https://www.linkedin.com/in/robingaur/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 56,
+    "name": "Ginger Glass",
+    "email": "ginger.glass@compass.com",
+    "phone": "3109279307",
+    "listings": 30,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ginger-glass/",
+    "designation": "realtor",
+    "city": "Beverly Hills, CA",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 57,
+    "name": "Alexandra Glass",
+    "email": "alex.glass@compass.com",
+    "phone": "4246669235",
+    "listings": 21,
+    "website": "",
+    "compass": "https://www.compass.com/agents/alexandra-glass/",
+    "designation": "Realtor\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 58,
+    "name": "Kira Gould",
+    "email": "kira.gould@compass.com",
+    "phone": "3109639563",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/kira-gould/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 59,
+    "name": "Barry Gray",
+    "email": "barry.gray@compass.com",
+    "phone": "3238223200",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/barry-gray/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 4,
+    "socials": [
+      "https://www.facebook.com/barrygrayrealestate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 60,
+    "name": "Brian Griffin",
+    "email": "brian.griffin@compass.com",
+    "phone": "7073322936",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/brian-griffin/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/briangriffinre/",
+      "https://www.facebook.com/briangriffinpro",
+      "https://www.linkedin.com/in/realestateadvisor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 61,
+    "name": "Stephen Hansen Brown",
+    "email": "stephen.brown@compass.com",
+    "phone": "3104333860",
+    "listings": 2,
+    "website": "https://stephenhansenbrown.com/",
+    "compass": "https://www.compass.com/agents/stephen-brown/",
+    "designation": "realtor",
+    "city": "Beverly Hills, CA",
+    "page": 5,
+    "socials": [
+      "https://www.facebook.com/hansenbrownLA",
+      "https://www.instagram.com/stephenhansenbrown/",
+      "https://twitter.com/hansenbrownLA",
+      "https://www.linkedin.com/in/stephen-hansen-brown-04b575124"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 62,
+    "name": "Brooke Held",
+    "email": "brooke.held@compass.com",
+    "phone": "8186579420",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/brooke-held/",
+    "designation": "Realtor\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 63,
+    "name": "Irene Hernandez",
+    "email": "irenehernandez@compass.com",
+    "phone": "4152054587",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/irene-hernandez-la/",
+    "designation": "REALTOR\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 64,
+    "name": "Esther Hickman",
+    "email": "esther.hickman@compass.com",
+    "phone": "3106007306",
+    "listings": 2,
+    "website": "https://www.phsrealty.com/team/esther-hickman",
+    "compass": "https://www.compass.com/agents/esther-hickman/",
+    "designation": "REALTOR\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 5,
+    "socials": [
+      "https://www.facebook.com/kehickmancompass/",
+      "https://www.instagram.com/estherhickman.la/?hl=en",
+      "https://twitter.com/estherheidi",
+      "https://www.linkedin.com/in/estherhickman/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 65,
+    "name": "Madison Hildebrand",
+    "email": "madison.hildebrand@compass.com",
+    "phone": "3108185788",
+    "listings": 9,
+    "website": "https://themalibulife.com/properties/41800-pacific-coast-hwy-malibu-ca-90265-23-245455",
+    "compass": "https://www.compass.com/agents/madison-hildebrand/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 5,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 66,
+    "name": "Henry Horn",
+    "email": "henry.horn@compass.com",
+    "phone": "4242792910",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/henry-horn/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 67,
+    "name": "Therese Hyde",
+    "email": "therese.hyde@compass.com",
+    "phone": "8185120683",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/therese-hyde/",
+    "designation": "Realtor",
+    "city": "Beverly Hills, CA",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 68,
+    "name": "Francis Tim Hyde",
+    "email": "tim.hyde@compass.com",
+    "phone": "4248350727",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tim-hyde/",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 69,
+    "name": "Anton Ismailyan",
+    "email": "anton.ismailyan@compass.com",
+    "phone": "8183192988",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/anton-ismailyan/",
+    "designation": "REALTOR\u00ae",
+    "city": "Beverly Hills, CA",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 70,
+    "name": "Jeremy Ives",
+    "email": "jeremy.ives@compass.com",
+    "phone": "3107701202",
+    "listings": 3,
+    "website": "http://www.jeremyives.com/",
+    "compass": "https://www.compass.com/agents/jeremy-ives-group/",
+    "designation": "Realtor",
+    "city": "Beverly Hills, CA",
+    "page": 5,
+    "socials": [
+      "https://www.instagram.com/jeremyivesgroup/",
+      "https://www.facebook.com/JeremyIvesRealtor/",
+      "https://www.linkedin.com/in/jeremyivesrealtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 71,
+    "name": "Daniel Jacobson",
+    "email": "daniel.jacobson@compass.com",
+    "phone": "3233469111",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/daniel-jacobson/",
+    "designation": "real estate agent",
+    "city": "Beverly Hills, CA",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 72,
+    "name": "Jerry Jaffe",
+    "email": "jerry.jaffe@compass.com",
+    "phone": "3104034925",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jerry-jaffe/",
+    "designation": "Real Estate Agent",
+    "city": "Beverly Hills, CA",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 73,
+    "name": "Nadia Saad",
+    "email": "jnsaad@compass.com",
+    "phone": "310.770.7395",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/nadia-saad",
+    "designation": "licensed real estate broker",
+    "city": "Beverly Hills, CA",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  }
+];
+        
+        const gradients = [
+            'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)',
+            'linear-gradient(135deg, #F6D365 0%, #FDA085 100%)',
+            'linear-gradient(135deg, #A1C4FD 0%, #C2E9FB 100%)',
+            'linear-gradient(135deg, #76B2FE 0%, #B2D8FF 100%)',
+            'linear-gradient(135deg, #E0C3FC 0%, #8EC5FC 100%)',
+            'linear-gradient(135deg, #F093FB 0%, #F5576C 100%)',
+            'linear-gradient(135deg, #5EEAD4 0%, #14B8A6 100%)',
+            'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)',
+            'linear-gradient(135deg, #C084FC 0%, #A855F7 100%)',
+            'linear-gradient(135deg, #93C5FD 0%, #3B82F6 100%)'
+        ];
+
+        function getGradient(name) {
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const idx = Math.abs(hash) % gradients.length;
+            return gradients[idx];
+        }
+
+        function getInitials(name) {
+            if (!name) return 'A';
+            const parts = name.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+            return name[0].toUpperCase();
+        }
+
+        function getPlatformName(url) {
+            const urlLower = url.toLowerCase();
+            if (urlLower.includes('instagram.com')) return 'instagram';
+            if (urlLower.includes('linkedin.com')) return 'linkedin';
+            if (urlLower.includes('facebook.com')) return 'facebook';
+            if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) return 'twitter';
+            if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
+            if (urlLower.includes('tiktok.com')) return 'tiktok';
+            return 'default';
+        }
+
+
+
+        function getSocialIconSvg(platform) {
+            const svgs = {
+                instagram: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>',
+                linkedin: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>',
+                facebook: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>',
+                twitter: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z M4 20l6.768 -6.768 M20 4l-6.768 6.768"></path></svg>',
+                youtube: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>',
+                tiktok: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>',
+                default: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>'
+            };
+            return svgs[platform] || svgs.default;
+        }
+
+        let activeTab = 'all';
+        let searchQuery = '';
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        function renderLeads() {
+            const grid = document.getElementById('agentGrid');
+            grid.innerHTML = '';
+            
+            let filtered = leadsData.filter(lead => {
+                if (activeTab === 'with-links' && !lead.has_links) return false;
+                if (activeTab === 'no-links' && lead.has_links) return false;
+                
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    const nameMatch = lead.name.toLowerCase().includes(q);
+                    const desigMatch = (lead.designation || '').toLowerCase().includes(q);
+                    const emailMatch = (lead.email || '').toLowerCase().includes(q);
+                    const cityMatch = (lead.city || '').toLowerCase().includes(q);
+                    const pageMatch = String(lead.page || '').includes(q);
+                    return nameMatch || desigMatch || emailMatch || cityMatch || pageMatch;
+                }
+                return true;
+            });
+            
+            const allCount = leadsData.length;
+            const withLinksCount = leadsData.filter(l => l.has_links).length;
+            const noLinksCount = allCount - withLinksCount;
+            
+            document.getElementById('count-all').innerText = allCount;
+            document.getElementById('count-with-links').innerText = withLinksCount;
+            document.getElementById('count-no-links').innerText = noLinksCount;
+            
+            document.getElementById('stat-total-val').innerText = allCount;
+            document.getElementById('stat-with-links-val').innerText = withLinksCount;
+            document.getElementById('stat-no-links-val').innerText = noLinksCount;
+            
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+            
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+            
+            if (totalItems === 0) {
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <span class="no-results-icon">🔍</span>
+                        <h3>No prospects found</h3>
+                        <p>Try adjusting your filters or search keywords.</p>
+                    </div>
+                `;
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+                document.getElementById('paginationInfo').innerText = `Showing ${startIdx + 1}-${endIdx} of ${totalItems} prospects`;
+            }
+            
+            const pageData = filtered.slice(startIdx, endIdx);
+            
+            pageData.forEach(lead => {
+                const initials = getInitials(lead.name);
+                const gradient = getGradient(lead.name);
+                
+                let webButtonHtml = '';
+                if (lead.website) {
+                    webButtonHtml = `<a href="${lead.website}" target="_blank" class="btn btn-primary">Website</a>`;
+                } else {
+                    webButtonHtml = `<button class="btn btn-primary disabled" disabled>No Website</button>`;
+                }
+                
+                let socialsHtml = '';
+                if (lead.socials && lead.socials.length > 0) {
+                    socialsHtml += `<span class="social-label">Socials:</span>`;
+                    lead.socials.forEach(url => {
+                        const platform = getPlatformName(url);
+                        const iconSvg = getSocialIconSvg(platform);
+                        socialsHtml += `
+                            <a href="${url}" target="_blank" class="social-link ${platform}" title="${platform.charAt(0).toUpperCase() + platform.slice(1)}: ${url}">
+                                ${iconSvg}
+                            </a>
+                        `;
+                    });
+                } else {
+                    socialsHtml = `<span class="social-label" style="color: #94a3b8;">No socials on Compass</span>`;
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                card.style.cursor = 'pointer';
+                card.onclick = (e) => {
+                    if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.copy-btn')) {
+                        return;
+                    }
+                    window.open(lead.compass, '_blank');
+                };
+                
+                card.innerHTML = `
+                    <button class="copy-btn" onclick="copyAgentInfo(${lead.id}, event)" title="Copy agent info">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    </button>
+                    <div class="card-header">
+                        <div class="avatar" style="background: ${gradient}">${initials}</div>
+                        <div class="agent-meta">
+                            <div class="agent-name" title="${lead.name}">${lead.name}</div>
+                            <div class="agent-designation" title="${lead.designation || 'Real Estate Agent'}">${lead.designation || 'Real Estate Agent'}</div>
+                            <div class="badges-container">
+                                <span class="badge badge-listings">🏡 ${lead.listings} Listings</span>
+                                ${lead.city ? `<span class="badge badge-city">📍 ${lead.city}</span>` : ''}
+                                ${lead.page ? `<span class="badge badge-page">📄 Page ${lead.page}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        ${lead.email ? `
+                        <a href="mailto:${lead.email}" class="contact-row">
+                            <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            <span>${lead.email}</span>
+                        </a>` : ''}
+                        ${lead.phone ? `
+                        <a href="tel:${lead.phone}" class="contact-row">
+                            <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                            <span>${lead.phone}</span>
+                        </a>` : ''}
+                    </div>
+                    <div class="card-footer">
+                        <div class="actions-row">
+                            <a href="${lead.compass}" target="_blank" class="btn btn-secondary">Compass Profile</a>
+                            ${webButtonHtml}
+                        </div>
+                        <div class="socials-row">
+                            ${socialsHtml}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            renderPaginationControls(totalPages);
+        }
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            const activeBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabName));
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            currentPage = 1;
+            renderLeads();
+        }
+
+        function handleSearch(val) {
+            searchQuery = val;
+            currentPage = 1;
+            renderLeads();
+        }
+
+        function renderPaginationControls(totalPages) {
+            const controls = document.getElementById('paginationControls');
+            controls.innerHTML = '';
+            
+            if (totalPages <= 1) {
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+            }
+            
+            // Prev Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.innerHTML = '&larr; Prev';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(prevBtn);
+            
+            // Smart visible buttons logic
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            
+            if (endPage - startPage + 1 < maxVisible) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+            
+            if (startPage > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.className = 'page-btn';
+                firstBtn.innerText = '1';
+                firstBtn.onclick = () => { currentPage = 1; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(firstBtn);
+                
+                if (startPage > 2) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                btn.innerText = i;
+                btn.onclick = () => {
+                    currentPage = i;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+                controls.appendChild(btn);
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+                
+                const lastBtn = document.createElement('button');
+                lastBtn.className = 'page-btn';
+                lastBtn.innerText = totalPages;
+                lastBtn.onclick = () => { currentPage = totalPages; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(lastBtn);
+            }
+            
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.innerHTML = 'Next &rarr;';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(nextBtn);
+        }
+
+        function copyAgentInfo(id, event) {
+            const lead = leadsData.find(l => l.id === id);
+            if (!lead) return;
+            
+            const text = lead.name + '\n' + 
+                         (lead.designation || 'Real Estate Agent') + '\n' +
+                         'Email: ' + (lead.email || 'None') + '\n' +
+                         'Phone: ' + (lead.phone || 'None') + '\n' +
+                         'Website: ' + (lead.website || 'None') + '\n' +
+                         'Compass: ' + lead.compass;
+                         
+            const btn = event.currentTarget;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Agent details copied to clipboard!');
+                const originalSvg = btn.innerHTML;
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                setTimeout(() => { btn.innerHTML = originalSvg; }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderLeads();
+        });
+    </script>
+</body>
+</html>

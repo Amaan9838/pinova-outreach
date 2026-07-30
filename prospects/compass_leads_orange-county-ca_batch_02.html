@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinova Outreach - Compass Leads Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #e0e7ff;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-full: 9999px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .logo-text p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.total { background-color: #eff6ff; color: #3b82f6; }
+        .stat-icon.with-links { background-color: #f0fdf4; color: #22c55e; }
+        .stat-icon.no-links { background-color: #fffbeb; color: #f59e0b; }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .controls-bar {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+            max-width: 480px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #fcfcfd;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            background-color: #fff;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background-color: #f1f5f9;
+            padding: 0.25rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .tab-btn {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 1rem;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background-color: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-count {
+            background-color: #e2e8f0;
+            color: var(--text-secondary);
+            padding: 0.125rem 0.375rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .tab-btn.active .tab-count {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .agent-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s, border-color 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-hover);
+        }
+
+        .card-header {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1.25rem;
+        }
+
+        .avatar {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .agent-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .agent-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.125rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .agent-designation {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.5rem;
+        }
+
+        .badges-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.625rem;
+            border-radius: var(--radius-full);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .badge-listings {
+            background-color: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #dcfce7;
+        }
+
+
+
+        .badge-city {
+            background-color: #f0f9ff;
+            color: #0369a1;
+            border: 1px solid #e0f2fe;
+        }
+
+        .badge-page {
+            background-color: #faf5ff;
+            color: #7e22ce;
+            border: 1px solid #f3e8ff;
+        }
+
+        .card-body {
+            padding: 0.75rem 0;
+            border-top: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .contact-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .contact-row:hover {
+            color: var(--primary);
+        }
+
+        .contact-icon {
+            width: 1rem;
+            height: 1rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .card-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .actions-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            padding: 0.625rem;
+            font-family: var(--font-family);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-primary.disabled {
+            background-color: #f1f5f9;
+            color: var(--text-muted);
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .btn-secondary {
+            background-color: white;
+            border-color: var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background-color: #f8fafc;
+        }
+
+        .socials-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            min-height: 2rem;
+        }
+
+        .social-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-right: 0.25rem;
+        }
+
+        .social-link {
+            width: 2rem;
+            height: 2rem;
+            border-radius: var(--radius-full);
+            background-color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            text-decoration: none;
+            border: 1px solid #e2e8f0;
+        }
+
+        .social-link:hover {
+            transform: scale(1.1);
+            color: white;
+        }
+
+        .social-link.instagram:hover { background-color: #e1306c; border-color: #e1306c; }
+        .social-link.linkedin:hover { background-color: #0077b5; border-color: #0077b5; }
+        .social-link.facebook:hover { background-color: #1877f2; border-color: #1877f2; }
+        .social-link.twitter:hover { background-color: #000000; border-color: #000000; }
+        .social-link.youtube:hover { background-color: #ff0000; border-color: #ff0000; }
+        .social-link.tiktok:hover { background-color: #010101; border-color: #010101; }
+        .social-link.default:hover { background-color: var(--primary); border-color: var(--primary); }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 1.75rem;
+            height: 1.75rem;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.15s;
+            opacity: 0;
+            z-index: 10;
+        }
+
+        .agent-card:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary-light);
+            background-color: var(--primary-light);
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            background-color: var(--bg-card);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .no-results-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--text-primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pagination-info {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .page-btn {
+            border: 1px solid var(--border-color);
+            background-color: white;
+            color: var(--text-secondary);
+            padding: 0.5rem 0.875rem;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background-color: #f8fafc;
+        }
+
+        .page-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .page-btn:disabled {
+            color: var(--text-muted);
+            background-color: #f1f5f9;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+        }
+
+        .page-dots {
+            padding: 0 0.5rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-icon">P</div>
+                <div class="logo-text">
+                    <h1>Pinova Outreach</h1>
+                    <p>Compass Agent Directory Explorer</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon total">🏡</div>
+                <div class="stat-info">
+                    <span id="stat-total-val" class="stat-value">0</span>
+                    <span class="stat-label">Total Prospects</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon with-links">🔗</div>
+                <div class="stat-info">
+                    <span id="stat-with-links-val" class="stat-value">0</span>
+                    <span class="stat-label">Has Website/Socials (Cat A)</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon no-links">❓</div>
+                <div class="stat-info">
+                    <span id="stat-no-links-val" class="stat-value">0</span>
+                    <span class="stat-label">No Links (Cat B)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls-bar">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('all')">
+                    All Leads <span id="count-all" class="tab-count">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('with-links')">
+                    Category A: Has Links <span id="count-with-links" class="tab-count">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('no-links')">
+                    Category B: No Links <span id="count-no-links" class="tab-count">0</span>
+                </button>
+            </div>
+            
+            <div class="search-box">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by name, designation, email..." oninput="handleSearch(this.value)">
+            </div>
+        </div>
+        
+        <div id="agentGrid" class="agent-grid"></div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationContainer" class="pagination-container" style="display: none;">
+            <div id="paginationInfo" class="pagination-info">Showing 0-0 of 0 prospects</div>
+            <div id="paginationControls" class="pagination-controls"></div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast">Agent details copied to clipboard!</div>
+
+    <script>
+        const leadsData = [
+  {
+    "id": 0,
+    "name": "Robby Fields",
+    "email": "robby.fields@compass.com",
+    "phone": "3109052775",
+    "listings": 22,
+    "website": "https://g.page/r/CZEYibdpK1u2EAE/review",
+    "compass": "https://www.compass.com/agents/robby-fields/",
+    "designation": "realtor",
+    "city": "Orange County, CA",
+    "page": 7,
+    "socials": [
+      "https://www.facebook.com/robert.fields.18",
+      "https://www.instagram.com/robbyfieldsla/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 1,
+    "name": "Paul Fisher",
+    "email": "paul.fisher@compass.com",
+    "phone": "8083661680",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/paul-fisher/",
+    "designation": "Real Estate Agent",
+    "city": "Orange County, CA",
+    "page": 7,
+    "socials": [
+      "https://www.linkedin.com/in/paul-fisher-8b120b10/",
+      "https://www.facebook.com/paulfisherhomes/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 2,
+    "name": "Ken Follis",
+    "email": "ken.follis@compass.com",
+    "phone": "7608036235",
+    "listings": 7,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ken-follis/",
+    "designation": "REALTOR\u00ae",
+    "city": "Orange County, CA",
+    "page": 7,
+    "socials": [
+      "https://www.linkedin.com/in/ken-follis-b8bb7228/",
+      "https://www.facebook.com/ken.follis.7"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 3,
+    "name": "Sue Freeman",
+    "email": "sue.freeman@compass.com",
+    "phone": "3107809244",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sue-freeman/",
+    "designation": "Realtor\u00ae",
+    "city": "Orange County, CA",
+    "page": 7,
+    "socials": [
+      "https://www.instagram.com/freemangroupre/?hl=en",
+      "https://www.facebook.com/FreemanGroupRE/",
+      "https://www.linkedin.com/in/sue-freeman-ab3b4b43/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 4,
+    "name": "Frontgate",
+    "email": "frontgaterealestate@compass.com",
+    "phone": "747.888.0508",
+    "listings": 41,
+    "website": "https://frontgaterealestate.com/",
+    "compass": "https://www.compass.com/agents/frontgate/",
+    "designation": "licensed real estate broker",
+    "city": "Orange County, CA",
+    "page": 7,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 5,
+    "name": "Jennifer Gainey",
+    "email": "jennifer.gainey@compass.com",
+    "phone": "3235596742",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jennifer-gainey/",
+    "designation": "Realtor\u00ae",
+    "city": "Orange County, CA",
+    "page": 7,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 6,
+    "name": "Jake Gordon",
+    "email": "jake.gordon@compass.com",
+    "phone": "5622436283",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jake-gordon/",
+    "designation": "Realtor\u00ae",
+    "city": "Orange County, CA",
+    "page": 8,
+    "socials": [
+      "https://www.linkedin.com/in/jake-gordon-aa7b66104",
+      "https://www.instagram.com/jakegordon._/",
+      "https://www.instagram.com/gordongrouprealestate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 7,
+    "name": "Pam Griffiths",
+    "email": "pam.griffiths@compass.com",
+    "phone": "3107177886",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/pam-griffiths/",
+    "designation": "REALTOR\u00ae",
+    "city": "Orange County, CA",
+    "page": 8,
+    "socials": [
+      "https://www.instagram.com/pam_the_producer",
+      "https://www.linkedin.com/in/pamgriffiths/",
+      "https://www.facebook.com/PamGriffithsREALTOR"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 8,
+    "name": "Mark Grimes",
+    "email": "mark.grimes@compass.com",
+    "phone": "3234224929",
+    "listings": 2,
+    "website": "https://localregroup.com/",
+    "compass": "https://www.compass.com/agents/mark-grimes/",
+    "designation": "Real Estate Agent",
+    "city": "Orange County, CA",
+    "page": 8,
+    "socials": [
+      "https://www.instagram.com/parislondonla/",
+      "https://www.linkedin.com/in/mark-grimes-517795/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 9,
+    "name": "Dana Halden",
+    "email": "dana.halden@compass.com",
+    "phone": "7143345213",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/dana-halden/",
+    "designation": "Realtor\u00ae",
+    "city": "Orange County, CA",
+    "page": 8,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 10,
+    "name": "Ash Hammad",
+    "email": "ash.hammad@compass.com",
+    "phone": "6262983030",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ash-hammad/",
+    "designation": "realtor",
+    "city": "Orange County, CA",
+    "page": 8,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 11,
+    "name": "Ryan Hanke",
+    "email": "ryan.hanke@compass.com",
+    "phone": "3237931910",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ryan-hanke/",
+    "designation": "licensed real estate broker",
+    "city": "Orange County, CA",
+    "page": 9,
+    "socials": [
+      "https://www.instagram.com/_ryanhanke/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 12,
+    "name": "Bridgett Harris",
+    "email": "bridgett.harris@compass.com",
+    "phone": "7147202400",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/bridgett-harris/",
+    "designation": "REALTOR\u00ae",
+    "city": "Orange County, CA",
+    "page": 9,
+    "socials": [
+      "https://www.facebook.com/HBbridgett/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 13,
+    "name": "James Harm",
+    "email": "jamesharm@compass.com",
+    "phone": "9498702327",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/james-harm/",
+    "designation": "licensed real estate broker",
+    "city": "Orange County, CA",
+    "page": 9,
+    "socials": [
+      "https://www.instagram.com/jameson_harm/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 14,
+    "name": "Dennis Hartley",
+    "email": "dennis.hartley@compass.com",
+    "phone": "3107172319",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/dennis-hartley/",
+    "designation": "licensed real estate broker",
+    "city": "Orange County, CA",
+    "page": 9,
+    "socials": [
+      "https://www.linkedin.com/in/dennis-hartley-381241179/",
+      "https://www.facebook.com/DennisHartleyRealEstate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 15,
+    "name": "Nik Hennessee",
+    "email": "nik.hennessee@compass.com",
+    "phone": "7146067054",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/nik-hennessee/",
+    "designation": "REALTOR\u00ae",
+    "city": "Orange County, CA",
+    "page": 9,
+    "socials": [
+      "https://www.instagram.com/hennessee/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 16,
+    "name": "Paige Hill",
+    "email": "paige.hill@compass.com",
+    "phone": "3106143317",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/paige-hill/",
+    "designation": "REALTOR\u00ae",
+    "city": "Orange County, CA",
+    "page": 9,
+    "socials": [
+      "https://www.linkedin.com/in/paige-hill-3124b923",
+      "https://www.instagram.com/paige.sells.properties/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 17,
+    "name": "Historic Real Estate LA",
+    "email": "hrela@compass.com",
+    "phone": "310.779.4578",
+    "listings": 9,
+    "website": "",
+    "compass": "https://www.compass.com/agents/historic-real-estate/",
+    "designation": "licensed real estate broker",
+    "city": "Orange County, CA",
+    "page": 9,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 18,
+    "name": "Annie Ho",
+    "email": "annie.ho@compass.com",
+    "phone": "3109729602",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/annie-ho/",
+    "designation": "Realtor\u00ae",
+    "city": "Orange County, CA",
+    "page": 9,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 19,
+    "name": "Carin Hoffman",
+    "email": "carin.hoffman@compass.com",
+    "phone": "3233361158",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/carin-hoffman/",
+    "designation": "realtor",
+    "city": "Orange County, CA",
+    "page": 9,
+    "socials": [
+      "https://www.instagram.com/happyhomesbycarin/",
+      "https://www.facebook.com/people/Carin-Tejidor-Hoffman/1405925924/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 20,
+    "name": "Brad Holmes",
+    "email": "brad.holmes@compass.com",
+    "phone": "3236731001",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/brad-holmes/",
+    "designation": "licensed real estate broker",
+    "city": "Orange County, CA",
+    "page": 9,
+    "socials": [
+      "https://www.instagram.com/dear.la.re/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 21,
+    "name": "Tori Horowitz",
+    "email": "torih@compass.com",
+    "phone": "3236460334",
+    "listings": 3,
+    "website": "https://www.canyonhaus.com/all-testimonials",
+    "compass": "https://www.compass.com/agents/tori-horowitz/",
+    "designation": "Realtor",
+    "city": "Orange County, CA",
+    "page": 10,
+    "socials": [
+      "https://www.instagram.com/canyonhaus/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 22,
+    "name": "Kai Ito",
+    "email": "kai.ito@compass.com",
+    "phone": "3106502150",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/kai-ito/",
+    "designation": "Realtor\u00ae",
+    "city": "Orange County, CA",
+    "page": 10,
+    "socials": [
+      "https://www.linkedin.com/in/kai-ito-5aa3345",
+      "https://www.facebook.com/BerkshireHHS/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 23,
+    "name": "Ito Orio Group",
+    "email": "itooriogroup@compass.com",
+    "phone": "310.894.6787",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ito-orio-group/",
+    "designation": "licensed real estate broker",
+    "city": "Orange County, CA",
+    "page": 10,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 24,
+    "name": "Ron Jackson",
+    "email": "ron.jackson@compass.com",
+    "phone": "3107485959",
+    "listings": 10,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ron-jackson/",
+    "designation": "Realtor\u00ae",
+    "city": "Orange County, CA",
+    "page": 10,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 25,
+    "name": "Julie Mollo Homes Group",
+    "email": "juliemolloteam@compass.com",
+    "phone": "323.459.2789",
+    "listings": 3,
+    "website": "https://www.google.com/search?client=safari&sca_esv=29b631a3bb3a5bbd&hl=en&q=julie+mollo,+realtor+%7C+compass+los+angeles+reviews&uds=ADvngMicAnA-QaS919M4c0U6p2ZIwBzkVZrsWHXhNfISyPjYE7xg3qMxnb8PyAkZKbP_D5mye7D_NSkBIURjzrUDly_-s-o_BtG5MD7uMGz10y9mosY9HTq-JHemGNhjjvXPU-LR6IK3bIVI0Eoe28C8DeXY6zlxwboLYchpIjk6eZT9piT8aBeuqgKOzFJ_dB-r5I1rwT7qC5rtyhE4RtGhOAYDDEMTsI1QGJQl78x-ieRl19gxhnXHyQiuDusLGD8D5RVAQuGQ_M-Ld1ejgEPjpbEWt4hET1GjWIBXOpfeSY8JM_cHDsH1Pb8BfU6ByHvbz-7o4XMErPAI9UQD3j2yFeyaEWfkttbKbGiMwxf0602-xz7_X8ZyDNfQqmufVkhmH1EMirK4ZhgbnQfaHCg-3Y47r63HSwyAJQAnLOvDKJdHbkNfGGY_DSjc-s1bXqbcDYX5uZ_WjTHuPa2cPEAHAY291oMifQ&si=ACC90nwjPmqJHrCEt6ewASzksVFQDX8zco_7MgBaIawvaF4-7vArfDwrOukWCXRJYUXmOZEv2BW6oA1uo3ylxQ66m8yWp7dp1xcvmxJEdLF9L2MPZVGFONBeNRaN7XEFK4u52brcDHWeQYl60GxzeoUFxd4SIPXKagOP4IJaDts6eKz09K56h3U%3D&sa=X&ved=2ahUKEwiNtbHKwbeKAxWGJkQIHWIPM2QQk8gLegQIIxAB&ictx=1&stq=1&cs=1&lei=M_9lZ83PEYbNkPIP4p7MoQY",
+    "compass": "https://www.compass.com/agents/julie-mollo-homes-group/",
+    "designation": "real estate professional",
+    "city": "Orange County, CA",
+    "page": 10,
+    "socials": [
+      "https://www.youtube.com/@JulieMolloHomesGroup"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 26,
+    "name": "Benjamin Kahle",
+    "email": "benjamin.kahle@compass.com",
+    "phone": "3107794578",
+    "listings": 9,
+    "website": "",
+    "compass": "https://www.compass.com/agents/benjamin-kahle/",
+    "designation": "licensed real estate broker",
+    "city": "Orange County, CA",
+    "page": 10,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 27,
+    "name": "Rob Kallick",
+    "email": "rob.kallick@compass.com",
+    "phone": "3237756305",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/robert-kallick/",
+    "designation": "REALTOR\u00ae",
+    "city": "Orange County, CA",
+    "page": 10,
+    "socials": [
+      "https://www.linkedin.com/in/robkallick",
+      "https://www.facebook.com/silverlakerealestate",
+      "https://www.instagram.com/takesunset/",
+      "https://twitter.com/takesunset"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 28,
+    "name": "Katie Crain + John Podhor",
+    "email": "katieandjohn@compass.com",
+    "phone": "310.502.2312",
+    "listings": 4,
+    "website": "https://www.crainpodhor.com/",
+    "compass": "https://www.compass.com/agents/katieand-john/",
+    "designation": "Realtor",
+    "city": "Orange County, CA",
+    "page": 11,
+    "socials": [
+      "https://www.instagram.com/crainpodhor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 29,
+    "name": "Erin Keegan",
+    "email": "erin.keegan@compass.com",
+    "phone": "3104827281",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/erin-keegan/",
+    "designation": "licensed real estate broker",
+    "city": "Orange County, CA",
+    "page": 11,
+    "socials": [
+      "https://www.instagram.com/_theparks"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 30,
+    "name": "Ken Follis & Sharon Robinson Group",
+    "email": "kenfollisandsharonrobinsongroup@compass.com",
+    "phone": "949-295-1161",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ken-follis-robinson-group/",
+    "designation": "Realtor",
+    "city": "Orange County, CA",
+    "page": 11,
+    "socials": [
+      "https://www.instagram.com/follis.robinson.group/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 31,
+    "name": "Nikki Kilmer",
+    "email": "nikki.kilmer@compass.com",
+    "phone": "3102451251",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/nikki-kilmer/",
+    "designation": "licensed real estate broker",
+    "city": "Orange County, CA",
+    "page": 11,
+    "socials": [
+      "https://www.instagram.com/nikkithebeat/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 32,
+    "name": "Bo Kim",
+    "email": "bokim@compass.com",
+    "phone": "2135883629",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/bo-kim/",
+    "designation": "licensed real estate broker",
+    "city": "Orange County, CA",
+    "page": 11,
+    "socials": [
+      "https://www.instagram.com/bokim.real/",
+      "https://www.linkedin.com/feed/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 33,
+    "name": "Matt Klein",
+    "email": "matt.klein@compass.com",
+    "phone": "3104189785",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/matt-klein/",
+    "designation": "realtor",
+    "city": "Orange County, CA",
+    "page": 11,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 34,
+    "name": "Tadashi Kondo",
+    "email": "tad.kondo@compass.com",
+    "phone": "3105678790",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tadashi-kondo/",
+    "designation": "Realtor\u00ae",
+    "city": "Orange County, CA",
+    "page": 11,
+    "socials": [
+      "https://www.linkedin.com/in/tadashikondo/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 35,
+    "name": "Aleks Korfanty",
+    "email": "aleks.korfanty@compass.com",
+    "phone": "9494159951",
+    "listings": 2,
+    "website": "https://drive.google.com/file/d/16pE4yT6UMdpYm_EBYA2sAPw3HLF1NTP1/view",
+    "compass": "https://www.compass.com/agents/aleks-korfanty/",
+    "designation": "Real Estate Agent",
+    "city": "Orange County, CA",
+    "page": 11,
+    "socials": [
+      "https://www.facebook.com/akorfanty",
+      "https://www.linkedin.com/in/alekskorfanty/",
+      "https://www.instagram.com/alekskorfanty/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 36,
+    "name": "Michele Kreinheder",
+    "email": "michele.kreinheder@compass.com",
+    "phone": "5622432171",
+    "listings": 4,
+    "website": "https://betterlivinginlongbeach.com/",
+    "compass": "https://www.compass.com/agents/michele-kreinheder/",
+    "designation": "REALTOR\u00ae",
+    "city": "Orange County, CA",
+    "page": 11,
+    "socials": [
+      "https://www.linkedin.com/in/michele-k-kreinheder-realtor/",
+      "https://www.facebook.com/MicheleKRealtor",
+      "https://www.instagram.com/betterlivinglongbeach/",
+      "https://www.youtube.com/channel/UCgPX7k7u2d0lKWaTaO6qPwg"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 37,
+    "name": "Gary Krill",
+    "email": "gary.krill@compass.com",
+    "phone": "3109943922",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/gary-krill/",
+    "designation": "real estate agent",
+    "city": "Orange County, CA",
+    "page": 11,
+    "socials": [
+      "https://www.linkedin.com/in/gary-krill-jr-78b6b01b/",
+      "https://www.facebook.com/krillandassociates/?rf=121301867926251"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 38,
+    "name": "Steve Kuhn",
+    "email": "steven.kuhn@compass.com",
+    "phone": "8189574899",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/steve-kuhn/",
+    "designation": "Realtor",
+    "city": "Orange County, CA",
+    "page": 11,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 39,
+    "name": "May Kunka",
+    "email": "may.kunka@compass.com",
+    "phone": "6262026030",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/may-kunka/",
+    "designation": "REALTOR\u00ae",
+    "city": "Orange County, CA",
+    "page": 11,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 40,
+    "name": "Diane Kutinsky",
+    "email": "diane.kutinsky@compass.com",
+    "phone": "7144203664",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/diane-kutinsky/",
+    "designation": "REALTOR\u00ae",
+    "city": "Orange County, CA",
+    "page": 11,
+    "socials": [
+      "https://www.instagram.com/dianekutinsky_realtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 41,
+    "name": "Christine La Bounty",
+    "email": "christinelabounty@compass.com",
+    "phone": "8582524794",
+    "listings": 2,
+    "website": "https://christinelabounty.com/",
+    "compass": "https://www.compass.com/agents/christine-la-bounty/",
+    "designation": "REALTOR\u00ae",
+    "city": "Orange County, CA",
+    "page": 11,
+    "socials": [
+      "https://www.linkedin.com/in/rankinchristine",
+      "https://www.instagram.com/christinelabounty_realestate/?hl=en",
+      "https://www.facebook.com/christinelabountyrealestate/",
+      "https://www.youtube.com/channel/UCoIUbXXOihWXjP6D1vfcOcg"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 42,
+    "name": "LaRocca Group",
+    "email": "laroccagroup@compass.com",
+    "phone": "310.614.2958",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/leonard-larocca1/",
+    "designation": "licensed real estate broker",
+    "city": "Orange County, CA",
+    "page": 12,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 43,
+    "name": "Leonard LaRocca",
+    "email": "leonard.larocca@compass.com",
+    "phone": "3106142958",
+    "listings": 3,
+    "website": "https://www.livinginthesouthbay.com/",
+    "compass": "https://www.compass.com/agents/leonard-larocca/",
+    "designation": "real estate professional",
+    "city": "Orange County, CA",
+    "page": 12,
+    "socials": [
+      "https://www.instagram.com/larocca.realestategroup",
+      "https://www.facebook.com/LaRocca.Real.Estate",
+      "https://www.linkedin.com/in/lennylarocca/",
+      "https://www.youtube.com/channel/UCnjRVsRunUQYjMYeYBtfpqA"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 44,
+    "name": "Jerry LaMott",
+    "email": "jerry.lamott@compass.com",
+    "phone": "9494729191",
+    "listings": 2,
+    "website": "https://www.tatelamott.com/",
+    "compass": "https://www.compass.com/agents/jerry-lamott/",
+    "designation": "realtor",
+    "city": "Orange County, CA",
+    "page": 12,
+    "socials": [
+      "https://www.facebook.com/lamottgroup",
+      "https://www.instagram.com/tatelamottgroup/"
+    ],
+    "has_links": true
+  }
+];
+        
+        const gradients = [
+            'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)',
+            'linear-gradient(135deg, #F6D365 0%, #FDA085 100%)',
+            'linear-gradient(135deg, #A1C4FD 0%, #C2E9FB 100%)',
+            'linear-gradient(135deg, #76B2FE 0%, #B2D8FF 100%)',
+            'linear-gradient(135deg, #E0C3FC 0%, #8EC5FC 100%)',
+            'linear-gradient(135deg, #F093FB 0%, #F5576C 100%)',
+            'linear-gradient(135deg, #5EEAD4 0%, #14B8A6 100%)',
+            'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)',
+            'linear-gradient(135deg, #C084FC 0%, #A855F7 100%)',
+            'linear-gradient(135deg, #93C5FD 0%, #3B82F6 100%)'
+        ];
+
+        function getGradient(name) {
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const idx = Math.abs(hash) % gradients.length;
+            return gradients[idx];
+        }
+
+        function getInitials(name) {
+            if (!name) return 'A';
+            const parts = name.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+            return name[0].toUpperCase();
+        }
+
+        function getPlatformName(url) {
+            const urlLower = url.toLowerCase();
+            if (urlLower.includes('instagram.com')) return 'instagram';
+            if (urlLower.includes('linkedin.com')) return 'linkedin';
+            if (urlLower.includes('facebook.com')) return 'facebook';
+            if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) return 'twitter';
+            if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
+            if (urlLower.includes('tiktok.com')) return 'tiktok';
+            return 'default';
+        }
+
+
+
+        function getSocialIconSvg(platform) {
+            const svgs = {
+                instagram: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>',
+                linkedin: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>',
+                facebook: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>',
+                twitter: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z M4 20l6.768 -6.768 M20 4l-6.768 6.768"></path></svg>',
+                youtube: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>',
+                tiktok: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>',
+                default: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>'
+            };
+            return svgs[platform] || svgs.default;
+        }
+
+        let activeTab = 'all';
+        let searchQuery = '';
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        function renderLeads() {
+            const grid = document.getElementById('agentGrid');
+            grid.innerHTML = '';
+            
+            let filtered = leadsData.filter(lead => {
+                if (activeTab === 'with-links' && !lead.has_links) return false;
+                if (activeTab === 'no-links' && lead.has_links) return false;
+                
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    const nameMatch = lead.name.toLowerCase().includes(q);
+                    const desigMatch = (lead.designation || '').toLowerCase().includes(q);
+                    const emailMatch = (lead.email || '').toLowerCase().includes(q);
+                    const cityMatch = (lead.city || '').toLowerCase().includes(q);
+                    const pageMatch = String(lead.page || '').includes(q);
+                    return nameMatch || desigMatch || emailMatch || cityMatch || pageMatch;
+                }
+                return true;
+            });
+            
+            const allCount = leadsData.length;
+            const withLinksCount = leadsData.filter(l => l.has_links).length;
+            const noLinksCount = allCount - withLinksCount;
+            
+            document.getElementById('count-all').innerText = allCount;
+            document.getElementById('count-with-links').innerText = withLinksCount;
+            document.getElementById('count-no-links').innerText = noLinksCount;
+            
+            document.getElementById('stat-total-val').innerText = allCount;
+            document.getElementById('stat-with-links-val').innerText = withLinksCount;
+            document.getElementById('stat-no-links-val').innerText = noLinksCount;
+            
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+            
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+            
+            if (totalItems === 0) {
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <span class="no-results-icon">🔍</span>
+                        <h3>No prospects found</h3>
+                        <p>Try adjusting your filters or search keywords.</p>
+                    </div>
+                `;
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+                document.getElementById('paginationInfo').innerText = `Showing ${startIdx + 1}-${endIdx} of ${totalItems} prospects`;
+            }
+            
+            const pageData = filtered.slice(startIdx, endIdx);
+            
+            pageData.forEach(lead => {
+                const initials = getInitials(lead.name);
+                const gradient = getGradient(lead.name);
+                
+                let webButtonHtml = '';
+                if (lead.website) {
+                    webButtonHtml = `<a href="${lead.website}" target="_blank" class="btn btn-primary">Website</a>`;
+                } else {
+                    webButtonHtml = `<button class="btn btn-primary disabled" disabled>No Website</button>`;
+                }
+                
+                let socialsHtml = '';
+                if (lead.socials && lead.socials.length > 0) {
+                    socialsHtml += `<span class="social-label">Socials:</span>`;
+                    lead.socials.forEach(url => {
+                        const platform = getPlatformName(url);
+                        const iconSvg = getSocialIconSvg(platform);
+                        socialsHtml += `
+                            <a href="${url}" target="_blank" class="social-link ${platform}" title="${platform.charAt(0).toUpperCase() + platform.slice(1)}: ${url}">
+                                ${iconSvg}
+                            </a>
+                        `;
+                    });
+                } else {
+                    socialsHtml = `<span class="social-label" style="color: #94a3b8;">No socials on Compass</span>`;
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                card.style.cursor = 'pointer';
+                card.onclick = (e) => {
+                    if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.copy-btn')) {
+                        return;
+                    }
+                    window.open(lead.compass, '_blank');
+                };
+                
+                card.innerHTML = `
+                    <button class="copy-btn" onclick="copyAgentInfo(${lead.id}, event)" title="Copy agent info">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    </button>
+                    <div class="card-header">
+                        <div class="avatar" style="background: ${gradient}">${initials}</div>
+                        <div class="agent-meta">
+                            <div class="agent-name" title="${lead.name}">${lead.name}</div>
+                            <div class="agent-designation" title="${lead.designation || 'Real Estate Agent'}">${lead.designation || 'Real Estate Agent'}</div>
+                            <div class="badges-container">
+                                <span class="badge badge-listings">🏡 ${lead.listings} Listings</span>
+                                ${lead.city ? `<span class="badge badge-city">📍 ${lead.city}</span>` : ''}
+                                ${lead.page ? `<span class="badge badge-page">📄 Page ${lead.page}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        ${lead.email ? `
+                        <a href="mailto:${lead.email}" class="contact-row">
+                            <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            <span>${lead.email}</span>
+                        </a>` : ''}
+                        ${lead.phone ? `
+                        <a href="tel:${lead.phone}" class="contact-row">
+                            <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                            <span>${lead.phone}</span>
+                        </a>` : ''}
+                    </div>
+                    <div class="card-footer">
+                        <div class="actions-row">
+                            <a href="${lead.compass}" target="_blank" class="btn btn-secondary">Compass Profile</a>
+                            ${webButtonHtml}
+                        </div>
+                        <div class="socials-row">
+                            ${socialsHtml}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            renderPaginationControls(totalPages);
+        }
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            const activeBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabName));
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            currentPage = 1;
+            renderLeads();
+        }
+
+        function handleSearch(val) {
+            searchQuery = val;
+            currentPage = 1;
+            renderLeads();
+        }
+
+        function renderPaginationControls(totalPages) {
+            const controls = document.getElementById('paginationControls');
+            controls.innerHTML = '';
+            
+            if (totalPages <= 1) {
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+            }
+            
+            // Prev Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.innerHTML = '&larr; Prev';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(prevBtn);
+            
+            // Smart visible buttons logic
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            
+            if (endPage - startPage + 1 < maxVisible) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+            
+            if (startPage > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.className = 'page-btn';
+                firstBtn.innerText = '1';
+                firstBtn.onclick = () => { currentPage = 1; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(firstBtn);
+                
+                if (startPage > 2) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                btn.innerText = i;
+                btn.onclick = () => {
+                    currentPage = i;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+                controls.appendChild(btn);
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+                
+                const lastBtn = document.createElement('button');
+                lastBtn.className = 'page-btn';
+                lastBtn.innerText = totalPages;
+                lastBtn.onclick = () => { currentPage = totalPages; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(lastBtn);
+            }
+            
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.innerHTML = 'Next &rarr;';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(nextBtn);
+        }
+
+        function copyAgentInfo(id, event) {
+            const lead = leadsData.find(l => l.id === id);
+            if (!lead) return;
+            
+            const text = lead.name + '\n' + 
+                         (lead.designation || 'Real Estate Agent') + '\n' +
+                         'Email: ' + (lead.email || 'None') + '\n' +
+                         'Phone: ' + (lead.phone || 'None') + '\n' +
+                         'Website: ' + (lead.website || 'None') + '\n' +
+                         'Compass: ' + lead.compass;
+                         
+            const btn = event.currentTarget;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Agent details copied to clipboard!');
+                const originalSvg = btn.innerHTML;
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                setTimeout(() => { btn.innerHTML = originalSvg; }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderLeads();
+        });
+    </script>
+</body>
+</html>

@@ -9,7 +9,7 @@ export function GlobalLayoutWrapper({ children }) {
   const pathname = usePathname();
   
   // If we are on the new CRM Pulse interface, don't render the old sidebar
-  if (pathname && (pathname.startsWith('/crm') || pathname.startsWith('/flow'))) {
+  if (pathname && (pathname.startsWith('/crm') || pathname.startsWith('/flow') || pathname.startsWith('/cara-prospector'))) {
     return <>{children}</>;
   }
 

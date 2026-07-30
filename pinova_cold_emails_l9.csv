@@ -1,217 +1,5 @@
-import csv
-
-# All 10 prospects with their data
-prospects = [
-    {
-        "firstname": "Bailee",
-        "lastname": "Cox",
-        "email": "bailee.cox@compass.com",
-        "company": "Tracy Tutor Team at Compass",
-        "linkedin": "",
-        "instagram": "@baileecoxrealtor",
-        "facebook": "",
-        "website": "Redirects to Tracy Tutor team subpage — blank grey hero, no personal photo",
-        "phone": "",
-        "zillow": "https://www.compass.com/agents/bailee-cox/",
-        "type": "Team Member",
-        "website_status": "Old website",
-        "segment": "team_member_old_site",
-        "market": "DFW",
-        "team": "Tracy Tutor Team",
-        "findings": "Team Member on Tracy Tutor Team at Compass with 4 active listings in DFW luxury including a $3.495M property in Weatherford, TX and 10+ years in the market with D Magazine Best recognition. Verified Instagram at 20.6K followers. Her Instagram bio links to a team subpage that renders with a completely blank grey hero and zero personalized content. She also has an old abandoned website from her prior brokerage that now throws a Cloudflare error.",
-        "social_active": True,
-        "followers": "20.6K Instagram",
-    },
-    {
-        "firstname": "Karen",
-        "lastname": "Cravens",
-        "email": "karen.cravens@compass.com",
-        "company": "Compass",
-        "linkedin": "",
-        "instagram": "",
-        "facebook": "",
-        "website": "No Website",
-        "phone": "",
-        "zillow": "https://www.compass.com/agents/karen-cravens/",
-        "type": "Solo",
-        "website_status": "No website",
-        "segment": "solo_no_website",
-        "market": "Dallas",
-        "team": "",
-        "findings": "Solo agent with 2 active listings in Dallas TX and zero discoverable digital presence. No social media accounts found on Instagram Facebook or LinkedIn and no personal website. Her Compass profile shows only a Concierge Page with no external links whatsoever. She appears to rely exclusively on referrals and direct network.",
-        "social_active": False,
-        "followers": "",
-    },
-    {
-        "firstname": "Marsha",
-        "lastname": "Crawford",
-        "email": "marsha.crawford@compass.com",
-        "company": "The Marsha + Candis Team at Compass",
-        "linkedin": "",
-        "instagram": "@themarshacrawfordteam",
-        "facebook": "",
-        "website": "https://www.themarshacrawfordteam.com",
-        "phone": "",
-        "zillow": "https://www.compass.com/agents/marsha-crawford/",
-        "type": "Team Member",
-        "website_status": "Active - needs redesign",
-        "segment": "team_member_outdated_site",
-        "market": "Highland Village and North DFW",
-        "team": "The Marsha + Candis Team",
-        "findings": "Co-principal of The Marsha + Candis Team at Compass, mother-daughter duo serving Highland Village and North DFW since 1994 with 6 active listings and D Magazine Best recognition. Site uses a dated mid-2010s template with a hero slider cycling through generic Texas stock photos (the state flag, Austin skyline, Fort Worth Stockyards) none of which are their actual market. Scripted fonts, flat layout, and stock imagery entirely mismatched with a team that markets luxury and relocation properties.",
-        "social_active": True,
-        "followers": "705 Instagram",
-    },
-    {
-        "firstname": "Daniel",
-        "lastname": "Moore",
-        "email": "dallasmetrogroup@compass.com",
-        "company": "Dallas Metro Group at Compass",
-        "linkedin": "",
-        "instagram": "@dmkflyer",
-        "facebook": "",
-        "website": "https://www.dallasmetrogroup.com/ — broken hero, images fail to render",
-        "phone": "",
-        "zillow": "https://www.compass.com/agents/daniel-moore",
-        "type": "Solo",
-        "website_status": "Active - needs redesign",
-        "segment": "solo_broken_site",
-        "market": "Dallas",
-        "team": "Dallas Metro Group",
-        "findings": "Solo agent and Founding Principal of Dallas Metro Group at Compass with 3 active listings in Dallas posting staging and property content on Instagram every few weeks. His website loads with a broken hero where images fail to render showing placeholder alt text, the logo is a tiny broken icon, and the overall layout is a generic black-background IDX search template with no agent photo no bio on the homepage and no personal branding. His Instagram bio does not even link to his website but to his Compass profile.",
-        "social_active": True,
-        "followers": "792 Instagram",
-    },
-    {
-        "firstname": "Shannon",
-        "lastname": "Beitchman",
-        "email": "shannon.beitchman@compass.com",
-        "company": "Dallas North Group at Compass",
-        "linkedin": "",
-        "instagram": "@dallasnorthgroup",
-        "facebook": "",
-        "website": "https://www.dallasnorthgroup.com/",
-        "phone": "",
-        "zillow": "https://www.compass.com/agents/shannon-beitchman/",
-        "type": "Team Member",
-        "website_status": "Active - needs redesign",
-        "segment": "team_member_outdated_site_social_mismatch",
-        "market": "Plano, Frisco, Prosper, and North Dallas",
-        "team": "Dallas North Group",
-        "findings": "Principal agent of Dallas North Group at Compass covering Plano Frisco Prosper and North Dallas with 5 active listings and an HGTV House Hunters appearance. Instagram is among the most active reviewed with 5035 followers and strong video content. The team site requires a full-screen black preloader and the homepage hero loads with a stock photo of a generic suburban family. For an agent who has appeared on national television and has 5000+ engaged followers the site fails to match any of that media credibility.",
-        "social_active": True,
-        "followers": "5,035 Instagram",
-    },
-    {
-        "firstname": "Abigail",
-        "lastname": "Davis",
-        "email": "abigail.davis@compass.com",
-        "company": "Compass",
-        "linkedin": "",
-        "instagram": "@abigaildavisrealtor",
-        "facebook": "",
-        "website": "No Website",
-        "phone": "",
-        "zillow": "https://www.compass.com/agents/abigail-davis/",
-        "type": "Solo",
-        "website_status": "No website",
-        "segment": "solo_no_website_active_social",
-        "market": "Dallas",
-        "team": "",
-        "findings": "Solo agent with 5 active listings in Dallas TX posting listing photography and real estate content consistently. Most recent post featured a listing at 9902 Galway Drive with a kitchen walkthrough. With 1550 followers and a focused real estate grid she is running a disciplined content operation. Her Instagram bio links to a link-in-bio tool not a personal website. She publicly posts her email in Instagram captions signaling she is actively looking for inbound contacts but there is no website to capture them professionally.",
-        "social_active": True,
-        "followers": "1,550 Instagram",
-    },
-    {
-        "firstname": "Natalie",
-        "lastname": "Dean",
-        "email": "natalie.dean@compass.com",
-        "company": "Sage Realty Group DFW at Compass",
-        "linkedin": "linkedin.com/in/natalie-dean",
-        "instagram": "@natalie.alexa.dean",
-        "facebook": "",
-        "website": "No Website",
-        "phone": "",
-        "zillow": "https://www.compass.com/agents/natalie-dean/",
-        "type": "Solo",
-        "website_status": "No website",
-        "segment": "solo_no_website_active_social_linkedin",
-        "market": "Dallas",
-        "team": "Sage Realty Group DFW",
-        "findings": "Solo agent affiliated with Sage Realty Group DFW at Compass with 4 active listings in Dallas. Instagram shows 1858 followers with real estate content and LinkedIn shows 988 followers. Her Linktree contains only a Compass Agent Page link TREC compliance notice and brokerage services info. The team site does not give her a personal presence. For an agent building dual visibility across Instagram and LinkedIn all roads lead to either a compliance Linktree or a team group page that does not spotlight her individually.",
-        "social_active": True,
-        "followers": "1,858 Instagram, 988 LinkedIn",
-    },
-    {
-        "firstname": "Sallie",
-        "lastname": "Laning",
-        "email": "thedrg@compass.com",
-        "company": "Compass",
-        "linkedin": "",
-        "instagram": "@sallielaning",
-        "facebook": "",
-        "website": "https://www.sallielaning.com",
-        "phone": "",
-        "zillow": "https://www.compass.com/agents/sallie-laning/",
-        "type": "Team Member",
-        "website_status": "Active - needs redesign",
-        "segment": "team_member_fresh_redesign_still_off",
-        "market": "Dallas",
-        "team": "Sallie Laning",
-        "findings": "Sallie Laning has a personal website that she recently relaunched in April with new branding. The current site features her photo a palm tree logo and pink/cream palette. However the logo uses all-lowercase type that reads aspirational rather than luxury, the hero font mix feels informal and the overall aesthetic sits closer to mid-market personal brand than a D Magazine Top Producer luxury site. She just launched a redesign so the pitch here is elevation not first-time sell.",
-        "social_active": True,
-        "followers": "3,505 Instagram",
-    },
-    {
-        "firstname": "Ryan",
-        "lastname": "DeLaGarza",
-        "email": "ryan.delagarza@compass.com",
-        "company": "Ryan DeLaGarza Real Estate Group at Compass",
-        "linkedin": "linkedin.com/in/ryan-delagarza",
-        "instagram": "@ryansellsdallas",
-        "facebook": "",
-        "website": "No Website",
-        "phone": "",
-        "zillow": "https://www.compass.com/agents/ryan-delagarza/",
-        "type": "Solo",
-        "website_status": "No website",
-        "segment": "solo_no_website_large_audience",
-        "market": "Dallas, Park Cities",
-        "team": "Ryan DeLaGarza Real Estate Group",
-        "findings": "Solo agent and Principal of Ryan DeLaGarza Real Estate Group at Compass with 2 active listings in Dallas serving DFW since 2017, Park Cities focused. Verified Instagram at 10.2K followers and LinkedIn at 4715 followers represent one of the largest combined audiences in this prospecting set. His Linktree contains only a TREC Consumer Protection Notice a brokerage services document a Google Form buyer questionnaire Google Reviews and a Facebook link. Nearly 15000 combined followers across two platforms with no web presence to anchor any of it.",
-        "social_active": True,
-        "followers": "10.2K Instagram, 4,715 LinkedIn",
-    },
-    {
-        "firstname": "Jennifer",
-        "lastname": "Dertouzos",
-        "email": "jennifer.dertouzos@compass.com",
-        "company": "Compass",
-        "linkedin": "",
-        "instagram": "@jjdertouzos",
-        "facebook": "",
-        "website": "No Website",
-        "phone": "",
-        "zillow": "https://www.compass.com/agents/jennifer-dertouzos/",
-        "type": "Solo",
-        "website_status": "No website",
-        "segment": "solo_no_website_niche_brand",
-        "market": "East Dallas and White Rock Lake",
-        "team": "",
-        "findings": "Solo agent with 3+ active listings in Dallas including a $849K property and credentials as a National Association of Realtors Green Designee. Instagram is disciplined and real estate-focused with story highlights for Open Houses, Current Listings, Reviews, SOLD, and Tax Protest content. Her Linktree is being used as a listing portfolio but it is still just a Linktree not a professional website. She has built a genuinely consistent content practice, NAR designation credibility and a recognizable niche in East Dallas but there is nowhere for a potential client to learn her full story or see her sold history.",
-        "social_active": True,
-        "followers": "1,088 Instagram",
-    },
-]
-
-# Now write all emails
-emails_data = []
-
-# --- BAILEE COX --- Team Member, Old/Broken Website, 20.6K Instagram, luxury listings
-# Segment: Team Member with outdated/broken personal presence + strong social = Mismatch angle
-bailee = {
-    "step1_subject": "Bailee, your listings",
-    "step1_body": """Bailee -
+"firstname","lastname","email","company","linkedin","instagram","facebook","website","phone","zillow","step1_subject","step1_body","step2_subject","step2_body","step3_subject","step3_body","step4_subject","step4_body"
+"Bailee","Cox","bailee.cox@compass.com","Tracy Tutor Team at Compass","","@baileecoxrealtor","","Redirects to Tracy Tutor team subpage — blank grey hero, no personal photo","","https://www.compass.com/agents/bailee-cox/","Bailee, your listings","Bailee -
 
 Spent some time looking through your work in DFW. The $3.495M Weatherford property caught my eye - genuinely beautiful listing.
 
@@ -223,10 +11,7 @@ So I went ahead and redesigned your personal homepage - one that actually tells 
 
 It's done. Want to see it?
 
-- Amaan.""",
-
-    "step2_subject": "Bailee, something I've been thinking about",
-    "step2_body": """Bailee -
+- Amaan.","Bailee, something I've been thinking about","Bailee -
 
 Here's what I think about a lot when I work with agents at your level:
 
@@ -240,10 +25,7 @@ It's one of those things that's easy to push to next quarter. But next quarter n
 
 I already built what your personal presence should look like. Just say the word.
 
-- Amaan.""",
-
-    "step3_subject": "Bailee, something no one tells you",
-    "step3_body": """Bailee -
+- Amaan.","Bailee, something no one tells you","Bailee -
 
 Nobody's going to say this, so I will:
 
@@ -255,10 +37,7 @@ That's a fixable problem. I already fixed it for you.
 
 Want to take a look?
 
-- Amaan.""",
-
-    "step4_subject": "Bailee, this probably happened last month",
-    "step4_body": """Bailee -
+- Amaan.","Bailee, this probably happened last month","Bailee -
 
 Picture this:
 
@@ -274,15 +53,8 @@ This is happening more than any of us want to admit. The homepage I designed put
 
 Interested?
 
-- Amaan.""",
-}
-emails_data.append({**prospects[0], **bailee})
-
-# --- KAREN CRAVENS --- Solo, No website, No social
-# Segment 2 - No website
-karen = {
-    "step1_subject": "Karen, looked you up",
-    "step1_body": """Karen -
+- Amaan."
+"Karen","Cravens","karen.cravens@compass.com","Compass","","","","No Website","","https://www.compass.com/agents/karen-cravens/","Karen, looked you up","Karen -
 
 Looked you up before reaching out. You've got 2 active listings in Dallas and a real track record here.
 
@@ -292,10 +64,7 @@ For someone doing serious work in this market, that felt like a gap. So I design
 
 It's ready. Want to take a look?
 
-- Amaan.""",
-
-    "step2_subject": "Karen, the part nobody sees",
-    "step2_body": """Karen -
+- Amaan.","Karen, the part nobody sees","Karen -
 
 Here's the thing about not having a website that nobody talks about:
 
@@ -305,10 +74,7 @@ You're doing the hard work in Dallas with no home base.
 
 I built one for you. Say the word and I'll walk you through it.
 
-- Amaan.""",
-
-    "step3_subject": "Karen, honest thought",
-    "step3_body": """Karen -
+- Amaan.","Karen, honest thought","Karen -
 
 You probably think you don't need a website because your business comes from relationships. And you're right - it does.
 
@@ -318,10 +84,7 @@ Right now, that search turns up nothing that you control. That's a conversation 
 
 I designed what should show up instead. Let me know if you're curious.
 
-- Amaan.""",
-
-    "step4_subject": "Karen, this happens more than you think",
-    "step4_body": """Karen -
+- Amaan.","Karen, this happens more than you think","Karen -
 
 A client refers you to a friend. The friend is excited. They pull out their phone and Google you over dinner.
 
@@ -333,15 +96,8 @@ You didn't lose the referral - you just made it harder for the referral to becom
 
 I built the fix. It's a homepage that does the convincing for you before you ever pick up the phone. Want to see it?
 
-- Amaan.""",
-}
-emails_data.append({**prospects[1], **karen})
-
-# --- MARSHA CRAWFORD --- Team Member, Active but outdated site, 30+ years in market
-# Segment 1 - Outdated website
-marsha = {
-    "step1_subject": "Marsha, your listings",
-    "step1_body": """Marsha -
+- Amaan."
+"Marsha","Crawford","marsha.crawford@compass.com","The Marsha + Candis Team at Compass","","@themarshacrawfordteam","","https://www.themarshacrawfordteam.com","","https://www.compass.com/agents/marsha-crawford/","Marsha, your listings","Marsha -
 
 Spent some time looking through The Marsha + Candis Team's work in Highland Village. The 30-year track record and D Magazine Best recognition are hard to miss.
 
@@ -353,10 +109,7 @@ There's a gap between what your team has actually built in North DFW and what sh
 
 It's done. Want to see it?
 
-- Amaan.""",
-
-    "step2_subject": "Marsha, something I've been thinking about",
-    "step2_body": """Marsha -
+- Amaan.","Marsha, something I've been thinking about","Marsha -
 
 Here's something I think about when I work with teams like yours:
 
@@ -368,10 +121,7 @@ It's one of those things that's easy to keep pushing back - especially when the 
 
 I already built what it should look like. Just say the word.
 
-- Amaan.""",
-
-    "step3_subject": "Marsha, something no one tells you",
-    "step3_body": """Marsha -
+- Amaan.","Marsha, something no one tells you","Marsha -
 
 Nobody's going to say this to a team with your track record, so I will:
 
@@ -383,10 +133,7 @@ That's a fixable problem. I already fixed it for you.
 
 Want to take a look?
 
-- Amaan.""",
-
-    "step4_subject": "Marsha, this probably happened last month",
-    "step4_body": """Marsha -
+- Amaan.","Marsha, this probably happened last month","Marsha -
 
 Picture this:
 
@@ -400,15 +147,8 @@ You didn't lose that lead to a better team. You lost it to a better-looking webs
 
 The homepage I designed puts your real story front and center. Interested?
 
-- Amaan.""",
-}
-emails_data.append({**prospects[2], **marsha})
-
-# --- DANIEL MOORE --- Solo, Broken website, named brand (Dallas Metro Group), moderate Instagram
-# Segment 1 - broken/outdated site with strong personal branding effort
-daniel = {
-    "step1_subject": "Daniel, your listings",
-    "step1_body": """Daniel -
+- Amaan."
+"Daniel","Moore","dallasmetrogroup@compass.com","Dallas Metro Group at Compass","","@dmkflyer","","https://www.dallasmetrogroup.com/ — broken hero, images fail to render","","https://www.compass.com/agents/daniel-moore","Daniel, your listings","Daniel -
 
 Spent time looking at what you're building with Dallas Metro Group. The staging reels on Instagram are well done - you clearly put thought into how you present listings.
 
@@ -420,10 +160,7 @@ So I redesigned the homepage - built around the brand you're clearly trying to b
 
 It's ready. Want to see it?
 
-- Amaan.""",
-
-    "step2_subject": "Daniel, something I've been thinking about",
-    "step2_body": """Daniel -
+- Amaan.","Daniel, something I've been thinking about","Daniel -
 
 Here's the irony I keep coming back to with your setup:
 
@@ -435,10 +172,7 @@ You've got the pieces of a real brand. They're just not connected yet.
 
 I built the homepage that ties it together. Just say the word.
 
-- Amaan.""",
-
-    "step3_subject": "Daniel, something no one tells you",
-    "step3_body": """Daniel -
+- Amaan.","Daniel, something no one tells you","Daniel -
 
 Here's something worth saying out loud:
 
@@ -450,10 +184,7 @@ The broken homepage is costing you more than you think. I already fixed it.
 
 Want to take a look?
 
-- Amaan.""",
-
-    "step4_subject": "Daniel, this probably happened last month",
-    "step4_body": """Daniel -
+- Amaan.","Daniel, this probably happened last month","Daniel -
 
 Picture this:
 
@@ -467,15 +198,8 @@ You had the stronger content. But the site didn't back it up.
 
 The homepage I designed makes sure that doesn't happen. Interested?
 
-- Amaan.""",
-}
-emails_data.append({**prospects[3], **daniel})
-
-# --- SHANNON BEITCHMAN --- Team Member, Active site but outdated, 5K Instagram, HGTV appearance
-# Segment: Mismatch - great social, bad site
-shannon = {
-    "step1_subject": "Shannon, your Instagram vs. your website",
-    "step1_body": """Shannon -
+- Amaan."
+"Shannon","Beitchman","shannon.beitchman@compass.com","Dallas North Group at Compass","","@dallasnorthgroup","","https://www.dallasnorthgroup.com/","","https://www.compass.com/agents/shannon-beitchman/","Shannon, your Instagram vs. your website","Shannon -
 
 Spent a few minutes on your Instagram before reaching out. It's genuinely good - the House Hunters content, the market recap reels, the video production quality. It's exactly what a serious team in North Dallas should look like.
 
@@ -487,10 +211,7 @@ The gap between the two is real. Your Instagram says premium. The site says 2018
 
 I redesigned your homepage to close that gap. Want to see it?
 
-- Amaan.""",
-
-    "step2_subject": "Shannon, something I've been thinking about",
-    "step2_body": """Shannon -
+- Amaan.","Shannon, something I've been thinking about","Shannon -
 
 Here's something that doesn't get said enough about teams at your stage:
 
@@ -502,10 +223,7 @@ None of that reflects what you and the team have actually built. The credibility
 
 I already built what it should look like. Just say the word.
 
-- Amaan.""",
-
-    "step3_subject": "Shannon, something no one tells you",
-    "step3_body": """Shannon -
+- Amaan.","Shannon, something no one tells you","Shannon -
 
 Nobody's going to say this to a team with your media profile, so I will:
 
@@ -517,10 +235,7 @@ For an agent who's done what you've done - HGTV, a real team, strong video conte
 
 I already fixed it. Want to take a look?
 
-- Amaan.""",
-
-    "step4_subject": "Shannon, this probably happened last month",
-    "step4_body": """Shannon -
+- Amaan.","Shannon, this probably happened last month","Shannon -
 
 Picture this:
 
@@ -534,15 +249,8 @@ You had the stronger brand on Instagram. The website gave it away.
 
 The homepage I designed makes sure the site backs up what your Instagram already built. Interested?
 
-- Amaan.""",
-}
-emails_data.append({**prospects[4], **shannon})
-
-# --- ABIGAIL DAVIS --- Solo, No website, active Instagram 1.5K, 5 listings, posts email in captions
-# Segment 2 - No website, active social/Mismatch
-abigail = {
-    "step1_subject": "Abigail, looked you up",
-    "step1_body": """Abigail -
+- Amaan."
+"Abigail","Davis","abigail.davis@compass.com","Compass","","@abigaildavisrealtor","","No Website","","https://www.compass.com/agents/abigail-davis/","Abigail, looked you up","Abigail -
 
 Looked you up before reaching out. Your Instagram is genuinely impressive - the listing content is focused and consistent, the story highlights are organized, and your most recent post had real listing detail.
 
@@ -552,10 +260,7 @@ For someone putting out the content you're putting out in Dallas, that felt off.
 
 It's ready. Want to take a look?
 
-- Amaan.""",
-
-    "step2_subject": "Abigail, the part nobody sees",
-    "step2_body": """Abigail -
+- Amaan.","Abigail, the part nobody sees","Abigail -
 
 Here's the thing about not having a website that nobody talks about:
 
@@ -569,10 +274,7 @@ A homepage turns your Instagram into a funnel instead of a dead end.
 
 I built it for you. Say the word.
 
-- Amaan.""",
-
-    "step3_subject": "Abigail, honest thought",
-    "step3_body": """Abigail -
+- Amaan.","Abigail, honest thought","Abigail -
 
 You probably don't think you need a website because your content is working and leads are coming through Instagram. And some are - no question.
 
@@ -584,10 +286,7 @@ That's a conversation someone else is having about your brand - without you in t
 
 I designed what should show up instead. Let me know if you're curious.
 
-- Amaan.""",
-
-    "step4_subject": "Abigail, this happens more than you think",
-    "step4_body": """Abigail -
+- Amaan.","Abigail, this happens more than you think","Abigail -
 
 A buyer in Dallas finds your listing post. They're interested - the kitchen photo is great, the details are there. They tap your profile.
 
@@ -599,15 +298,8 @@ You had the listing that started the conversation. The site is what should've cl
 
 I built the homepage that does. Want to see it?
 
-- Amaan.""",
-}
-emails_data.append({**prospects[5], **abigail})
-
-# --- NATALIE DEAN --- Solo, No website, Instagram + LinkedIn, 4 listings, personal lifestyle highlights
-# Segment 2 + Mismatch (dual platform presence, nowhere to land)
-natalie = {
-    "step1_subject": "Natalie, looked you up",
-    "step1_body": """Natalie -
+- Amaan."
+"Natalie","Dean","natalie.dean@compass.com","Sage Realty Group DFW at Compass","linkedin.com/in/natalie-dean","@natalie.alexa.dean","","No Website","","https://www.compass.com/agents/natalie-dean/","Natalie, looked you up","Natalie -
 
 Looked you up before reaching out. You're active on both Instagram and LinkedIn, you've got 4 active listings in Dallas, and the real estate content you're posting is consistent.
 
@@ -617,10 +309,7 @@ For someone building visibility across two platforms in this market, that's a ga
 
 It's ready. Want to take a look?
 
-- Amaan.""",
-
-    "step2_subject": "Natalie, the part nobody sees",
-    "step2_body": """Natalie -
+- Amaan.","Natalie, the part nobody sees","Natalie -
 
 Here's the thing about not having a personal website when you're active on Instagram and LinkedIn:
 
@@ -632,10 +321,7 @@ Every piece of content you create is bringing people to a door that doesn't open
 
 I built what should be on the other side of that door. Say the word.
 
-- Amaan.""",
-
-    "step3_subject": "Natalie, honest thought",
-    "step3_body": """Natalie -
+- Amaan.","Natalie, honest thought","Natalie -
 
 You probably think you don't need a personal website because the Sage Realty Group site exists and your Linktree handles the basics. And maybe that feels fine right now.
 
@@ -647,10 +333,7 @@ That's a missed conversation every single time.
 
 I designed what should show up instead. Let me know if you're curious.
 
-- Amaan.""",
-
-    "step4_subject": "Natalie, this happens more than you think",
-    "step4_body": """Natalie -
+- Amaan.","Natalie, this happens more than you think","Natalie -
 
 Someone in Dallas follows you on Instagram. They've watched your listing posts for a few weeks. They're getting serious about buying.
 
@@ -664,15 +347,8 @@ You had the more consistent content and the stronger audience. You just had nowh
 
 The homepage I designed changes that. Interested?
 
-- Amaan.""",
-}
-emails_data.append({**prospects[6], **natalie})
-
-# --- SALLIE LANING --- Team Member, Just relaunched site but still off-brand for luxury
-# Special approach: elevation, not first pitch
-sallie = {
-    "step1_subject": "Sallie, your listings",
-    "step1_body": """Sallie -
+- Amaan."
+"Sallie","Laning","thedrg@compass.com","Compass","","@sallielaning","","https://www.sallielaning.com","","https://www.compass.com/agents/sallie-laning/","Sallie, your listings","Sallie -
 
 Noticed you just launched a rebrand and new website. The personal direction is right - having your photo, your copy, your aesthetic front and center is exactly what it should be.
 
@@ -682,10 +358,7 @@ The logo typeface and the overall feel sit closer to a mid-market personal brand
 
 I redesigned what it should look like at that level. Want to see it?
 
-- Amaan.""",
-
-    "step2_subject": "Sallie, something I've been thinking about",
-    "step2_body": """Sallie -
+- Amaan.","Sallie, something I've been thinking about","Sallie -
 
 You just went through the work of a rebrand. That takes real commitment - and it's clear you care about how you show up online.
 
@@ -699,10 +372,7 @@ I built a version that matches the tier - not a different design philosophy, jus
 
 Just say the word.
 
-- Amaan.""",
-
-    "step3_subject": "Sallie, something no one tells you",
-    "step3_body": """Sallie -
+- Amaan.","Sallie, something no one tells you","Sallie -
 
 Nobody's going to tell you this after you just invested in a new site, so I will:
 
@@ -710,16 +380,13 @@ The rebrand moved you forward. It's personal, it's yours, and it's better than a
 
 But here's what I've noticed looking at the Dallas luxury market this week: the agents who are winning the premium listings don't just look personal - they look premium. The typography, the spacing, the way listings are presented, the absence of anything that reads as casual.
 
-Right now your site says "I have great taste." The market you're competing in needs it to say "I handle assets at this level every day."
+Right now your site says ""I have great taste."" The market you're competing in needs it to say ""I handle assets at this level every day.""
 
 That's a one-step adjustment. I built what that step looks like.
 
 Want to take a look?
 
-- Amaan.""",
-
-    "step4_subject": "Sallie, this probably happened last month",
-    "step4_body": """Sallie -
+- Amaan.","Sallie, this probably happened last month","Sallie -
 
 Picture this:
 
@@ -733,15 +400,8 @@ You're not losing to a better agent. You're in a close comparison where the site
 
 The redesign I built for you wins that comparison. Interested?
 
-- Amaan.""",
-}
-emails_data.append({**prospects[7], **sallie})
-
-# --- RYAN DELAGARZA --- Solo, No website, 10.2K Instagram + 4.7K LinkedIn, named group, largest audience
-# Segment 2 + Mismatch - biggest gap in the list
-ryan = {
-    "step1_subject": "Ryan, looked you up",
-    "step1_body": """Ryan -
+- Amaan."
+"Ryan","DeLaGarza","ryan.delagarza@compass.com","Ryan DeLaGarza Real Estate Group at Compass","linkedin.com/in/ryan-delagarza","@ryansellsdallas","","No Website","","https://www.compass.com/agents/ryan-delagarza/","Ryan, looked you up","Ryan -
 
 Looked you up before reaching out. 10,000 followers on a verified Instagram. Nearly 5,000 on LinkedIn. You named your operation Ryan DeLaGarza Real Estate Group. You're Park Cities focused and you've been in DFW since 2017.
 
@@ -753,10 +413,7 @@ So I designed a homepage for the group - what that audience should find when the
 
 It's ready. Want to take a look?
 
-- Amaan.""",
-
-    "step2_subject": "Ryan, the part nobody sees",
-    "step2_body": """Ryan -
+- Amaan.","Ryan, the part nobody sees","Ryan -
 
 Here's the thing about your situation that nobody's probably said out loud:
 
@@ -768,10 +425,7 @@ You're running one of the strongest top-of-funnel operations in your market with
 
 I built the middle. Say the word.
 
-- Amaan.""",
-
-    "step3_subject": "Ryan, honest thought",
-    "step3_body": """Ryan -
+- Amaan.","Ryan, honest thought","Ryan -
 
 You probably think you don't need a website because the business is coming through referrals and your network. And a lot of it is - no question.
 
@@ -783,10 +437,7 @@ You've done everything right to build attention. You just haven't built anywhere
 
 I designed that landing. Let me know if you're curious.
 
-- Amaan.""",
-
-    "step4_subject": "Ryan, this happens more than you think",
-    "step4_body": """Ryan -
+- Amaan.","Ryan, this happens more than you think","Ryan -
 
 A buyer relocating to Park Cities finds your Instagram. They've been watching your content for two months. They're finally ready.
 
@@ -800,15 +451,8 @@ You had the content, the audience, and the market credibility. The site is the o
 
 I built what fills it. Want to see it?
 
-- Amaan.""",
-}
-emails_data.append({**prospects[8], **ryan})
-
-# --- JENNIFER DERTOUZOS --- Solo, No website, disciplined Instagram, East Dallas niche, NAR Green Designee
-# Segment 2 - No website, niche brand, real content discipline
-jennifer = {
-    "step1_subject": "Jennifer, looked you up",
-    "step1_body": """Jennifer -
+- Amaan."
+"Jennifer","Dertouzos","jennifer.dertouzos@compass.com","Compass","","@jjdertouzos","","No Website","","https://www.compass.com/agents/jennifer-dertouzos/","Jennifer, looked you up","Jennifer -
 
 Looked you up before reaching out. Your Instagram is one of the most disciplined real estate feeds I've come across - the highlights are organized, the listing content is detailed, and you clearly know your niche in East Dallas and White Rock Lake.
 
@@ -818,10 +462,7 @@ For someone with your content practice and your NAR Green Designee credentials, 
 
 It's ready. Want to take a look?
 
-- Amaan.""",
-
-    "step2_subject": "Jennifer, the part nobody sees",
-    "step2_body": """Jennifer -
+- Amaan.","Jennifer, the part nobody sees","Jennifer -
 
 Here's what I think about with agents at your stage:
 
@@ -833,10 +474,7 @@ Every piece of content you create is doing work, but it's leading people to a do
 
 I built what should be behind that door. Say the word.
 
-- Amaan.""",
-
-    "step3_subject": "Jennifer, honest thought",
-    "step3_body": """Jennifer -
+- Amaan.","Jennifer, honest thought","Jennifer -
 
 You probably don't think you need a website because your Linktree is working as a listing hub and the DMs are coming in. And some business is getting through - no question.
 
@@ -848,10 +486,7 @@ That's a conversation happening about your expertise - without you fully in the 
 
 I designed what should show up instead. Let me know if you're curious.
 
-- Amaan.""",
-
-    "step4_subject": "Jennifer, this happens more than you think",
-    "step4_body": """Jennifer -
+- Amaan.","Jennifer, this happens more than you think","Jennifer -
 
 A buyer is moving to East Dallas. They find your listing post for the $849K property on Galway Drive. They like your content. They tap your bio.
 
@@ -863,31 +498,4 @@ You had the stronger market knowledge and the better content. You just had nowhe
 
 The homepage I designed makes the whole case before they ever have to ask. Interested?
 
-- Amaan.""",
-}
-emails_data.append({**prospects[9], **jennifer})
-
-# Write CSV
-output_path = "pinova_cold_emails_l9.csv"
-
-fieldnames = [
-    "firstname", "lastname", "email", "company", "linkedin", "instagram",
-    "facebook", "website", "phone", "zillow",
-    "step1_subject", "step1_body",
-    "step2_subject", "step2_body",
-    "step3_subject", "step3_body",
-    "step4_subject", "step4_body",
-]
-
-with open(output_path, "w", newline="", encoding="utf-8") as f:
-    writer = csv.DictWriter(
-        f,
-        fieldnames=fieldnames,
-        quoting=csv.QUOTE_ALL,
-        extrasaction="ignore"
-    )
-    writer.writeheader()
-    for row in emails_data:
-        writer.writerow(row)
-
-print(f"Written {len(emails_data)} rows to {output_path}")
+- Amaan."

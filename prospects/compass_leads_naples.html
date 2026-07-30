@@ -1,0 +1,3394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinova Outreach - Compass Leads Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #e0e7ff;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-full: 9999px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .logo-text p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.total { background-color: #eff6ff; color: #3b82f6; }
+        .stat-icon.with-links { background-color: #f0fdf4; color: #22c55e; }
+        .stat-icon.no-links { background-color: #fffbeb; color: #f59e0b; }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .controls-bar {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+            max-width: 480px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #fcfcfd;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            background-color: #fff;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background-color: #f1f5f9;
+            padding: 0.25rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .tab-btn {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 1rem;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background-color: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-count {
+            background-color: #e2e8f0;
+            color: var(--text-secondary);
+            padding: 0.125rem 0.375rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .tab-btn.active .tab-count {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .agent-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s, border-color 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-hover);
+        }
+
+        .card-header {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1.25rem;
+        }
+
+        .avatar {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .agent-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .agent-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.125rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .agent-designation {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.5rem;
+        }
+
+        .badges-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.625rem;
+            border-radius: var(--radius-full);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .badge-listings {
+            background-color: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #dcfce7;
+        }
+
+
+
+        .badge-city {
+            background-color: #f0f9ff;
+            color: #0369a1;
+            border: 1px solid #e0f2fe;
+        }
+
+        .badge-page {
+            background-color: #faf5ff;
+            color: #7e22ce;
+            border: 1px solid #f3e8ff;
+        }
+
+        .card-body {
+            padding: 0.75rem 0;
+            border-top: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .contact-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .contact-row:hover {
+            color: var(--primary);
+        }
+
+        .contact-icon {
+            width: 1rem;
+            height: 1rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .card-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .actions-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            padding: 0.625rem;
+            font-family: var(--font-family);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-primary.disabled {
+            background-color: #f1f5f9;
+            color: var(--text-muted);
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .btn-secondary {
+            background-color: white;
+            border-color: var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background-color: #f8fafc;
+        }
+
+        .socials-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            min-height: 2rem;
+        }
+
+        .social-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-right: 0.25rem;
+        }
+
+        .social-link {
+            width: 2rem;
+            height: 2rem;
+            border-radius: var(--radius-full);
+            background-color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            text-decoration: none;
+            border: 1px solid #e2e8f0;
+        }
+
+        .social-link:hover {
+            transform: scale(1.1);
+            color: white;
+        }
+
+        .social-link.instagram:hover { background-color: #e1306c; border-color: #e1306c; }
+        .social-link.linkedin:hover { background-color: #0077b5; border-color: #0077b5; }
+        .social-link.facebook:hover { background-color: #1877f2; border-color: #1877f2; }
+        .social-link.twitter:hover { background-color: #000000; border-color: #000000; }
+        .social-link.youtube:hover { background-color: #ff0000; border-color: #ff0000; }
+        .social-link.tiktok:hover { background-color: #010101; border-color: #010101; }
+        .social-link.default:hover { background-color: var(--primary); border-color: var(--primary); }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 1.75rem;
+            height: 1.75rem;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.15s;
+            opacity: 0;
+            z-index: 10;
+        }
+
+        .agent-card:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary-light);
+            background-color: var(--primary-light);
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            background-color: var(--bg-card);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .no-results-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--text-primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pagination-info {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .page-btn {
+            border: 1px solid var(--border-color);
+            background-color: white;
+            color: var(--text-secondary);
+            padding: 0.5rem 0.875rem;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background-color: #f8fafc;
+        }
+
+        .page-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .page-btn:disabled {
+            color: var(--text-muted);
+            background-color: #f1f5f9;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+        }
+
+        .page-dots {
+            padding: 0 0.5rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-icon">P</div>
+                <div class="logo-text">
+                    <h1>Pinova Outreach</h1>
+                    <p>Compass Agent Directory Explorer</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon total">🏡</div>
+                <div class="stat-info">
+                    <span id="stat-total-val" class="stat-value">0</span>
+                    <span class="stat-label">Total Prospects</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon with-links">🔗</div>
+                <div class="stat-info">
+                    <span id="stat-with-links-val" class="stat-value">0</span>
+                    <span class="stat-label">Has Website/Socials (Cat A)</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon no-links">❓</div>
+                <div class="stat-info">
+                    <span id="stat-no-links-val" class="stat-value">0</span>
+                    <span class="stat-label">No Links (Cat B)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls-bar">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('all')">
+                    All Leads <span id="count-all" class="tab-count">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('with-links')">
+                    Category A: Has Links <span id="count-with-links" class="tab-count">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('no-links')">
+                    Category B: No Links <span id="count-no-links" class="tab-count">0</span>
+                </button>
+            </div>
+            
+            <div class="search-box">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by name, designation, email..." oninput="handleSearch(this.value)">
+            </div>
+        </div>
+        
+        <div id="agentGrid" class="agent-grid"></div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationContainer" class="pagination-container" style="display: none;">
+            <div id="paginationInfo" class="pagination-info">Showing 0-0 of 0 prospects</div>
+            <div id="paginationControls" class="pagination-controls"></div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast">Agent details copied to clipboard!</div>
+
+    <script>
+        const leadsData = [
+  {
+    "id": 0,
+    "name": "John F. Adams",
+    "email": "jadams@compass.com",
+    "phone": "6127204827",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/john-f.-adams/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 1,
+    "name": "Lauren Alto",
+    "email": "lauren.alto@compass.com",
+    "phone": "2394276308",
+    "listings": 2,
+    "website": "https://maps.app.goo.gl/de6p6Utgr34BDsN67",
+    "compass": "https://www.compass.com/agents/lauren-alto/",
+    "designation": "Realtor\u00ae",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [
+      "https://www.facebook.com/sellingparadisecoastfl/",
+      "https://www.instagram.com/lauren_alto_/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 2,
+    "name": "Ian Alters",
+    "email": "ian.alters@compass.com",
+    "phone": "2399009006",
+    "listings": 11,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ian-alters/",
+    "designation": "Real Estate Agent",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/ian-alters/",
+      "https://www.facebook.com/PalmCoastLuxury/",
+      "https://www.instagram.com/palmcoastluxury/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 3,
+    "name": "Tamina Aratari",
+    "email": "tamina.aratari@compass.com",
+    "phone": "9412869647",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tamina-aratari/",
+    "designation": "Realtor",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [
+      "https://www.facebook.com/Aratari-Exchange-Allison-James-Estates-and-Home-100822619957922/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 4,
+    "name": "Anatoliy Basov",
+    "email": "anatoliy.basov@compass.com",
+    "phone": "7328228799",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/anatoliy-basov/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 5,
+    "name": "Victor Aviles",
+    "email": "victor.aviles@compass.com",
+    "phone": "2396032395",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/victor-aviles/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/victor-aviles-realtor/",
+      "https://www.facebook.com/victor.aviles.14/",
+      "https://www.instagram.com/victoraviles2490/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 6,
+    "name": "Adrienne Gilhart",
+    "email": "ateamnaples@compass.com",
+    "phone": "239.261.2020",
+    "listings": 6,
+    "website": "https://www.naplesillustrated.com/adrienne-gilhart-out-of-the-blue/",
+    "compass": "https://www.compass.com/agents/adrienne-gilhart",
+    "designation": "real estate agent",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [
+      "https://www.facebook.com/adriennegilhart12/",
+      "https://www.instagram.com/adrienne_spears_deals/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 7,
+    "name": "Matt Bianchini",
+    "email": "matt.bianchini@compass.com",
+    "phone": "2398770015",
+    "listings": 7,
+    "website": "",
+    "compass": "https://www.compass.com/agents/matt-bianchini/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 8,
+    "name": "Jessica Bibbee",
+    "email": "jessica.bibbee@compass.com",
+    "phone": "2392726810",
+    "listings": 3,
+    "website": "https://www.realm-global.com/",
+    "compass": "https://www.compass.com/agents/jessica-bibbee/",
+    "designation": "REALTOR\u00ae",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/jessicabibbee/",
+      "https://www.instagram.com/naplesfinestrealestate/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 9,
+    "name": "Mel Biondi",
+    "email": "mel.biondi@compass.com",
+    "phone": "7209343843",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/mel-biondi/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/mel-j-biondi-87439312a/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 10,
+    "name": "Sebastian Bokemeier",
+    "email": "sebastian.boki@compass.com",
+    "phone": "2399894503",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sebastian-bokemeier/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/sebastian-boki-7506862b4/",
+      "https://www.facebook.com/SebasBoki/",
+      "https://instagram.com/sebastian_boki/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 11,
+    "name": "Jamie Boer",
+    "email": "jamie.boer@compass.com",
+    "phone": "3172899169",
+    "listings": 16,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jamie-boer/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [
+      "https://www.facebook.com/getmorewithjamieboer/",
+      "https://www.instagram.com/getmorewithjamieboer/",
+      "https://twitter.com/JamieBoer1"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 12,
+    "name": "Kyle Bosworth",
+    "email": "kyle.bosworth@compass.com",
+    "phone": "9729783614",
+    "listings": 12,
+    "website": "https://sportsentertainmentdivision.com/report/",
+    "compass": "https://www.compass.com/agents/kyle-bosworth/",
+    "designation": "real estate agent",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/kyle-bosworth-8695b2a2/",
+      "https://www.facebook.com/KyleBosworthRealtor",
+      "https://twitter.com/KyleBosworth"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 13,
+    "name": "Denny Bowers",
+    "email": "dennis.bowers@compass.com",
+    "phone": "2392726917",
+    "listings": 19,
+    "website": "https://www.digitaljournal.com/business/agent-dennis-bowers-talks-record-naples-real-estate-market/article",
+    "compass": "https://www.compass.com/agents/dennis-bowers/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/dennybowers/",
+      "https://www.facebook.com/dennis.bowers1",
+      "https://www.instagram.com/thebowersgroupnaples/",
+      "https://www.youtube.com/@thebowersgroup239"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 14,
+    "name": "Bryan Brax",
+    "email": "bryanbrax@compass.com",
+    "phone": "2399619618",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/bryan-brax/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 15,
+    "name": "Vincent Branda",
+    "email": "vincent.branda@compass.com",
+    "phone": "2394046606",
+    "listings": 7,
+    "website": "",
+    "compass": "https://www.compass.com/agents/vincent-branda/",
+    "designation": "Licensed Broker",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/vincent-branda-77a30759/",
+      "https://www.instagram.com/naples_real_estate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 16,
+    "name": "Lauren Brooker",
+    "email": "lauren.brooker@compass.com",
+    "phone": "2392874947",
+    "listings": 10,
+    "website": "https://www.mansionglobal.com/articles/boasting-floridas-priciest-residence-this-gulf-coast-neighborhood-is-americas-next-super-luxury-hot-spot-ade149c8?redirect=amp",
+    "compass": "https://www.compass.com/agents/lauren-brooker/",
+    "designation": "real estate agent",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/lauren-brooker-58a1317/",
+      "https://www.facebook.com/BrookerNaples/",
+      "https://www.instagram.com/lauren.brooker./"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 17,
+    "name": "Stephanie Brumund",
+    "email": "stephanie.brumund@compass.com",
+    "phone": "2392160458",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/stephanie-brumund/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 18,
+    "name": "Danny Brumund",
+    "email": "danny.brumund@compass.com",
+    "phone": "2395055254",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/danny-brumund/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 19,
+    "name": "David Burnham",
+    "email": "david.burnham@compass.com",
+    "phone": "2398344365",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/david-burnham/",
+    "designation": "real estate agent",
+    "city": "Naples, FL",
+    "page": 1,
+    "socials": [
+      "https://www.facebook.com/buyfromburnham/",
+      "https://www.instagram.com/buyfromburnham/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 20,
+    "name": "Ariel Burnham",
+    "email": "ariel.burnham@compass.com",
+    "phone": "2394708403",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ariel-burnham/",
+    "designation": "real estate professional",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 21,
+    "name": "Cole Campbell",
+    "email": "cole.campbell@compass.com",
+    "phone": "5718820992",
+    "listings": 2,
+    "website": "https://cole.endlesssummerlivingfl.com/",
+    "compass": "https://www.compass.com/agents/cole-campbell/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [
+      "https://www.facebook.com/endlesssummerliving",
+      "https://www.instagram.com/thecampbellgroupfl/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 22,
+    "name": "Karli Campbell",
+    "email": "karli.campbell@compass.com",
+    "phone": "9414049285",
+    "listings": 3,
+    "website": "https://karli.endlesssummerlivingfl.com/",
+    "compass": "https://www.compass.com/agents/karli-campbell/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [
+      "https://www.facebook.com/endlesssummerliving",
+      "https://www.instagram.com/thecampbellgroupfl/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 23,
+    "name": "Ryan Chiodo",
+    "email": "ryan.chiodo@compass.com",
+    "phone": "2392480551",
+    "listings": 9,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ryan-chiodo/",
+    "designation": "Realtor",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 24,
+    "name": "Brooke Codere",
+    "email": "brooke.codere@compass.com",
+    "phone": "9413742101",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/brooke-codere/",
+    "designation": "real estate professional",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [
+      "https://www.facebook.com/BrookeCodereRealtor",
+      "https://www.instagram.com/brookecodererealtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 25,
+    "name": "Denise Cowan",
+    "email": "denise.cowan@compass.com",
+    "phone": "4146402080",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/denise-cowan/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/denise-cowan-46590217a/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 26,
+    "name": "Bob Cowan",
+    "email": "bob.cowan@compass.com",
+    "phone": "4143031528",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/bob-cowan/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/bob-cowan-02a4027/",
+      "https://www.facebook.com/bobcowannaplesrealtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 27,
+    "name": "Jill Cotrona",
+    "email": "jill.cotrona@compass.com",
+    "phone": "2393714531",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jill-cotrona/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 28,
+    "name": "Lisa Da Silva",
+    "email": "lisa.dasilva@compass.com",
+    "phone": "5083140041",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/lisa-dasilva/",
+    "designation": "Licensed Real Estate Broker",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/lisadasilva",
+      "https://www.facebook.com/signalhousegroup",
+      "https://www.instagram.com/lisa_dasilva_sells_paradise",
+      "https://www.youtube.com/channel/UC_MJAwF3t9r9x-xXOa7BDjw"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 29,
+    "name": "Samuel Da Silva",
+    "email": "samuel.dasilva@compass.com",
+    "phone": "2398960173",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/samuel-da-silva/",
+    "designation": "Real Estate Professional",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 30,
+    "name": "Adnan Dedic",
+    "email": "adnan.dedic@compass.com",
+    "phone": "9417262917",
+    "listings": 8,
+    "website": "https://disruptmagazine.com/adnan-dedic-inspires-new-precedents-for-young-entrepreneurs/?fbclid=IwAR3nTL35tiySElaExAEn0TMuhs21WqRnrIv9wOeZ7fllIq5vbWLodbUcUo0",
+    "compass": "https://www.compass.com/agents/adnan-dedic/",
+    "designation": "real estate agent",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [
+      "https://www.facebook.com/prohomehunter/",
+      "https://www.instagram.com/adnandedic/",
+      "https://twitter.com/adnandedic1"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 31,
+    "name": "Mike Darda",
+    "email": "mike.darda@compass.com",
+    "phone": "2395422822",
+    "listings": 99,
+    "website": "https://theprivateclientnetwork.com/",
+    "compass": "https://www.compass.com/agents/mike-darda/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 32,
+    "name": "Vincent Diorides",
+    "email": "vincent.diorides@compass.com",
+    "phone": "9417205717",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/vincent-diorides/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 33,
+    "name": "Joan DeRoche",
+    "email": "joan.deroche@compass.com",
+    "phone": "2124704329",
+    "listings": 2,
+    "website": "https://living%20area/",
+    "compass": "https://www.compass.com/agents/joan-deroche/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/joan-deroche-b119b14/",
+      "https://www.facebook.com//upperwestsiderealestate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 34,
+    "name": "Lisa Dowdy",
+    "email": "lisa.dowdy@compass.com",
+    "phone": "8168032414",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/lisa-dowdy/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 35,
+    "name": "Maria Eaton",
+    "email": "maria.eaton@compass.com",
+    "phone": "2395308555",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/maria-eaton/",
+    "designation": "REALTOR",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [
+      "https://www.facebook.com/maria.eaton",
+      "https://www.instagram.com/mariaveaton/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 36,
+    "name": "Michael Dorobanti",
+    "email": "michael.dorobanti@compass.com",
+    "phone": "2392738374",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michael-dorobanti/",
+    "designation": "REALTOR",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 37,
+    "name": "Jessica Anderson Sf",
+    "email": "dardagroup@compass.com",
+    "phone": "239.542.2822",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jessica-anderson-sf",
+    "designation": "licensed agent",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 38,
+    "name": "Jane Ebury Sinclair",
+    "email": "jane.ebury@compass.com",
+    "phone": "9417269360",
+    "listings": 3,
+    "website": "https://www.relocatesarasota.com/",
+    "compass": "https://www.compass.com/agents/jane-ebury/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [
+      "https://www.facebook.com/relocatesarasota"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 39,
+    "name": "Katie Edmonds Peters",
+    "email": "katie.edmondspeters@compass.com",
+    "phone": "2398726750",
+    "listings": 9,
+    "website": "",
+    "compass": "https://www.compass.com/agents/katie-edmonds-peters/",
+    "designation": "Realtor",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [
+      "https://www.facebook.com/Katie-Edmonds-Peters-Palm-Paradise-Real-Estate-108587467466000/",
+      "https://www.instagram.com/havengroupfl/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 40,
+    "name": "Chris Farrugia",
+    "email": "chris.farrugia@compass.com",
+    "phone": "2392488171",
+    "listings": 9,
+    "website": "https://listingnaples.com/",
+    "compass": "https://www.compass.com/agents/chris-farrugia/",
+    "designation": "real estate agent",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [
+      "https://www.facebook.com/groups/naplesflgroup",
+      "https://www.facebook.com/listingnaples",
+      "https://www.linkedin.com/in/christopher-farrugia/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 41,
+    "name": "Laney Farrugia",
+    "email": "laney.farrugia@compass.com",
+    "phone": "2397843509",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/laney-farrugia/",
+    "designation": "REALTOR\u00ae",
+    "city": "Naples, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 42,
+    "name": "Kelly Ferreri",
+    "email": "kelly.ferreri@compass.com",
+    "phone": "7326842299",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/kelly-ferreri/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [
+      "https://www.facebook.com/kelly.ferreri.2025",
+      "https://www.instagram.com/kelly.ferreri.naplesfl.realtor/",
+      "https://www.linkedin.com/in/kellyferreri/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 43,
+    "name": "Jon Feins",
+    "email": "jon.feins@compass.com",
+    "phone": "2396879546",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jon-feins/",
+    "designation": "real estate professional",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [
+      "https://www.facebook.com/jonfeinsrealtor",
+      "https://www.linkedin.com/in/jonfeins",
+      "https://www.instagram.com/jonfeins",
+      "https://twitter.com/jonfeins"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 44,
+    "name": "Kaleena Figaro",
+    "email": "kfigaro@compass.com",
+    "phone": "2392609343",
+    "listings": 3,
+    "website": "https://www.pinterest.com/kaleenarose/",
+    "compass": "https://www.compass.com/agents/kaleena-figaro/",
+    "designation": "Realtor",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/http://www.linkedin.com/in/kaleenafigaro/",
+      "https://www.facebook.com/kaleena.figaro/",
+      "https://www.instagram.com/kaleena.figaro/",
+      "https://www.youtube.com/channel/UCfjWe0IoayM8hlquZwkWZrA"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 45,
+    "name": "Kylie Fowler",
+    "email": "kylie.fowler@compass.com",
+    "phone": "6035836842",
+    "listings": 11,
+    "website": "",
+    "compass": "https://www.compass.com/agents/kylie-fowler/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 46,
+    "name": "Mike Fowler",
+    "email": "mike.fowler@compass.com",
+    "phone": "2395643590",
+    "listings": 11,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michael-fowler-sf/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 47,
+    "name": "Debbie Judge",
+    "email": "floridahomegirls@compass.com",
+    "phone": "313.729.6339",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/debbie-judge",
+    "designation": "real estate professional",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [
+      "https://www.facebook.com/Debbie.Lloyd.Judge",
+      "https://www.instagram.com/debbiejudgerealtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 48,
+    "name": "Lance Martinicchio",
+    "email": "floridalifestylegroup@compass.com",
+    "phone": "239.770.1908",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/lance-martinicchio",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/lance-martinicchio-1742b33b/",
+      "https://www.facebook.com/Lance-Martinicchio-BEX-Realty-Southwest-Florida-Real-Estate-353602714841637/",
+      "https://www.instagram.com/lancem239/",
+      "https://www.youtube.com/@everybodylovesnaples",
+      "https://www.instagram.com/everybodylovesnaples?igsh=NG9qdjhvd3Zoa3Bt&utm_source=qr"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 49,
+    "name": "Isabella Fuerst",
+    "email": "isabella.fuerst@compass.com",
+    "phone": "8084466628",
+    "listings": 14,
+    "website": "https://nashvillevoyager.com/interview/exploring-life-business-with-isabella-fuerst-of-real-estate-agent-with-the-fuerst-team-at-compass/",
+    "compass": "https://www.compass.com/agents/isabella-fuerst-taylor/",
+    "designation": "Real Estate Professional",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/isabella-fuerst-121a2a8b/",
+      "https://www.facebook.com/isabellafuersttaylor/",
+      "https://www.instagram.com/bellafuerst/",
+      "https://youtube.com/shorts/QQHN-KzTiZ4?si=29fCJiNJGv_ehW-0"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 50,
+    "name": "Becky Gale",
+    "email": "becky.gale@compass.com",
+    "phone": "2399635965",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/becky-gale/",
+    "designation": "Real estate agent",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [
+      "https://www.facebook.com/NancyBurgessTeamNBT/",
+      "https://www.facebook.com/BurgessGaleGroup",
+      "https://www.instagram.com/nancyknowsnaplesrealestate/",
+      "https://www.instagram.com/burgessgalegroup/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 51,
+    "name": "Tony Grech",
+    "email": "tony.grech@compass.com",
+    "phone": "2398254555",
+    "listings": 7,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tony-grech/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [
+      "https://www.facebook.com/TonyGrechRealtor",
+      "https://www.instagram.com/tonygrechrealtor"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 52,
+    "name": "Hans Haedelt",
+    "email": "hans.haedelt@compass.com",
+    "phone": "2392071163",
+    "listings": 4,
+    "website": "https://abc-7.com/news/cover-story/2021/05/13/naples-luxury-home-contractor-offers-buyers-bitcoin-payment-option/",
+    "compass": "https://www.compass.com/agents/hans-haedelt/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/hanshaedelt/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 53,
+    "name": "Tyler Hahne",
+    "email": "tyler.hahne@compass.com",
+    "phone": "9419938097",
+    "listings": 3,
+    "website": "https://tylerhahne.com/",
+    "compass": "https://www.compass.com/agents/tyler-hahne/",
+    "designation": "real estate agent",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [
+      "https://www.facebook.com/TheGermanRealtorSRQ",
+      "https://www.instagram.com/thegermanrealtor_srq"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 54,
+    "name": "Andrew Haddad",
+    "email": "andrew.haddad@compass.com",
+    "phone": "9413131218",
+    "listings": 8,
+    "website": "https://andrewhaddad.com/",
+    "compass": "https://www.compass.com/agents/andrew-haddad/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [
+      "https://facebook.com/1andrewhaddad/",
+      "https://twitter.com/1AndrewHaddad",
+      "http://instagram.com/1andrewhaddad",
+      "https://www.youtube.com/channel/UCABLdl5D1iX8LiQ_dHLjLpw",
+      "https://www.youtube.com/watch?v=utkjoni-I7g&t=8s",
+      "https://www.youtube.com/watch?v=5rj5QPZ_nrs&t=1s"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 55,
+    "name": "Kerry Hartman",
+    "email": "kerry.hartman@compass.com",
+    "phone": "7248162917",
+    "listings": 6,
+    "website": "https://www.pinterest.com/hartman7907/",
+    "compass": "https://www.compass.com/agents/kerry-hartman/",
+    "designation": "Realtor",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/kerryhartman/",
+      "https://www.facebook.com/kerry.hartman.58",
+      "https://www.instagram.com/khart0704"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 56,
+    "name": "Ivan Hernandez",
+    "email": "ivanhernandez@compass.com",
+    "phone": "2392491163",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ivan-hernandez/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 57,
+    "name": "Marc Hernandez",
+    "email": "mhernandez@compass.com",
+    "phone": "2392319355",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/mhernandez/",
+    "designation": "real estate professional",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [
+      "https://www.facebook.com/therealtor.marc",
+      "https://www.instagram.com/therealtor_marc/",
+      "https://twitter.com/therealtor_marc"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 58,
+    "name": "Brian Helgemo",
+    "email": "brian.helgemo@compass.com",
+    "phone": "9414998146",
+    "listings": 90,
+    "website": "https://compasssupport.zendesk.com/agent/tickets/1",
+    "compass": "https://www.compass.com/agents/brian-helgemo/",
+    "designation": "Licensed Real Estate Salesperson",
+    "city": "Naples, FL",
+    "page": 3,
+    "socials": [
+      "https://www.facebook.com/HELGEMOTEAM/",
+      "https://www.instagram.com/helgemoteam/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 59,
+    "name": "David Jablonski",
+    "email": "david.jablonski@compass.com",
+    "phone": "2399611170",
+    "listings": 10,
+    "website": "",
+    "compass": "https://www.compass.com/agents/david-jablonski/",
+    "designation": "Realtor",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 60,
+    "name": "Missy Jerfita",
+    "email": "missy.jerfita@compass.com",
+    "phone": "8479136300",
+    "listings": 9,
+    "website": "",
+    "compass": "https://www.compass.com/agents/missy-jerfita/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [
+      "https://www.facebook.com/JerfitaPiersonTeam",
+      "https://www.instagram.com/jerfitapiersonteam/",
+      "https://twitter.com/JerfitaPierson"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 61,
+    "name": "Maryanne Elsaesser",
+    "email": "homenavigators@compass.com",
+    "phone": "551-206-9264",
+    "listings": 7,
+    "website": "https://maryanneelsaesserhomenavigators.com/",
+    "compass": "https://www.compass.com/agents/maryanne-elsaesser",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [
+      "https://www.linkedin.com/in/maryanneelsaesser/",
+      "https://www.facebook.com/maryanne.elsaesser",
+      "https://www.instagram.com/nj_home_navigators?igshid+YmMyMTA2MY2Y=/",
+      "https://twitter.com/MAElsaesser"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 62,
+    "name": "Stephen Joslin",
+    "email": "stephen.joslin@compass.com",
+    "phone": "2393228059",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/stephen-joslin/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/stephen.joslin_/",
+      "https://www.tiktok.com/@Stephen.joslin"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 63,
+    "name": "JW Group",
+    "email": "jwgroup@compass.com",
+    "phone": "847.373.1061",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jw-group/",
+    "designation": "real estate agent",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/jwgroup_compass/",
+      "https://www.facebook.com/jwgroupcompass"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 64,
+    "name": "Tom Kiessling",
+    "email": "tom.kiessling@compass.com",
+    "phone": "9419201718",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tom-kiessling/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 65,
+    "name": "Thomas Kiessling",
+    "email": "thomas.kiessling@compass.com",
+    "phone": "9419201678",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/thomas-kiessling/",
+    "designation": "real estate professional",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 66,
+    "name": "Cathy Kirk",
+    "email": "catherine.kirk@compass.com",
+    "phone": "5866129363",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/cathy-kirk/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 67,
+    "name": "Jason Knox",
+    "email": "jason.knox@compass.com",
+    "phone": "2392973034",
+    "listings": 5,
+    "website": "https://knoxbrothers.link/mgltcg",
+    "compass": "https://www.compass.com/agents/jason-knox/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [
+      "https://www.linkedin.com/in/jason-knox-593a011b"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 68,
+    "name": "Kathy Knabel-Bailey",
+    "email": "kathy.knabelbailey@compass.com",
+    "phone": "2392691990",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/kathy-knabel-bailey/",
+    "designation": "Realtor",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/kathykeys2homes/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 69,
+    "name": "Brian Knox",
+    "email": "brian.knox@compass.com",
+    "phone": "2392877419",
+    "listings": 5,
+    "website": "https://knoxbrothers.link/a2yppt",
+    "compass": "https://www.compass.com/agents/brian-knox/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 70,
+    "name": "Paul Kolaczynski",
+    "email": "paul.kolaczynski@compass.com",
+    "phone": "2397706968",
+    "listings": 9,
+    "website": "",
+    "compass": "https://www.compass.com/agents/paul-kolaczynski/",
+    "designation": "real estate professional",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 71,
+    "name": "Taylor Lawton",
+    "email": "taylor.lawton@compass.com",
+    "phone": "7204223060",
+    "listings": 6,
+    "website": "https://lawtonsmith.team/",
+    "compass": "https://www.compass.com/agents/taylor-lawton/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/lawtonsmithteam/",
+      "https://www.linkedin.com/company/lawton-smith-team",
+      "https://www.facebook.com/lawtonsmithteam"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 72,
+    "name": "Colby Lengel",
+    "email": "colby.lengel@compass.com",
+    "phone": "9417796227",
+    "listings": 11,
+    "website": "",
+    "compass": "https://www.compass.com/agents/colby-lengel/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [
+      "https://www.facebook.com/colbylengelexperience",
+      "https://www.instagram.com/colbylengelexperience/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 73,
+    "name": "Karen Majerczak",
+    "email": "karen.majerczak@compass.com",
+    "phone": "8479136665",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/karen-majerczak/",
+    "designation": "Licensed Broker",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 74,
+    "name": "Alexis Smith Frady",
+    "email": "luxurycoastalliving@compass.com",
+    "phone": "352.225.1724",
+    "listings": 4,
+    "website": "https://www.sarasotamagazine.com/home-and-real-estate/2024/03/real-estate-most-expensive-2024-so-far",
+    "compass": "https://www.compass.com/agents/alexis-smith-frady",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [
+      "https://www.facebook.com/AlexisSarasotaManatee/",
+      "https://www.instagram.com/luxurycoastallivingfl/",
+      "https://www.youtube.com/channel/UCTke8KZPfWjwgXBRhl84ChQ"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 75,
+    "name": "Tyler Manring",
+    "email": "tyler.manring@compass.com",
+    "phone": "2392896915",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tyler-manring/",
+    "designation": "real estate agent",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [
+      "https://www.linkedin.com/in/tyler-manring-b277618/",
+      "https://www.instagram.com/manringbrothersrealtors/",
+      "https://www.facebook.com/manringbrothers/",
+      "https://twitter.com/manringbrothers"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 76,
+    "name": "Eric Manring",
+    "email": "eric.manring@compass.com",
+    "phone": "2392896913",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/eric-manring/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 77,
+    "name": "Taylor Stewart",
+    "email": "luxurylinks@compass.com",
+    "phone": "804.614.5667",
+    "listings": 9,
+    "website": "https://swflgolfrealestate.com/",
+    "compass": "https://www.compass.com/agents/taylor-stewart",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [
+      "https://www.facebook.com/swflgolfrealestate/",
+      "https://www.instagram.com/luxurylinksgolf/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 78,
+    "name": "Michael Mandile",
+    "email": "themlpg@compass.com",
+    "phone": "630.546.0254",
+    "listings": 10,
+    "website": "https://www.realtrends.com/",
+    "compass": "https://www.compass.com/agents/michael-mandile",
+    "designation": "Licensed Real Estate Broker",
+    "city": "Naples, FL",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/thempmandile/",
+      "https://www.facebook.com/themlpg",
+      "https://www.linkedin.com/in/mpmandile/",
+      "https://www.instagram.com/p/CakP6bBrFyI/",
+      "https://www.youtube.com/watch?v=WKf18irTXnU&t=259s",
+      "https://www.youtube.com/watch?v=fpy4ikBCuWg"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 79,
+    "name": "P.J. Martin",
+    "email": "p.j.martin@compass.com",
+    "phone": "5615233766",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/pj- martin/",
+    "designation": "Realtor",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 80,
+    "name": "Chandler M Marks, PA",
+    "email": "chandler.marks@compass.com",
+    "phone": "2399800272",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/chandler-marks/",
+    "designation": "Realtor",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 81,
+    "name": "Jaroslaw Maras",
+    "email": "jaroslaw.maras@compass.com",
+    "phone": "2395290192",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jaroslaw-maras/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 82,
+    "name": "Jozef Maston",
+    "email": "jozef.maston@compass.com",
+    "phone": "2393987884",
+    "listings": 3,
+    "website": "http://jozefmaston.com/",
+    "compass": "https://www.compass.com/agents/jozef-maston/",
+    "designation": "real estate agent",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 83,
+    "name": "Robert Mauceli",
+    "email": "rob.mauceli@compass.com",
+    "phone": "2392166347",
+    "listings": 7,
+    "website": "",
+    "compass": "https://www.compass.com/agents/robert-mauceli/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [
+      "https://www.facebook.com/robmaucelirealtor",
+      "https://www.instagram.com/robmauceli"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 84,
+    "name": "Alexander Mayr",
+    "email": "alexander.mayr@compass.com",
+    "phone": "2392138322",
+    "listings": 5,
+    "website": "https://online.flippingbook.com/view/159565156/",
+    "compass": "https://www.compass.com/agents/alexander-mayr/",
+    "designation": "Real Estate Professional",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 85,
+    "name": "Erin McCullough",
+    "email": "erin.mccullough@compass.com",
+    "phone": "6125978902",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/erin-mccullough/",
+    "designation": "Realtor",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [
+      "https://www.facebook.com/CompassBrokerErin/",
+      "https://www.instagram.com/mccullougherin/?hl=en/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 86,
+    "name": "Shannon May",
+    "email": "shannon.may@compass.com",
+    "phone": "2398320812",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/shannon-may/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 87,
+    "name": "Melissa McMurray",
+    "email": "melissa.mcmurray@compass.com",
+    "phone": "2397775456",
+    "listings": 4,
+    "website": "https://melissamcmurray.com/",
+    "compass": "https://www.compass.com/agents/melissa-mcmurray/",
+    "designation": "Real Estate Agent",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [
+      "https://www.linkedin.com/in/melissa-mcmurray-76440145/",
+      "https://www.facebook.com/710668321/",
+      "https://www.instagram.com/melissa.mcmurray.realestate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 88,
+    "name": "Anna Mead",
+    "email": "anna.mead@compass.com",
+    "phone": "2397771308",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/anna-mead/",
+    "designation": "real estate agent",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [
+      "https://www.tiktok.com/@Annasellsswfl",
+      "https://www.instagram.com/annasellsswfl.compass/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 89,
+    "name": "Tanny Medina",
+    "email": "tanny.medina@compass.com",
+    "phone": "2399087401",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tanny-medina/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 90,
+    "name": "Dawn Merrill",
+    "email": "dawn.merrill@compass.com",
+    "phone": "9419157126",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/dawn-merrill/",
+    "designation": "real estate agent",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [
+      "https://www.facebook.com/DawnMerrillRealtor/#",
+      "https://www.instagram.com/dawnmerrillrealtorsrq/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 91,
+    "name": "Janelle Mertins",
+    "email": "janelle.mertins@compass.com",
+    "phone": "8133943313",
+    "listings": 6,
+    "website": "https://www.janellemertins.com/",
+    "compass": "https://www.compass.com/agents/janelle-mertins/",
+    "designation": "real estate professional",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 92,
+    "name": "Jessica Meschko",
+    "email": "jessica.meschko@compass.com",
+    "phone": "2398776828",
+    "listings": 12,
+    "website": "https://marinergroupnaplesrealestate.com/",
+    "compass": "https://www.compass.com/agents/jessica-meschko/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 93,
+    "name": "Laurie Middleton Mann",
+    "email": "laurie.mann@compass.com",
+    "phone": "7203204977",
+    "listings": 3,
+    "website": "https://www.luxuryrealestate.com/news/press_releases/12261",
+    "compass": "https://www.compass.com/agents/laurie-middleton-mann/",
+    "designation": "Licensed Broker",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [
+      "https://www.instagram.com/lauriemannrealestate/?r=nametag",
+      "https://www.facebook.com/lauriemannrealestate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 94,
+    "name": "Norbert Mika",
+    "email": "norbert.mika@compass.com",
+    "phone": "7734067116",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/norbert-mika/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 95,
+    "name": "Matthew Mika",
+    "email": "matt.mika@compass.com",
+    "phone": "7734061792",
+    "listings": 10,
+    "website": "",
+    "compass": "https://www.compass.com/agents/matt-mika/",
+    "designation": "Realtor",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [
+      "https://www.linkedin.com/in/matt-mika-3ba1695/",
+      "https://www.facebook.com//MattMikaRealEstateBroker/",
+      "https://www.instagram.com/mikasells/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 96,
+    "name": "Zachary Monger",
+    "email": "zach.monger@compass.com",
+    "phone": "2393078424",
+    "listings": 2,
+    "website": "http://themongergroup.com/",
+    "compass": "https://www.compass.com/agents/zach-monger/",
+    "designation": "licensed agent",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 97,
+    "name": "Jolene Munzenrieder",
+    "email": "jolene.munzenrieder@compass.com",
+    "phone": "2398602324",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jolene-munzenrieder/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [
+      "https://www.facebook.com/JoleneSellsNaples/",
+      "https://www.instagram.com/jolenemunzenrieder/?hl=en",
+      "https://www.linkedin.com/in/jolenemunzenrieder/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 98,
+    "name": "Sascha Nagel",
+    "email": "sascha.nagel@compass.com",
+    "phone": "2392856283",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sascha-nagel/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [
+      "https://www.instagram.com/saschanagelrealestate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 99,
+    "name": "Jake Neuville",
+    "email": "jake.neuville@compass.com",
+    "phone": "2392226072",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/2947226/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 100,
+    "name": "Amanda Van Slyke",
+    "email": "naplescoastalliving@compass.com",
+    "phone": "239.370.0013",
+    "listings": 7,
+    "website": "https://drive.google.com/file/d/1LN0fibb8_ebhmLVkGA9ZHmr7ePAteeYR/view?usp=sharing",
+    "compass": "https://www.compass.com/agents/amanda-van-slyke",
+    "designation": "REALTOR\u00ae",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [
+      "https://www.instagram.com/naplescoastalliving/",
+      "https://www.facebook.com/Naplescoastalliving/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 101,
+    "name": "Madeline Tracy",
+    "email": "napleshomecollective@compass.com",
+    "phone": "",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/madeline-tracy",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 5,
+    "socials": [
+      "https://www.linkedin.com/in/madeline-tracy-b8012911b/",
+      "https://www.facebook.com/Madeline-Tracy-Naples-Real-Estate-101793529125363/?notif_id=1647406106378575&notif_t=aymt_simplified_make_page_post&ref=notif/",
+      "https://www.instagram.com/madelinektracy/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 102,
+    "name": "H. Thomas Ostrander",
+    "email": "tom.ostrander@compass.com",
+    "phone": "8603041037",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tom-ostrander/",
+    "designation": "Real Estate Agent",
+    "city": "Naples, FL",
+    "page": 6,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 103,
+    "name": "Andrew Oliver",
+    "email": "andrew.oliver@compass.com",
+    "phone": "6178348205",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/andrew-oliver/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 6,
+    "socials": [
+      "https://www.facebook.com/AndrewOliverRealtor/",
+      "https://twitter.com/oliverreports",
+      "https://www.linkedin.com/in/andrew-oliver-35894813"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 104,
+    "name": "Samantha Palazzolo-Perini",
+    "email": "samantha.palazzoloperini@compass.com",
+    "phone": "2013947042",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/samantha-palazzolo-perini/",
+    "designation": "Realtor",
+    "city": "Naples, FL",
+    "page": 6,
+    "socials": [
+      "https://www.facebook.com/samantha.georgevichpalazzolo",
+      "https://www.instagram.com/your_nj_florida_realtor/",
+      "https://www.linkedin.com/in/spalazzolo1/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 105,
+    "name": "Chris Pakietur",
+    "email": "chris.pakietur@compass.com",
+    "phone": "2392871368",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/chris-pakietur/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 6,
+    "socials": [
+      "https://www.instagram.com/solditallfl/",
+      "https://www.facebook.com/chris.pakietur"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 106,
+    "name": "Jan Paul",
+    "email": "jan.paul@compass.com",
+    "phone": "2394645288",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jan-paul/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 6,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 107,
+    "name": "Natalie Perez-Benitoa",
+    "email": "nperezbenitoa@compass.com",
+    "phone": "2395373824",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/natalie-perez-benitoa/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 6,
+    "socials": [
+      "https://www.instagram.com/nattypb/",
+      "https://www.facebook.com/realtynpb/",
+      "https://www.linkedin.com/in/natalieperez-benitoa/",
+      "https://www.youtube.com/@everybodylovesnaples",
+      "https://www.instagram.com/everybodylovesnaples?igsh=NG9qdjhvd3Zoa3Bt&utm_source=qr",
+      "https://www.youtube.com/@nattypb/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 108,
+    "name": "Tina Pietropaoli",
+    "email": "tina.pietropaoli@compass.com",
+    "phone": "4072478216",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tina-pietropaoli/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 6,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 109,
+    "name": "Jordan Pyle",
+    "email": "jordan.pyle@compass.com",
+    "phone": "3128057074",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jordan-pyle/",
+    "designation": "Licensed Real Estate Agent",
+    "city": "Naples, FL",
+    "page": 6,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 110,
+    "name": "Joey Remington",
+    "email": "joey.remington@compass.com",
+    "phone": "2394622031",
+    "listings": 10,
+    "website": "",
+    "compass": "https://www.compass.com/agents/joey-remington/",
+    "designation": "Real Estate Professional",
+    "city": "Naples, FL",
+    "page": 6,
+    "socials": [
+      "https://www.linkedin.com/in/joeyremington/",
+      "https://www.facebook.com/joeyremingtonrealtor",
+      "https://www.instagram.com/joeyremington/",
+      "https://www.youtube.com/user/jojodancer1000/featured"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 111,
+    "name": "Michelle Riddle",
+    "email": "michelle.riddle@compass.com",
+    "phone": "2397761589",
+    "listings": 2,
+    "website": "https://bowersgroupnaples.com/",
+    "compass": "https://www.compass.com/agents/michelle-riddle-1/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 6,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 112,
+    "name": "Skip Riddle",
+    "email": "skip.riddle@compass.com",
+    "phone": "2397761726",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/skip-riddle/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 6,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 113,
+    "name": "Daniel Riess",
+    "email": "daniel.riess@compass.com",
+    "phone": "2394044232",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/daniel-riess/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 6,
+    "socials": [
+      "https://www.linkedin.com/in/daniel-riess-723a57139/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 114,
+    "name": "Mira Rochford PA",
+    "email": "mira.rochford@compass.com",
+    "phone": "2392872929",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/mira-rochford/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 6,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 115,
+    "name": "Zach Rosen",
+    "email": "zach.rosen@compass.com",
+    "phone": "2396916811",
+    "listings": 21,
+    "website": "",
+    "compass": "https://www.compass.com/agents/zach-rosen/",
+    "designation": "real estate agent",
+    "city": "Naples, FL",
+    "page": 6,
+    "socials": [
+      "https://www.linkedin.com/in/zachary-rosen-43217752",
+      "https://www.facebook.com/agentzachrosen/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 116,
+    "name": "Rafi Sahakian",
+    "email": "rafi.sahakian@compass.com",
+    "phone": "8478345099",
+    "listings": 2,
+    "website": "https://www.simplifyingthemarket.com/en/?a=403711-92548aa8e2346d69baa6653124688b91",
+    "compass": "https://www.compass.com/agents/rafi-sahakian/",
+    "designation": "Licensed Real Estate Agent",
+    "city": "Naples, FL",
+    "page": 6,
+    "socials": [
+      "https://www.facebook.com/BrokerRafi/",
+      "https://www.instagram.com/brokerrafi",
+      "https://x.com/rafisahakian/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 117,
+    "name": "Scott Schilling",
+    "email": "scott.schilling@compass.com",
+    "phone": "2394053551",
+    "listings": 30,
+    "website": "https://scottsellswfl.com/",
+    "compass": "https://www.compass.com/agents/scott-schilling/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [
+      "https://www.facebook.com/scott.schilling.589/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 118,
+    "name": "Joseph Scott",
+    "email": "joseph.scott@compass.com",
+    "phone": "2393256362",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/joseph-scott/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [
+      "https://www.facebook.com/josephscottre",
+      "https://www.instagram.com/josephscottre"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 119,
+    "name": "Katrina Shimer",
+    "email": "kat.shimer@compass.com",
+    "phone": "2393984343",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/kat-shimer/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 120,
+    "name": "Susan Simmons",
+    "email": "susan.simmons@compass.com",
+    "phone": "6145621501",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/susan-simmons/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [
+      "https://www.instagram.com/susansimmonsnaples/",
+      "https://www.facebook.com/SusanSimmonsNaples/?eid=ARAfVhc61_fj7zr9nX-vHEW6_KVB05xgec16ZCu8jOQS6iHPNDa_mVLktV-TGbw42FWW1ZnqkHFclQ4h/",
+      "https://www.linkedin.com/in/susansimmons1/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 121,
+    "name": "Joanne Sintic",
+    "email": "joanne.sintic@compass.com",
+    "phone": "2396829835",
+    "listings": 7,
+    "website": "",
+    "compass": "https://www.compass.com/agents/joanne-sintic/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 122,
+    "name": "Chris England",
+    "email": "sequel@compass.com",
+    "phone": "843.345.2864",
+    "listings": 5,
+    "website": "https://familypromisebeaufortcounty.org/",
+    "compass": "https://www.compass.com/agents/chris-england",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [
+      "https://www.instagram.com/sequelrealestategroup/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 123,
+    "name": "Dina Skinner",
+    "email": "dina.skinner@compass.com",
+    "phone": "2248059801",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/dina-skinner/",
+    "designation": "Licensed Broker",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [
+      "https://www.linkedin.com/in/dinaskinner/",
+      "https://www.facebook.com/DinaSkinnerCompass/",
+      "https://www.instagram.com/dina.skinner/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 124,
+    "name": "Becky Sirigotis",
+    "email": "becky.sirigotis@compass.com",
+    "phone": "9412018000",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/becky-sirigotis/",
+    "designation": "real estate agent",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [
+      "https://www.instagram.com/becky_sirigotis_amihomes/",
+      "https://www.facebook.com/BeckySirigotisRealtor"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 125,
+    "name": "Jason Skowronski",
+    "email": "jason.skowronski@compass.com",
+    "phone": "9418126090",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jason-skowronski/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 126,
+    "name": "Joel Slaymaker",
+    "email": "joel.slaymaker@compass.com",
+    "phone": "7608453584",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/joel-slaymaker/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 127,
+    "name": "Michael Sopka",
+    "email": "michael.sopka@compass.com",
+    "phone": "2395643819",
+    "listings": 9,
+    "website": "https://thecoastalteamnaples.com/",
+    "compass": "https://www.compass.com/agents/michael-sopka/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 128,
+    "name": "Tracy Slowik",
+    "email": "tracy.slowik@compass.com",
+    "phone": "4845717938",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tracy-slowik/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [
+      "https://www.linkedin.com/in/tracy-slowik-40504b12",
+      "https://www.facebook.com/tracyslowik"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 129,
+    "name": "Lance Stahlman",
+    "email": "lance.stahlman@compass.com",
+    "phone": "2398609994",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/lance-stahlman/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 130,
+    "name": "Karen Stabile",
+    "email": "karen.stabile@compass.com",
+    "phone": "2398601317",
+    "listings": 5,
+    "website": "https://www.dwell.com/home/luxurious-living-at-pelican-bay-newly-listed-dollar8995m-condo-boasts-unmatched-360-degree-gulf-views-eec399d2",
+    "compass": "https://www.compass.com/agents/karen-stabile/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [
+      "https://www.instagram.com/karen_m_stabile/",
+      "https://www.linkedin.com/in/karen-stabile-8327a7222/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 131,
+    "name": "Jessica Storti",
+    "email": "jessica.storti@compass.com",
+    "phone": "7249712523",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jessica-storti/",
+    "designation": "Realtor",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [
+      "https://www.linkedin.com/in/jessica-storti-7bb110208",
+      "https://www.facebook.com/essicJa-Storti-Real-Estate-Agent-101902785069597/",
+      "https://www.instagram.com/jessica.storti/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 132,
+    "name": "Team239",
+    "email": "team239@compass.com",
+    "phone": "239.399.1175",
+    "listings": 7,
+    "website": "https://www.naplesareahomelistings.com/",
+    "compass": "https://www.compass.com/agents/team239/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 133,
+    "name": "Team Boz",
+    "email": "teamboz@compass.com",
+    "phone": "(904) 290-5027",
+    "listings": 12,
+    "website": "",
+    "compass": "https://www.compass.com/agents/team-boz/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 134,
+    "name": "The Coastal Team",
+    "email": "thecoastalteam@compass.com",
+    "phone": "239.564.3819",
+    "listings": 9,
+    "website": "",
+    "compass": "https://www.compass.com/agents/the-coastal-team/",
+    "designation": "real estate professional",
+    "city": "Naples, FL",
+    "page": 7,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 135,
+    "name": "The Kathy & Michael Team",
+    "email": "kathyandmichael@compass.com",
+    "phone": "239.269.1990",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/the-kathy-and-michael-team/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 8,
+    "socials": [
+      "https://www.facebook.com/Naples.Knabel/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 136,
+    "name": "The Perini Group",
+    "email": "theperinigroup@compass.com",
+    "phone": "(201) 394-7042",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/the-perini-group/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 8,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 137,
+    "name": "The Saad Team",
+    "email": "saadteam@compass.com",
+    "phone": "239.977.5882",
+    "listings": 5,
+    "website": "https://drive.google.com/file/d/1Owyj6XrMNHinACqZYfskwzJQwwSoTJFU/view?usp=sharing=",
+    "compass": "https://www.compass.com/agents/saad-team/",
+    "designation": "Realtor",
+    "city": "Naples, FL",
+    "page": 8,
+    "socials": [
+      "https://www.facebook.com/thesaadteam/",
+      "https://www.instagram.com/thesaadteam/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 138,
+    "name": "Jonathan Van Heukelom",
+    "email": "jonathan.van@compass.com",
+    "phone": "2393991175",
+    "listings": 7,
+    "website": "https://www.naplesareahomelistings.com/",
+    "compass": "https://www.compass.com/agents/jonathan-van-heukelom/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 8,
+    "socials": [
+      "https://www.facebook.com/Team239NaplesFL",
+      "https://www.youtube.com/@team239naplesfl"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 139,
+    "name": "Kristin Van Heukelom",
+    "email": "kristin.van@compass.com",
+    "phone": "2395717082",
+    "listings": 7,
+    "website": "https://www.naplesareahomelistings.com/",
+    "compass": "https://www.compass.com/agents/kristin-van-heukelom/",
+    "designation": "licensed real estate broker",
+    "city": "Naples, FL",
+    "page": 8,
+    "socials": [
+      "https://www.facebook.com/Team239NaplesFL",
+      "https://www.youtube.com/@team239naplesfl"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 140,
+    "name": "Jeff Tyson",
+    "email": "jeff.tyson@compass.com",
+    "phone": "2398503403",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jeffrey-tyson/",
+    "designation": "real estate professional",
+    "city": "Naples, FL",
+    "page": 8,
+    "socials": [
+      "https://www.linkedin.com/in/jeff-tyson-9a2047107/",
+      "https://www.facebook.com/jeff.tyson.982"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 141,
+    "name": "Denisse Viera",
+    "email": "denisse.viera@compass.com",
+    "phone": "2396821100",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/denisse-viera/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 8,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 142,
+    "name": "Tara Vitta-Vimbor",
+    "email": "tara.vittavimbor@compass.com",
+    "phone": "2019700958",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tara-vitta-vimbor/",
+    "designation": "Realtor",
+    "city": "Naples, FL",
+    "page": 8,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 143,
+    "name": "Shontelle Walton Raphael",
+    "email": "shontelle.waltonraphael@compass.com",
+    "phone": "9545522261",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/shontelle-walton-raphael/",
+    "designation": "Licensed Real Estate Broker",
+    "city": "Naples, FL",
+    "page": 8,
+    "socials": [
+      "https://www.instagram.com/avenuestoacres/",
+      "https://www.facebook.com/AvenuesToAcres",
+      "https://www.linkedin.com/in/shontellewalton/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 144,
+    "name": "Brian Wood",
+    "email": "brian.wood@compass.com",
+    "phone": "9419288408",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/brian-wood/",
+    "designation": "real estate professional",
+    "city": "Naples, FL",
+    "page": 8,
+    "socials": [
+      "https://www.linkedin.com/in/brian-wood-04691b12/",
+      "https://www.instagram.com/brian.wood.srq/",
+      "https://www.facebook.com/682404446/videos/3485062428475096/",
+      "https://www.youtube.com/watch?v=gcDSZ5Y1idY&t=1s",
+      "https://www.youtube.com/watch?v=99-Aak5v1WU&t=13s",
+      "https://www.youtube.com/watch?v=utkjoni-I7g&t=8s",
+      "https://www.youtube.com/watch?v=utkjoni-I7g"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 145,
+    "name": "Christen Woods",
+    "email": "christen.woods@compass.com",
+    "phone": "8473731061",
+    "listings": 4,
+    "website": "https://i.imgur.com/IM0cPDq.png",
+    "compass": "https://www.compass.com/agents/christen-woods/",
+    "designation": "realtor",
+    "city": "Naples, FL",
+    "page": 8,
+    "socials": [
+      "https://www.linkedin.com/in/christen-woods-2506a050/",
+      "https://www.facebook.com/ChristenWoodsRealtor/?ref=aymt_homepage_panel",
+      "https://www.instagram.com/christen_woods_realtor/?hl=en",
+      "https://twitter.com/christennwoods?lang=en"
+    ],
+    "has_links": true
+  }
+];
+        
+        const gradients = [
+            'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)',
+            'linear-gradient(135deg, #F6D365 0%, #FDA085 100%)',
+            'linear-gradient(135deg, #A1C4FD 0%, #C2E9FB 100%)',
+            'linear-gradient(135deg, #76B2FE 0%, #B2D8FF 100%)',
+            'linear-gradient(135deg, #E0C3FC 0%, #8EC5FC 100%)',
+            'linear-gradient(135deg, #F093FB 0%, #F5576C 100%)',
+            'linear-gradient(135deg, #5EEAD4 0%, #14B8A6 100%)',
+            'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)',
+            'linear-gradient(135deg, #C084FC 0%, #A855F7 100%)',
+            'linear-gradient(135deg, #93C5FD 0%, #3B82F6 100%)'
+        ];
+
+        function getGradient(name) {
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const idx = Math.abs(hash) % gradients.length;
+            return gradients[idx];
+        }
+
+        function getInitials(name) {
+            if (!name) return 'A';
+            const parts = name.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+            return name[0].toUpperCase();
+        }
+
+        function getPlatformName(url) {
+            const urlLower = url.toLowerCase();
+            if (urlLower.includes('instagram.com')) return 'instagram';
+            if (urlLower.includes('linkedin.com')) return 'linkedin';
+            if (urlLower.includes('facebook.com')) return 'facebook';
+            if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) return 'twitter';
+            if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
+            if (urlLower.includes('tiktok.com')) return 'tiktok';
+            return 'default';
+        }
+
+
+
+        function getSocialIconSvg(platform) {
+            const svgs = {
+                instagram: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>',
+                linkedin: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>',
+                facebook: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>',
+                twitter: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z M4 20l6.768 -6.768 M20 4l-6.768 6.768"></path></svg>',
+                youtube: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>',
+                tiktok: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>',
+                default: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>'
+            };
+            return svgs[platform] || svgs.default;
+        }
+
+        let activeTab = 'all';
+        let searchQuery = '';
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        function renderLeads() {
+            const grid = document.getElementById('agentGrid');
+            grid.innerHTML = '';
+            
+            let filtered = leadsData.filter(lead => {
+                if (activeTab === 'with-links' && !lead.has_links) return false;
+                if (activeTab === 'no-links' && lead.has_links) return false;
+                
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    const nameMatch = lead.name.toLowerCase().includes(q);
+                    const desigMatch = (lead.designation || '').toLowerCase().includes(q);
+                    const emailMatch = (lead.email || '').toLowerCase().includes(q);
+                    const cityMatch = (lead.city || '').toLowerCase().includes(q);
+                    const pageMatch = String(lead.page || '').includes(q);
+                    return nameMatch || desigMatch || emailMatch || cityMatch || pageMatch;
+                }
+                return true;
+            });
+            
+            const allCount = leadsData.length;
+            const withLinksCount = leadsData.filter(l => l.has_links).length;
+            const noLinksCount = allCount - withLinksCount;
+            
+            document.getElementById('count-all').innerText = allCount;
+            document.getElementById('count-with-links').innerText = withLinksCount;
+            document.getElementById('count-no-links').innerText = noLinksCount;
+            
+            document.getElementById('stat-total-val').innerText = allCount;
+            document.getElementById('stat-with-links-val').innerText = withLinksCount;
+            document.getElementById('stat-no-links-val').innerText = noLinksCount;
+            
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+            
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+            
+            if (totalItems === 0) {
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <span class="no-results-icon">🔍</span>
+                        <h3>No prospects found</h3>
+                        <p>Try adjusting your filters or search keywords.</p>
+                    </div>
+                `;
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+                document.getElementById('paginationInfo').innerText = `Showing ${startIdx + 1}-${endIdx} of ${totalItems} prospects`;
+            }
+            
+            const pageData = filtered.slice(startIdx, endIdx);
+            
+            pageData.forEach(lead => {
+                const initials = getInitials(lead.name);
+                const gradient = getGradient(lead.name);
+                
+                let webButtonHtml = '';
+                if (lead.website) {
+                    webButtonHtml = `<a href="${lead.website}" target="_blank" class="btn btn-primary">Website</a>`;
+                } else {
+                    webButtonHtml = `<button class="btn btn-primary disabled" disabled>No Website</button>`;
+                }
+                
+                let socialsHtml = '';
+                if (lead.socials && lead.socials.length > 0) {
+                    socialsHtml += `<span class="social-label">Socials:</span>`;
+                    lead.socials.forEach(url => {
+                        const platform = getPlatformName(url);
+                        const iconSvg = getSocialIconSvg(platform);
+                        socialsHtml += `
+                            <a href="${url}" target="_blank" class="social-link ${platform}" title="${platform.charAt(0).toUpperCase() + platform.slice(1)}: ${url}">
+                                ${iconSvg}
+                            </a>
+                        `;
+                    });
+                } else {
+                    socialsHtml = `<span class="social-label" style="color: #94a3b8;">No socials on Compass</span>`;
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                card.style.cursor = 'pointer';
+                card.onclick = (e) => {
+                    if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.copy-btn')) {
+                        return;
+                    }
+                    window.open(lead.compass, '_blank');
+                };
+                
+                card.innerHTML = `
+                    <button class="copy-btn" onclick="copyAgentInfo(${lead.id}, event)" title="Copy agent info">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    </button>
+                    <div class="card-header">
+                        <div class="avatar" style="background: ${gradient}">${initials}</div>
+                        <div class="agent-meta">
+                            <div class="agent-name" title="${lead.name}">${lead.name}</div>
+                            <div class="agent-designation" title="${lead.designation || 'Real Estate Agent'}">${lead.designation || 'Real Estate Agent'}</div>
+                            <div class="badges-container">
+                                <span class="badge badge-listings">🏡 ${lead.listings} Listings</span>
+                                ${lead.city ? `<span class="badge badge-city">📍 ${lead.city}</span>` : ''}
+                                ${lead.page ? `<span class="badge badge-page">📄 Page ${lead.page}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        ${lead.email ? `
+                        <a href="mailto:${lead.email}" class="contact-row">
+                            <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            <span>${lead.email}</span>
+                        </a>` : ''}
+                        ${lead.phone ? `
+                        <a href="tel:${lead.phone}" class="contact-row">
+                            <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                            <span>${lead.phone}</span>
+                        </a>` : ''}
+                    </div>
+                    <div class="card-footer">
+                        <div class="actions-row">
+                            <a href="${lead.compass}" target="_blank" class="btn btn-secondary">Compass Profile</a>
+                            ${webButtonHtml}
+                        </div>
+                        <div class="socials-row">
+                            ${socialsHtml}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            renderPaginationControls(totalPages);
+        }
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            const activeBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabName));
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            currentPage = 1;
+            renderLeads();
+        }
+
+        function handleSearch(val) {
+            searchQuery = val;
+            currentPage = 1;
+            renderLeads();
+        }
+
+        function renderPaginationControls(totalPages) {
+            const controls = document.getElementById('paginationControls');
+            controls.innerHTML = '';
+            
+            if (totalPages <= 1) {
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+            }
+            
+            // Prev Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.innerHTML = '&larr; Prev';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(prevBtn);
+            
+            // Smart visible buttons logic
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            
+            if (endPage - startPage + 1 < maxVisible) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+            
+            if (startPage > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.className = 'page-btn';
+                firstBtn.innerText = '1';
+                firstBtn.onclick = () => { currentPage = 1; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(firstBtn);
+                
+                if (startPage > 2) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                btn.innerText = i;
+                btn.onclick = () => {
+                    currentPage = i;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+                controls.appendChild(btn);
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+                
+                const lastBtn = document.createElement('button');
+                lastBtn.className = 'page-btn';
+                lastBtn.innerText = totalPages;
+                lastBtn.onclick = () => { currentPage = totalPages; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(lastBtn);
+            }
+            
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.innerHTML = 'Next &rarr;';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(nextBtn);
+        }
+
+        function copyAgentInfo(id, event) {
+            const lead = leadsData.find(l => l.id === id);
+            if (!lead) return;
+            
+            const text = lead.name + '\n' + 
+                         (lead.designation || 'Real Estate Agent') + '\n' +
+                         'Email: ' + (lead.email || 'None') + '\n' +
+                         'Phone: ' + (lead.phone || 'None') + '\n' +
+                         'Website: ' + (lead.website || 'None') + '\n' +
+                         'Compass: ' + lead.compass;
+                         
+            const btn = event.currentTarget;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Agent details copied to clipboard!');
+                const originalSvg = btn.innerHTML;
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                setTimeout(() => { btn.innerHTML = originalSvg; }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderLeads();
+        });
+    </script>
+</body>
+</html>

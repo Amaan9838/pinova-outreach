@@ -3,6 +3,8 @@ import Message from '../../../models/Message.js';
 import Campaign from '../../../models/Campaign.js';
 import Prospect from '../../../models/Prospect.js';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
   try {
     await dbConnect();

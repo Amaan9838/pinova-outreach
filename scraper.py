@@ -3,11 +3,11 @@ Compass Agent Scraper — v6
 ----------------------------
 New vs v5:
   - Removed Google social fallback (triggers bot detection / CAPTCHA).
-  - Raised minimum listing gate to >2.
+  - Raised minimum listing gate to >=1.
   - Splits output into TWO files:
       1. *_with_links.csv  — agents with website or social links on Compass
          (for fast manual review → Comet browser deep-dive on weak sites)
-      2. *_no_links.csv    — agents with >2 listings but no website/social on Compass
+      2. *_no_links.csv    — agents with >=1 listing but no website/social on Compass
          (to be researched separately later)
 
 Previous versions:
@@ -28,6 +28,7 @@ USAGE:
     python scraper_v5.py --debug
 """
 
+import os
 import asyncio
 import csv
 import json
@@ -49,10 +50,10 @@ log = logging.getLogger("compass")
 
 # ── Config ────────────────────────────────────────────────────────────────────
 BASE_URL        = "https://www.compass.com/agents/locations/{location}/page-{page}/"
-PROFILE_TIMEOUT = 30_000
+PROFILE_TIMEOUT = 45_000
 LIST_TIMEOUT    = 45_000
 GOOGLE_TIMEOUT  = 20_000
-MIN_LISTINGS    = 2        # gate: skip if listing count < this (i.e. need >=2)
+MIN_LISTINGS    = 1        # gate: skip if listing count < this (i.e. need >=1)
 HEADLESS        = True
 
 # ── Social domains we care about ──────────────────────────────────────────────
@@ -121,13 +122,161 @@ class AgentLead:
     Website_URL:         str = ""
     Social_Links:        str = ""
     Compass_Profile_URL: str = ""
-    Type:                str = ""
     Designation:         str = ""   # new — captured for Google search & output
+    City:                str = ""
+    Page:                int = 0
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+def normalize_url(url: str) -> str:
+    """
+    Normalizes a URL by stripping protocol (http/https), www., query strings,
+    and trailing slashes for robust matching across URL variations.
+    """
+    if not url:
+        return ""
+    u = url.strip().lower()
+    u = re.sub(r"^https?://(www\.)?", "", u)
+    u = u.split("?")[0].split("#")[0]
+    return u.rstrip("/")
+
+def normalize_email(email: str) -> str:
+    """Normalizes an email address (lowercase and trimmed) for exact matching."""
+    return email.strip().lower() if email else ""
+
+def extract_slug(url: str) -> str:
+    """
+    Extracts the agent slug from a Compass profile URL (e.g., 'john-doe' from
+    'https://www.compass.com/agents/john-doe/').
+    """
+    norm = normalize_url(url)
+    if "compass.com/agents/" in norm:
+        parts = norm.split("compass.com/agents/")[-1].split("/")
+        if parts and parts[0] and parts[0] != "locations":
+            return parts[0]
+    return norm
+
+def load_existing_prospects() -> tuple[set[str], set[str]]:
+    """
+    Scans the prospects/ directory (and the workspace root) for ALL CSV files,
+    parses them, and extracts normalized URLs, agent slugs, and Email addresses
+    to build sets of pre-scraped agents so they are never fetched or duplicated again.
+    """
+    seen_urls = set()
+    seen_emails = set()
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    prospects_dir = os.path.join(script_dir, "prospects")
+    
+    dirs_to_check = [prospects_dir, script_dir]
+    csv_files = []
+    
+    for d in dirs_to_check:
+        if not os.path.isdir(d):
+            continue
+        for filename in os.listdir(d):
+            if filename.endswith(".csv"):
+                csv_files.append(os.path.join(d, filename))
+                
+    csv_files = list(set(csv_files))
+    if not csv_files:
+        log.info("No existing CSV files found to load pre-scraped agent data.")
+        return seen_urls, seen_emails
+
+    log.info(f"Scanning {len(csv_files)} existing CSV files for pre-scraped agents...")
+    for filepath in csv_files:
+        try:
+            with open(filepath, "r", newline="", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                if not reader.fieldnames:
+                    continue
+                
+                url_cols = []
+                email_cols = []
+                for col in reader.fieldnames:
+                    col_clean = col.strip().lower()
+                    if col_clean in ["compass_profile_url", "profile_url", "compass profile url", "url", "compass", "compass_url"]:
+                        url_cols.append(col)
+                    elif col_clean in ["email", "email_address", "agent_email"]:
+                        email_cols.append(col)
+                
+                url_count = 0
+                email_count = 0
+                for row in reader:
+                    for u_col in url_cols:
+                        url_val = row.get(u_col)
+                        if url_val:
+                            norm_u = normalize_url(url_val)
+                            if norm_u:
+                                seen_urls.add(norm_u)
+                                slug = extract_slug(url_val)
+                                if slug:
+                                    seen_urls.add(slug)
+                                url_count += 1
+                    for e_col in email_cols:
+                        email_val = row.get(e_col)
+                        if email_val:
+                            norm_e = normalize_email(email_val)
+                            if norm_e:
+                                seen_emails.add(norm_e)
+                                email_count += 1
+                                
+                if url_count or email_count:
+                    log.info(f"  Loaded data from {os.path.basename(filepath)} ({url_count} URLs, {email_count} emails)")
+        except Exception as e:
+            log.warning(f"  Failed to read {filepath}: {e}")
+
+    log.info(f"Total unique pre-scraped URLs/slugs: {len(seen_urls)} | Emails: {len(seen_emails)}")
+    return seen_urls, seen_emails
+
+def deduplicate_leads(leads: list[AgentLead]) -> list[AgentLead]:
+    """Ensures a list of AgentLead objects contains no duplicates by profile URL, slug, or email."""
+    unique_leads = []
+    seen_u = set()
+    seen_e = set()
+    
+    for lead in leads:
+        norm_u = normalize_url(lead.Compass_Profile_URL)
+        slug = extract_slug(lead.Compass_Profile_URL)
+        norm_e = normalize_email(lead.Email)
+        
+        if norm_u and norm_u in seen_u:
+            continue
+        if slug and slug in seen_u:
+            continue
+        if norm_e and norm_e in seen_e:
+            continue
+            
+        if norm_u:
+            seen_u.add(norm_u)
+        if slug:
+            seen_u.add(slug)
+        if norm_e:
+            seen_e.add(norm_e)
+            
+        unique_leads.append(lead)
+        
+    return unique_leads
+
+async def block_unnecessary_resources(route):
+    """Intercepts requests to block large/unneeded resources like images and fonts to save time."""
+    if route.request.resource_type in ["image", "media", "font"]:
+        await route.abort()
+    else:
+        await route.continue_()
+
 def clean(t: Optional[str]) -> str:
     return t.strip() if t else ""
+
+def extract_city(location: str) -> str:
+    """Extract and format the city name from a location slug like 'dallas-tx/40435'."""
+    if not location:
+        return ""
+    parts = location.split('/')[0].split('-')
+    if len(parts) > 1:
+        state = parts[-1].upper()
+        if len(state) == 2:  # state abbreviation
+            return f"{' '.join(parts[:-1]).title()}, {state}"
+    return " ".join(parts).title()
 
 def is_compass_social(url: str) -> bool:
     return any(cs in url for cs in COMPASS_SOCIAL_ACCOUNTS)
@@ -157,16 +306,22 @@ def individual_agent_links(all_links: list[str], exclude_url: str = "") -> list[
         out.append(h)
     return list(dict.fromkeys(out))  # dedupe while preserving order
 
-async def safe_goto(page: Page, url: str, timeout: int = 30_000) -> bool:
-    try:
-        await page.goto(url, wait_until="domcontentloaded", timeout=timeout)
-        return True
-    except PWTimeout:
-        log.warning(f"Timeout: {url}")
-        return False
-    except Exception as e:
-        log.warning(f"Error {url}: {e}")
-        return False
+async def safe_goto(page: Page, url: str, timeout: int = 30_000, retries: int = 1) -> bool:
+    for attempt in range(1 + retries):
+        try:
+            await page.goto(url, wait_until="domcontentloaded", timeout=timeout)
+            return True
+        except PWTimeout:
+            if attempt < retries:
+                log.warning(f"Timeout (attempt {attempt+1}), retrying: {url}")
+                await asyncio.sleep(3)
+            else:
+                log.warning(f"Timeout (giving up after {attempt+1} attempts): {url}")
+                return False
+        except Exception as e:
+            log.warning(f"Error {url}: {e}")
+            return False
+    return False
 
 async def all_hrefs(page: Page) -> list[str]:
     """Return deduplicated list of all href values on the current page."""
@@ -486,7 +641,7 @@ async def get_agents_from_listing_page(
 
 # ── STEP B: Profile page → enrich (with team deep-dive + Google social) ───────
 async def enrich_profile(
-    page: Page, agent: dict, debug: bool = False
+    page: Page, agent: dict, city: str = "", page_num: int = 0, seen_urls: set[str] = None, seen_emails: set[str] = None, debug: bool = False
 ) -> Optional[AgentLead]:
     """
     Load the agent's Compass profile page and extract all lead data.
@@ -494,11 +649,15 @@ async def enrich_profile(
     If the page turns out to be a team page:
       - find the team leader's individual profile URL
       - reload with that URL and continue as normal
-
-    If no on-page socials are found:
-      - fall back to a Google search using "[Name] [Designation]"
     """
+    # Intercept requests and block unneeded resources (images/fonts)
+    await page.route("**/*", block_unnecessary_resources)
+
     url = agent["profile_url"]
+    norm_url = normalize_url(url)
+    slug = extract_slug(url)
+    norm_email = normalize_email(agent.get("email", ""))
+
     ok  = await safe_goto(page, url, PROFILE_TIMEOUT)
     if not ok:
         return None
@@ -511,6 +670,18 @@ async def enrich_profile(
         leader = await find_team_leader(page, debug=debug)
         if not leader:
             log.info("  Could not identify team leader — skipping")
+            return None
+
+        # Check if the team leader's URL, slug, or email is already seen
+        leader_norm = normalize_url(leader['profile_url'])
+        leader_slug = extract_slug(leader['profile_url'])
+        leader_email = normalize_email(leader.get('email', ''))
+
+        if seen_urls is not None and (leader_norm in seen_urls or leader_slug in seen_urls):
+            log.info(f"  Leader already processed/skipped: {leader['name']} ({leader['profile_url']}) — skipping")
+            return None
+        if seen_emails is not None and leader_email and leader_email in seen_emails:
+            log.info(f"  Leader email already processed: {leader['name']} ({leader_email}) — skipping")
             return None
 
         # Reload with the leader's individual page
@@ -534,6 +705,8 @@ async def enrich_profile(
     lead.Email               = agent["email"]
     lead.Phone               = agent["phone"]
     lead.Compass_Profile_URL = agent["profile_url"]
+    lead.City                = city
+    lead.Page                = page_num
 
     # Designation (needed for Google search + output)
     lead.Designation = await get_designation(page)
@@ -595,21 +768,8 @@ async def enrich_profile(
     personal_sites = [h for h in all_links if is_personal_website(h)]
     lead.Website_URL = personal_sites[0] if personal_sites else ""
 
-    # ── Agent type from body text ──────────────────────────────────────────────
-    try:
-        body_lower = (await page.inner_text("body")).lower()
-    except Exception:
-        body_lower = ""
-
-    if "team leader" in body_lower or "team lead" in body_lower:
-        lead.Type = "Team Leader"
-    elif "team member" in body_lower or "part of the" in body_lower:
-        lead.Type = "Team Member"
-    else:
-        lead.Type = "Solo"
-
     log.info(
-        f"  ✓ {lead.Name} | listings={listing_count} | {lead.Type} | "
+        f"  ✓ {lead.Name} | listings={listing_count} | "
         f"desig={lead.Designation!r} | "
         f"website={'yes' if lead.Website_URL else 'no'} | "
         f"socials={len(socials)}"
@@ -622,6 +782,9 @@ def save_csv(leads: list[AgentLead], filename: str):
     if not leads:
         log.warning(f"No leads for {filename} — CSV not written.")
         return
+    dirname = os.path.dirname(filename)
+    if dirname:
+        os.makedirs(dirname, exist_ok=True)
     with open(filename, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=[fld.name for fld in fields(AgentLead)])
         writer.writeheader()
@@ -636,9 +799,10 @@ def has_links(lead: AgentLead) -> bool:
 
 
 def save_split_csvs(leads: list[AgentLead], base_name: str):
-    """Split leads into two files: those with links and those without."""
-    with_links    = [l for l in leads if has_links(l)]
-    without_links = [l for l in leads if not has_links(l)]
+    """Split leads into two files: those with links and those without, ensuring zero duplicates."""
+    clean_leads   = deduplicate_leads(leads)
+    with_links    = [l for l in clean_leads if has_links(l)]
+    without_links = [l for l in clean_leads if not has_links(l)]
 
     stem = base_name.rsplit(".", 1)[0] if "." in base_name else base_name
 
@@ -995,22 +1159,18 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
             border: 1px solid #dcfce7;
         }
 
-        .badge-type-solo {
-            background-color: #f1f5f9;
-            color: #475569;
-            border: 1px solid #e2e8f0;
+
+
+        .badge-city {
+            background-color: #f0f9ff;
+            color: #0369a1;
+            border: 1px solid #e0f2fe;
         }
 
-        .badge-type-leader {
-            background-color: #e0e7ff;
-            color: #4338ca;
-            border: 1px solid #c7d2fe;
-        }
-
-        .badge-type-member {
-            background-color: #fdf2f8;
-            color: #be185d;
-            border: 1px solid #fce7f3;
+        .badge-page {
+            background-color: #faf5ff;
+            color: #7e22ce;
+            border: 1px solid #f3e8ff;
         }
 
         .card-body {
@@ -1207,6 +1367,72 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
         .toast.show {
             transform: translateX(-50%) translateY(0);
         }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pagination-info {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .page-btn {
+            border: 1px solid var(--border-color);
+            background-color: white;
+            color: var(--text-secondary);
+            padding: 0.5rem 0.875rem;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background-color: #f8fafc;
+        }
+
+        .page-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .page-btn:disabled {
+            color: var(--text-muted);
+            background-color: #f1f5f9;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+        }
+
+        .page-dots {
+            padding: 0 0.5rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -1262,11 +1488,17 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
                 <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="searchInput" class="search-input" placeholder="Search by name, designation, email, type..." oninput="handleSearch(this.value)">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by name, designation, email..." oninput="handleSearch(this.value)">
             </div>
         </div>
         
         <div id="agentGrid" class="agent-grid"></div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationContainer" class="pagination-container" style="display: none;">
+            <div id="paginationInfo" class="pagination-info">Showing 0-0 of 0 prospects</div>
+            <div id="paginationControls" class="pagination-controls"></div>
+        </div>
     </div>
     
     <div id="toast" class="toast">Agent details copied to clipboard!</div>
@@ -1316,12 +1548,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
             return 'default';
         }
 
-        function getBadgeTypeClass(type) {
-            const t = (type || '').toLowerCase();
-            if (t.includes('leader')) return 'badge-type-leader';
-            if (t.includes('member')) return 'badge-type-member';
-            return 'badge-type-solo';
-        }
+
 
         function getSocialIconSvg(platform) {
             const svgs = {
@@ -1338,6 +1565,8 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 
         let activeTab = 'all';
         let searchQuery = '';
+        let currentPage = 1;
+        const itemsPerPage = 10;
 
         function renderLeads() {
             const grid = document.getElementById('agentGrid');
@@ -1352,8 +1581,9 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
                     const nameMatch = lead.name.toLowerCase().includes(q);
                     const desigMatch = (lead.designation || '').toLowerCase().includes(q);
                     const emailMatch = (lead.email || '').toLowerCase().includes(q);
-                    const typeMatch = (lead.type || '').toLowerCase().includes(q);
-                    return nameMatch || desigMatch || emailMatch || typeMatch;
+                    const cityMatch = (lead.city || '').toLowerCase().includes(q);
+                    const pageMatch = String(lead.page || '').includes(q);
+                    return nameMatch || desigMatch || emailMatch || cityMatch || pageMatch;
                 }
                 return true;
             });
@@ -1370,7 +1600,15 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
             document.getElementById('stat-with-links-val').innerText = withLinksCount;
             document.getElementById('stat-no-links-val').innerText = noLinksCount;
             
-            if (filtered.length === 0) {
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+            
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+            
+            if (totalItems === 0) {
                 grid.innerHTML = `
                     <div class="no-results">
                         <span class="no-results-icon">🔍</span>
@@ -1378,13 +1616,18 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
                         <p>Try adjusting your filters or search keywords.</p>
                     </div>
                 `;
+                document.getElementById('paginationContainer').style.display = 'none';
                 return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+                document.getElementById('paginationInfo').innerText = `Showing ${startIdx + 1}-${endIdx} of ${totalItems} prospects`;
             }
             
-            filtered.forEach(lead => {
+            const pageData = filtered.slice(startIdx, endIdx);
+            
+            pageData.forEach(lead => {
                 const initials = getInitials(lead.name);
                 const gradient = getGradient(lead.name);
-                const badgeClass = getBadgeTypeClass(lead.type);
                 
                 let webButtonHtml = '';
                 if (lead.website) {
@@ -1430,7 +1673,8 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
                             <div class="agent-designation" title="${lead.designation || 'Real Estate Agent'}">${lead.designation || 'Real Estate Agent'}</div>
                             <div class="badges-container">
                                 <span class="badge badge-listings">🏡 ${lead.listings} Listings</span>
-                                <span class="badge ${badgeClass}">${lead.type || 'Solo'}</span>
+                                ${lead.city ? `<span class="badge badge-city">📍 ${lead.city}</span>` : ''}
+                                ${lead.page ? `<span class="badge badge-page">📄 Page ${lead.page}</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -1458,6 +1702,8 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
                 `;
                 grid.appendChild(card);
             });
+            
+            renderPaginationControls(totalPages);
         }
 
         function switchTab(tabName) {
@@ -1468,12 +1714,105 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
             const activeBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabName));
             if (activeBtn) activeBtn.classList.add('active');
             
+            currentPage = 1;
             renderLeads();
         }
 
         function handleSearch(val) {
             searchQuery = val;
+            currentPage = 1;
             renderLeads();
+        }
+
+        function renderPaginationControls(totalPages) {
+            const controls = document.getElementById('paginationControls');
+            controls.innerHTML = '';
+            
+            if (totalPages <= 1) {
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+            }
+            
+            // Prev Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.innerHTML = '&larr; Prev';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(prevBtn);
+            
+            // Smart visible buttons logic
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            
+            if (endPage - startPage + 1 < maxVisible) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+            
+            if (startPage > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.className = 'page-btn';
+                firstBtn.innerText = '1';
+                firstBtn.onclick = () => { currentPage = 1; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(firstBtn);
+                
+                if (startPage > 2) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                btn.innerText = i;
+                btn.onclick = () => {
+                    currentPage = i;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+                controls.appendChild(btn);
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+                
+                const lastBtn = document.createElement('button');
+                lastBtn.className = 'page-btn';
+                lastBtn.innerText = totalPages;
+                lastBtn.onclick = () => { currentPage = totalPages; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(lastBtn);
+            }
+            
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.innerHTML = 'Next &rarr;';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(nextBtn);
         }
 
         function copyAgentInfo(id, event) {
@@ -1532,8 +1871,9 @@ def save_html(leads: list[AgentLead], filename: str):
             "listings": lead.Listing_Count,
             "website": lead.Website_URL,
             "compass": lead.Compass_Profile_URL,
-            "type": lead.Type,
             "designation": lead.Designation,
+            "city": lead.City,
+            "page": lead.Page,
             "socials": socials_list,
             "has_links": has_any_links
         })
@@ -1541,15 +1881,89 @@ def save_html(leads: list[AgentLead], filename: str):
     json_data_str = json.dumps(leads_json, indent=2)
     html_content = HTML_TEMPLATE.replace("__LEADS_JSON__", json_data_str)
     
+    dirname = os.path.dirname(filename)
+    if dirname:
+        os.makedirs(dirname, exist_ok=True)
     with open(filename, "w", encoding="utf-8") as f:
         f.write(html_content)
     log.info(f"Saved {len(leads)} leads to HTML dashboard → {filename}")
 
 
+async def process_agent_task(
+    agent: dict,
+    context,
+    city: str,
+    page_num: int,
+    debug: bool,
+    sem: asyncio.Semaphore,
+    save_lock: asyncio.Lock,
+    disk_seen_urls: set[str],
+    disk_seen_emails: set[str],
+    leads: list[AgentLead],
+    output: str,
+):
+    async with sem:
+        page = await context.new_page()
+        try:
+            # Only pass disk_seen sets to enrich_profile — these are used for
+            # team-leader duplicate checks against previously saved files.
+            # We do NOT pass in_flight sets here because the agent's own
+            # URL/email was pre-registered there by main() and would cause
+            # self-rejection.
+            lead = await enrich_profile(
+                page, agent, city=city, page_num=page_num,
+                seen_urls=disk_seen_urls, seen_emails=disk_seen_emails, debug=debug
+            )
+            
+            if lead:
+                resolved_norm = normalize_url(lead.Compass_Profile_URL)
+                resolved_slug = extract_slug(lead.Compass_Profile_URL)
+                resolved_email = normalize_email(lead.Email)
+                
+                async with save_lock:
+                    # Check against disk (previously saved files)
+                    is_dup = (resolved_norm in disk_seen_urls or
+                              resolved_slug in disk_seen_urls or
+                              (resolved_email and resolved_email in disk_seen_emails))
+                    
+                    # Check against leads already collected in THIS run
+                    if not is_dup:
+                        for existing in leads:
+                            ex_norm = normalize_url(existing.Compass_Profile_URL)
+                            ex_slug = extract_slug(existing.Compass_Profile_URL)
+                            ex_email = normalize_email(existing.Email)
+                            if ex_norm == resolved_norm or ex_slug == resolved_slug:
+                                is_dup = True
+                                break
+                            if resolved_email and ex_email == resolved_email:
+                                is_dup = True
+                                break
+                    
+                    if is_dup:
+                        log.info(f"  DUPLICATE PREVENTED: {lead.Name} ({lead.Email} / {lead.Compass_Profile_URL})")
+                    else:
+                        leads.append(lead)
+                        if len(leads) % 10 == 0:
+                            save_csv(leads, output)
+        except Exception as e:
+            log.error(f"Error processing agent {agent.get('name', 'Unknown')}: {e}")
+        finally:
+            await page.close()
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
-async def main(location: str, start_page: int, end_page: int, output: str, debug: bool):
+async def main(location: str, start_page: int, end_page: int, output: str, concurrency: int, debug: bool):
     leads: list[AgentLead] = []
     page_num = start_page
+    city = extract_city(location)
+
+    # 1. Load already-scraped agents from ALL CSV files on disk
+    disk_seen_urls, disk_seen_emails = load_existing_prospects()
+
+    # Track which agents have been queued in THIS run to prevent
+    # the same agent from being queued again on a later page.
+    # This is separate from disk_seen and is NOT passed to enrich_profile.
+    queued_urls = set()
 
     async with async_playwright() as pw:
         browser = await pw.chromium.launch(headless=HEADLESS)
@@ -1561,8 +1975,11 @@ async def main(location: str, start_page: int, end_page: int, output: str, debug
             ),
             viewport={"width": 1280, "height": 900},
         )
-        list_page    = await context.new_page()
-        profile_page = await context.new_page()
+        list_page = await context.new_page()
+        await list_page.route("**/*", block_unnecessary_resources)
+
+        save_lock = asyncio.Lock()
+        sem = asyncio.Semaphore(concurrency)
 
         while True:
             listing_url = BASE_URL.format(location=location, page=page_num)
@@ -1573,14 +1990,37 @@ async def main(location: str, start_page: int, end_page: int, output: str, debug
                 log.info("No agents — done.")
                 break
 
+            # Filter out already-scraped and already-queued agents
+            unseen_agents = []
             for agent in agents:
-                lead = await enrich_profile(profile_page, agent, debug=debug)
-                if lead:
-                    leads.append(lead)
-                    # Periodic save (all leads to a single backup)
-                    if len(leads) % 10 == 0:
-                        save_csv(leads, output)
-                await asyncio.sleep(1.2)
+                norm_url = normalize_url(agent["profile_url"])
+                slug = extract_slug(agent["profile_url"])
+                norm_email = normalize_email(agent.get("email", ""))
+
+                if norm_url in disk_seen_urls or slug in disk_seen_urls or (norm_email and norm_email in disk_seen_emails):
+                    log.info(f"  Skipping pre-scraped agent (from disk): {agent['name']} ({agent['profile_url']})")
+                elif norm_url in queued_urls or slug in queued_urls:
+                    log.info(f"  Skipping duplicate agent in current run: {agent['name']} ({agent['profile_url']})")
+                else:
+                    unseen_agents.append(agent)
+                    # Mark as queued so the same agent on a later page won't be re-queued
+                    queued_urls.add(norm_url)
+                    if slug:
+                        queued_urls.add(slug)
+
+            if unseen_agents:
+                log.info(f"Scraping {len(unseen_agents)} unseen agents concurrently...")
+                tasks = [
+                    process_agent_task(
+                        agent, context, city, page_num, debug, sem, save_lock,
+                        disk_seen_urls, disk_seen_emails,
+                        leads, output
+                    )
+                    for agent in unseen_agents
+                ]
+                await asyncio.gather(*tasks)
+            else:
+                log.info("All agents on this page were already processed.")
 
             page_num += 1
             if end_page and page_num > end_page:
@@ -1589,6 +2029,9 @@ async def main(location: str, start_page: int, end_page: int, output: str, debug
             await asyncio.sleep(2)
 
         await browser.close()
+
+    # Deduplicate leads array before final export
+    leads = deduplicate_leads(leads)
 
     # ── Final save: split into two category files and HTML dashboard ──────────
     save_split_csvs(leads, output)
@@ -1602,18 +2045,21 @@ async def main(location: str, start_page: int, end_page: int, output: str, debug
 # ── CLI ───────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Compass Agent Scraper v6")
-    parser.add_argument("--location",   default="scottsdale-az/25947")
-    parser.add_argument("--start-page", type=int, default=8)
-    parser.add_argument("--end-page",   type=int, default=8)
-    parser.add_argument("--output",     default="compass_leads.csv",
+    parser.add_argument("--location",   default="laguna-beach-ca/12980")
+    parser.add_argument("--start-page", type=int, default=1)
+    parser.add_argument("--end-page",   type=int, default=6)
+    parser.add_argument("--output",     default="prospects/compass_leads_laguna-beach-ca_batch_01.csv",
                         help="Base filename. Produces <name>_with_links.csv, <name>_no_links.csv, and <name>.html")
+    parser.add_argument("--concurrency", type=int, default=5,
+                        help="Number of concurrent profile pages to load at once.")
     parser.add_argument("--debug",      action="store_true")
     args = parser.parse_args()
 
     asyncio.run(main(
-        location   = args.location,
-        start_page = args.start_page,
-        end_page   = args.end_page,
-        output     = args.output,
-        debug      = args.debug,
+        location    = args.location,
+        start_page  = args.start_page,
+        end_page    = args.end_page,
+        output      = args.output,
+        concurrency = args.concurrency,
+        debug       = args.debug,
     ))

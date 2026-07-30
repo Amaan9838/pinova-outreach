@@ -1,0 +1,1957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinova Outreach - Compass Leads Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #e0e7ff;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-full: 9999px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .logo-text p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.total { background-color: #eff6ff; color: #3b82f6; }
+        .stat-icon.with-links { background-color: #f0fdf4; color: #22c55e; }
+        .stat-icon.no-links { background-color: #fffbeb; color: #f59e0b; }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .controls-bar {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+            max-width: 480px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #fcfcfd;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            background-color: #fff;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background-color: #f1f5f9;
+            padding: 0.25rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .tab-btn {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 1rem;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background-color: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-count {
+            background-color: #e2e8f0;
+            color: var(--text-secondary);
+            padding: 0.125rem 0.375rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .tab-btn.active .tab-count {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .agent-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s, border-color 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-hover);
+        }
+
+        .card-header {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1.25rem;
+        }
+
+        .avatar {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .agent-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .agent-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.125rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .agent-designation {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.5rem;
+        }
+
+        .badges-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.625rem;
+            border-radius: var(--radius-full);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .badge-listings {
+            background-color: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #dcfce7;
+        }
+
+
+
+        .badge-city {
+            background-color: #f0f9ff;
+            color: #0369a1;
+            border: 1px solid #e0f2fe;
+        }
+
+        .badge-page {
+            background-color: #faf5ff;
+            color: #7e22ce;
+            border: 1px solid #f3e8ff;
+        }
+
+        .card-body {
+            padding: 0.75rem 0;
+            border-top: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .contact-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .contact-row:hover {
+            color: var(--primary);
+        }
+
+        .contact-icon {
+            width: 1rem;
+            height: 1rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .card-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .actions-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            padding: 0.625rem;
+            font-family: var(--font-family);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-primary.disabled {
+            background-color: #f1f5f9;
+            color: var(--text-muted);
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .btn-secondary {
+            background-color: white;
+            border-color: var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background-color: #f8fafc;
+        }
+
+        .socials-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            min-height: 2rem;
+        }
+
+        .social-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-right: 0.25rem;
+        }
+
+        .social-link {
+            width: 2rem;
+            height: 2rem;
+            border-radius: var(--radius-full);
+            background-color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            text-decoration: none;
+            border: 1px solid #e2e8f0;
+        }
+
+        .social-link:hover {
+            transform: scale(1.1);
+            color: white;
+        }
+
+        .social-link.instagram:hover { background-color: #e1306c; border-color: #e1306c; }
+        .social-link.linkedin:hover { background-color: #0077b5; border-color: #0077b5; }
+        .social-link.facebook:hover { background-color: #1877f2; border-color: #1877f2; }
+        .social-link.twitter:hover { background-color: #000000; border-color: #000000; }
+        .social-link.youtube:hover { background-color: #ff0000; border-color: #ff0000; }
+        .social-link.tiktok:hover { background-color: #010101; border-color: #010101; }
+        .social-link.default:hover { background-color: var(--primary); border-color: var(--primary); }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 1.75rem;
+            height: 1.75rem;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.15s;
+            opacity: 0;
+            z-index: 10;
+        }
+
+        .agent-card:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary-light);
+            background-color: var(--primary-light);
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            background-color: var(--bg-card);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .no-results-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--text-primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pagination-info {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .page-btn {
+            border: 1px solid var(--border-color);
+            background-color: white;
+            color: var(--text-secondary);
+            padding: 0.5rem 0.875rem;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background-color: #f8fafc;
+        }
+
+        .page-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .page-btn:disabled {
+            color: var(--text-muted);
+            background-color: #f1f5f9;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+        }
+
+        .page-dots {
+            padding: 0 0.5rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-icon">P</div>
+                <div class="logo-text">
+                    <h1>Pinova Outreach</h1>
+                    <p>Compass Agent Directory Explorer</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon total">🏡</div>
+                <div class="stat-info">
+                    <span id="stat-total-val" class="stat-value">0</span>
+                    <span class="stat-label">Total Prospects</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon with-links">🔗</div>
+                <div class="stat-info">
+                    <span id="stat-with-links-val" class="stat-value">0</span>
+                    <span class="stat-label">Has Website/Socials (Cat A)</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon no-links">❓</div>
+                <div class="stat-info">
+                    <span id="stat-no-links-val" class="stat-value">0</span>
+                    <span class="stat-label">No Links (Cat B)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls-bar">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('all')">
+                    All Leads <span id="count-all" class="tab-count">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('with-links')">
+                    Category A: Has Links <span id="count-with-links" class="tab-count">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('no-links')">
+                    Category B: No Links <span id="count-no-links" class="tab-count">0</span>
+                </button>
+            </div>
+            
+            <div class="search-box">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by name, designation, email..." oninput="handleSearch(this.value)">
+            </div>
+        </div>
+        
+        <div id="agentGrid" class="agent-grid"></div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationContainer" class="pagination-container" style="display: none;">
+            <div id="paginationInfo" class="pagination-info">Showing 0-0 of 0 prospects</div>
+            <div id="paginationControls" class="pagination-controls"></div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast">Agent details copied to clipboard!</div>
+
+    <script>
+        const leadsData = [
+  {
+    "id": 0,
+    "name": "Tristan Alexander",
+    "email": "tristan.alexander@compass.com",
+    "phone": "3055429495",
+    "listings": 6,
+    "website": "https://therealdeal.com/miami/2024/02/21/marketing-boss-jose-dans-sells-miami-mansion-for-16m/?pn_term_id=TMSX1E1CMTTG&pn_oid=C04wHGjZvEUX7k7EV0uEiOHmpWJRAKsa&pn_offer_id=OF3474TCAW57&pn_provider_id=74&pn_rurl_3ds=aHR0cHM6Ly9idXkudGlueXBhc3MuY29tL2NoZWNrb3V0L29mZmVyL3N0cmlwZUVsZW1lbnRzUmV0dXJuP2JpbGxpbmdfemlwX2NvZGU9MzMxMzcmY2hhcmdlRGlzcGxheUFtb3VudD0lMjQxLjAwJk9JRD1QME9BbHJxYVN6TW52ZEx5S2NlMFdSZGczRkdTWjVGNCZvaWQ9QzA0d0hHalp2RVVYN2s3RVYwdUVpT0htcFdKUkFLc2EmdGVybV9pZD1UTVNYMUUxQ01UVEcmdXNlcl9kYXRhPSU3QiUyMmZpcnN0X25hbWUlMjIlM0FudWxsJTJDJTIybGFzdF9uYW1lJTIyJTNBbnVsbCU3RCZ0cmFuc2FjdGlvbklkPXBpXzNPbWU2YkQ0Q3NMVDNlZ1IyeFEwZW9OVSZzdG9yZUluVmF1bHQ9dHJ1ZSZ1aWQ9MlV1cUx1cmttMEw5X3p6WWd0bEN3dyZjb3VudHJ5X2NvZGU9VVMmdGVybUlkPVRNU1gxRTFDTVRURyZjcmVkaXRfY2FyZD0lN0IlMjJleHBpcmVNb250aCUyMiUzQSUyMiUyMiUyQyUyMmV4cGlyZVllYXIlMjIlM0ElMjIlMjIlN0QmaXNUZXJtTG9ja2VkQnlQcm9tb2NvZGU9ZmFsc2UmYXV0b19yZW5ldz10cnVlJmRlZmF1bHRQYXltZW50TWV0aG9kSWQ9ZmFsc2Umc3RvcmVfaW5fdmF1bHQ9dHJ1ZSZvZmZlcklkPU9GMzQ3NFRDQVc1NyZjaGFyZ2VBbW91bnQ9MSZmcmFtZU9yaWdpbnM9aHR0cHMlM0ElMkYlMkZ0aGVyZWFsZGVhbC5jb20raHR0cHMlM0ElMkYlMkZidXkudGlueXBhc3MuY29tJmNoYXJnZUN1cnJlbmN5PVVTRCZsYW5nPWVuJmFpZD1wN3NWSUdURG41&third_party_params=eyJwYXltZW50X2ludGVudF9jbGllbnRfc2VjcmV0IjoicGlfM09tZTZiRDRDc0xUM2VnUjJ4UTBlb05VX3NlY3JldF9wT0hSQjd6bmFlb3hOVklkVVczbmFlR1NPIiwicGF5bWVudF9pbnRlbnQiOiJwaV8zT21lNmJENENzTFQzZWdSMnhRMGVvTlUiLCJyZWRpcmVjdF9zdGF0dXMiOiJzdWNjZWVkZWQifQ%3D%3D",
+    "compass": "https://www.compass.com/agents/tristan-alexander/",
+    "designation": "realtor",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 1,
+    "name": "JoAnna Ballarini",
+    "email": "joanna.ballarini@compass.com",
+    "phone": "5613087525",
+    "listings": 2,
+    "website": "https://www.palmbeachdailynews.com/story/business/real-estate/2023/05/31/palm-beach-real-estate-house-sale-near-worth-ave-scrapes-15-million/70273516007/?gnt-cfr=1&gca-cat=p&gca-uir=true&gca-epti=z115001e001800v115001b0050xxd005065&gca-ft=150&gca-ds=sophi",
+    "compass": "https://www.compass.com/agents/joAnna-ballarini/",
+    "designation": "Realtor",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.instagram.com/joanna_ballarini_estates/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 2,
+    "name": "Lauren Barrocas",
+    "email": "lauren.barrocas@compass.com",
+    "phone": "9173274133",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/lauren-barrocas/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/lauren-barrocas-764b714/",
+      "https://www.facebook.com/LaurenBarrocasLuxuryRealEstate",
+      "https://twitter.com/laurenbnyc"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 3,
+    "name": "Seth Benkaddour",
+    "email": "seth.benkaddour@compass.com",
+    "phone": "5613249950",
+    "listings": 3,
+    "website": "https://www.yahoo.com/news/articles/sea-lake-estate-ripe-redo-195314914.html?guccounter=1&guce_referrer=aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS8&guce_referrer_sig=AQAAAIlMSorHfUZv2MYitvD3B7Ws_ybZSmdIvYYEuYe1jpNV8RtvSyIANC8Iz9wRV5TvvRzpALD3LWHAy3rqxd9Y8E3Hw1cbuiun08TYaH22EEaoFk7e9-npma_hf44DbCqYh1CYhSCC9Nvsa44COg8zrJDsvVuga4_xsW8ntFuDzMsn",
+    "compass": "https://www.compass.com/agents/seth-benkaddour/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 4,
+    "name": "Heather Bretzlaff",
+    "email": "heather.bretzlaff@compass.com",
+    "phone": "5617226136",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/heather-bretzlaff/",
+    "designation": "real estate agent",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 5,
+    "name": "Craig A. Bretzlaff",
+    "email": "craig.bretzlaff@compass.com",
+    "phone": "5616017557",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/craig-bretzlaff/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 6,
+    "name": "Thor Brown",
+    "email": "thor.brown@compass.com",
+    "phone": "5613017048",
+    "listings": 13,
+    "website": "",
+    "compass": "https://www.compass.com/agents/thor-brown/",
+    "designation": "Realtor",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.instagram.com/thorbrown/",
+      "https://www.facebook.com/thorbrownrealestate",
+      "https://www.facebook.com/thor.brown.9"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 7,
+    "name": "Steve Burns",
+    "email": "steve.burns@compass.com",
+    "phone": "5616625506",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/steve-burns/",
+    "designation": "Realtor",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/steven-burns-abb8b6161/",
+      "https://www.instagram.com/stevenjburnsrealestate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 8,
+    "name": "Roxanne Chirico",
+    "email": "roxanne.chirico@compass.com",
+    "phone": "5619296910",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/roxanne-chirico/",
+    "designation": "real estate agent",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 9,
+    "name": "Eric Clark",
+    "email": "eric.clark@compass.com",
+    "phone": "5617799595",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/eric-clark/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.instagram.com/eric.clarkk/profilecard/?igsh=NjFoOTVmOTZiZW83",
+      "https://www.facebook.com/clarkteamsouthflorida/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 10,
+    "name": "Peter Conn",
+    "email": "peter.conn@compass.com",
+    "phone": "9175960142",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/peter-conn/",
+    "designation": "real estate professional",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 11,
+    "name": "Mickey Conlon",
+    "email": "mickey.conlon@compass.com",
+    "phone": "9172247177",
+    "listings": 15,
+    "website": "https://www.tomandmickey.com/show/",
+    "compass": "https://www.compass.com/agents/mickey-conlon/",
+    "designation": "Realtor",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.instagram.com/tomandmickey/?hl=en",
+      "https://www.facebook.com/tomandmickey/",
+      "https://www.youtube.com/channel/UCInxB3KH2rIZtCOXJkofxlw/videos",
+      "https://www.tiktok.com/@tomandmickey",
+      "https://www.linkedin.com/in/mickey-conlon-5a0496120/",
+      "https://www.dropbox.com/s/c2npprt2g04jze6/Newsday_North_Shore_OPT.mp4?dl=0",
+      "https://pagesix.com/2024/06/11/lifestyle/inside-judge-judys-nyc-penthouse-selling-for-9-5-million/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 12,
+    "name": "Sabrina D'Amico",
+    "email": "sabrina.damico@compass.com",
+    "phone": "5613153903",
+    "listings": 2,
+    "website": "https://211palmbeach.org/",
+    "compass": "https://www.compass.com/agents/sabrina-d-amico/",
+    "designation": "realtor",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/sabrina-d-amico-4667038/",
+      "https://www.facebook.com/sabridamico",
+      "https://www.instagram.com/sabrina_realtor_palm_beaches/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 13,
+    "name": "Matt Crane",
+    "email": "matt.crane@compass.com",
+    "phone": "3052030000",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/matt-crane/",
+    "designation": "real estate agent",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/mattcranemiamirealestate/",
+      "https://www.facebook.com/MattCraneMiamiRealEstate/",
+      "https://www.instagram.com/mattcranemiami/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 14,
+    "name": "Meike Macgregor",
+    "email": "coastal.living@compass.com",
+    "phone": "561.818.1168",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/meike-macgregor",
+    "designation": "Realtor\u00ae",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/meike-macgregor-5a34ba140/",
+      "https://www.facebook.com/meikemacgregorcompass/?ref=pages_you_manage",
+      "https://www.facebook.com/coastallivingcompass/?ref=pages_you_manage",
+      "https://www.instagram.com/coastallivinggroup/",
+      "https://twitter.com/CoastalLiving_",
+      "https://www.youtube.com/channel/UC50v3srqbs3BQJp4Zzsecqw"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 15,
+    "name": "Defy Group",
+    "email": "defygroup@compass.com",
+    "phone": "833.879.3339",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/defy-group/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 16,
+    "name": "Matthew Doyle",
+    "email": "matthew.doyle@compass.com",
+    "phone": "5617076139",
+    "listings": 31,
+    "website": "https://sportsentertainmentdivision.com/report/",
+    "compass": "https://www.compass.com/agents/matthew-doyle/",
+    "designation": "REALTOR\u00ae",
+    "city": "Palm Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 17,
+    "name": "David Goodrowe",
+    "email": "doylegoodrowe@compass.com",
+    "phone": "561.707.6139",
+    "listings": 12,
+    "website": "",
+    "compass": "https://www.compass.com/agents/david-goodrowe",
+    "designation": "REALTOR\u00ae",
+    "city": "Palm Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/davidgoodrowe/",
+      "https://www.facebook.com/dgoodrowe",
+      "https://www.instagram.com/davidgoodrowe/?hl=en",
+      "https://twitter.com/DavidGoodrowe"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 18,
+    "name": "Sophie Ghedin",
+    "email": "sophie.ghedin@compass.com",
+    "phone": "5612361977",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sophie-ghedin/",
+    "designation": "REALTOR\u00ae",
+    "city": "Palm Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 19,
+    "name": "Kayla Grace",
+    "email": "kayla.grace@compass.com",
+    "phone": "5862013091",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/kayla-grace/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 20,
+    "name": "Barry Gutknecht",
+    "email": "barry.g@compass.com",
+    "phone": "5613461280",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/barry-gutknecht/",
+    "designation": "Real Estate Agent",
+    "city": "Palm Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 21,
+    "name": "LaTonya Hamilton",
+    "email": "latonya.hamilton@compass.com",
+    "phone": "9544486437",
+    "listings": 7,
+    "website": "https://hamiltonsellsfl.com/",
+    "compass": "https://www.compass.com/agents/latonya-hamilton/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.instagram.com/latonyahamiltonwebb/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 22,
+    "name": "Manal Hammad",
+    "email": "manal.hammad@compass.com",
+    "phone": "5618460597",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/manal-hammad/",
+    "designation": "realtor",
+    "city": "Palm Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/manahammad/",
+      "https://www.facebook.com/ManalHammadRealEstate/?ref=page_internal"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 23,
+    "name": "Hughes Browne Group",
+    "email": "hbg@compass.com",
+    "phone": "",
+    "listings": 21,
+    "website": "",
+    "compass": "https://www.compass.com/agents/hughes-browne-group/",
+    "designation": "realtor",
+    "city": "Palm Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/company/hughes-realty-group-inc./",
+      "https://www.facebook.com/hughesbrownegroup/",
+      "https://www.instagram.com/hughesbrownegroup_compass/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 24,
+    "name": "Jeannette Pawula Group",
+    "email": "jpgroup@compass.com",
+    "phone": "",
+    "listings": 3,
+    "website": "https://www.realproducersmag.com/locations/chicago-real-producers-d78b/articles/-7557e6/",
+    "compass": "https://www.compass.com/agents/jp-group/",
+    "designation": "Realtor",
+    "city": "Palm Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.youtube.com/playlist?list=PLofP2RfH8rykGk4rWidhKQ4LDcWg9dNFG"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 25,
+    "name": "Alyse Keller",
+    "email": "alyse.keller@compass.com",
+    "phone": "9175846451",
+    "listings": 3,
+    "website": "https://luxuryhomespbc.com/",
+    "compass": "https://www.compass.com/agents/alyse-keller/",
+    "designation": "Real Estate Professional",
+    "city": "Palm Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.facebook.com/KellerTeamRE/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 26,
+    "name": "Justin Keller",
+    "email": "justinkeller@compass.com",
+    "phone": "6318728689",
+    "listings": 3,
+    "website": "https://luxuryhomespbc.com/",
+    "compass": "https://www.compass.com/agents/justin-keller/",
+    "designation": "Real Estate Professional",
+    "city": "Palm Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://twitter.com/KellerTeamRE"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 27,
+    "name": "Seth Koretzky",
+    "email": "seth.koretzky@compass.com",
+    "phone": "5613397745",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/seth-koretzky/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 28,
+    "name": "Lisa Lebas",
+    "email": "lisa.lebas@compass.com",
+    "phone": "5619709392",
+    "listings": 2,
+    "website": "https://hughesbrownegroup.com/",
+    "compass": "https://www.compass.com/agents/lisa-lebas/",
+    "designation": "realtor",
+    "city": "Palm Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/lisalebas/",
+      "https://www.instagram.com/lisa.lebas.realtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 29,
+    "name": "Michelle Mackey",
+    "email": "michelle.mackey@compass.com",
+    "phone": "5613864428",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michelle-mackey/",
+    "designation": "realtor",
+    "city": "Palm Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/michelle-mackey-09301759/",
+      "https://www.facebook.com/realtormichellemackey/",
+      "https://www.instagram.com/michellemackey_/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 30,
+    "name": "Nicole Marcum Rife",
+    "email": "nicole.marcumrife@compass.com",
+    "phone": "4846788131",
+    "listings": 4,
+    "website": "https://www.bizjournals.com/philadelphia/news/2024/06/28/nicole-marcum-rife.html",
+    "compass": "https://www.compass.com/agents/nicole-marcum-rife/",
+    "designation": "Realtor\u00ae",
+    "city": "Palm Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/nicolemarcumrife/",
+      "https://www.facebook.com/nicole.marcum",
+      "https://www.facebook.com/TheRifeGroupatCompass",
+      "https://www.instagram.com/therifegroup/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 31,
+    "name": "Kassandra McDowell",
+    "email": "kassandra.mcdowell@compass.com",
+    "phone": "5613094516",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/kassandra-mcdowell/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 32,
+    "name": "Alison Newton",
+    "email": "anewton@compass.com",
+    "phone": "9174289909",
+    "listings": 15,
+    "website": "https://www.palmbeachdailynews.com/story/business/real-estate/2025/04/24/neighbors-pay-10-25m-for-condo-next-to-theirs-in-palm-beach-building/83237167007/?gnt-cfr=1&gca-cat=p&gca-uir=false&gca-epti=z117017p117050c117050e007100v117017&gca-ft=34&gca-ds=sophi",
+    "compass": "https://www.compass.com/agents/alison-newton/",
+    "designation": "real estate agent",
+    "city": "Palm Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.instagram.com/alison.newton.pb/",
+      "https://www.facebook.com/alison.newton.313",
+      "https://www.linkedin.com/in/alison-newton-574b9a2b/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 33,
+    "name": "John Nugent",
+    "email": "nugent@compass.com",
+    "phone": "5613013371",
+    "listings": 18,
+    "website": "",
+    "compass": "https://www.compass.com/agents/john-nugent/",
+    "designation": "Realtor\u00ae",
+    "city": "Palm Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.facebook.com/JohnNugentRealtorSingerIsland",
+      "https://www.instagram.com/johnnugentislandrealtor/",
+      "https://www.linkedin.com/in/johnnugentrealtorsingerisland/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 34,
+    "name": "Jeannette Pawula",
+    "email": "jeannette.pawula@compass.com",
+    "phone": "8477129623",
+    "listings": 3,
+    "website": "https://www.realproducersmag.com/locations/chicago-real-producers-d78b/articles/-7557e6/",
+    "compass": "https://www.compass.com/agents/jeannette-pawula/",
+    "designation": "Licensed Real Estate Broker",
+    "city": "Palm Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.youtube.com/playlist?list=PLofP2RfH8rykGk4rWidhKQ4LDcWg9dNFG",
+      "https://www.instagram.com/Jeannette.Pawula/?hl=en",
+      "https://www.instagram.com/Jeannette.Cherie/?hl=en",
+      "https://www.instagram.com/Compass/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 35,
+    "name": "Jean Phillips",
+    "email": "jean.phillips@compass.com",
+    "phone": "5615682649",
+    "listings": 2,
+    "website": "https://therealdeal.com/miami/2024/11/04/movers-shakers-ellimans-exclusive-group-expands-to-vero/",
+    "compass": "https://www.compass.com/agents/jean-phillips/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.facebook.com/jean.phillips.75033149/",
+      "https://www.instagram.com/jeanphillipsrealestate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 36,
+    "name": "Tom Postilio",
+    "email": "tom.postilio@compass.com",
+    "phone": "9175430005",
+    "listings": 15,
+    "website": "https://www.tomandmickey.com/show/",
+    "compass": "https://www.compass.com/agents/tom-postilio/",
+    "designation": "Realtor",
+    "city": "Palm Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/tomandmickey/?hl=en",
+      "https://www.facebook.com/tomandmickey/",
+      "https://www.youtube.com/channel/UCInxB3KH2rIZtCOXJkofxlw/videos",
+      "https://www.tiktok.com/@tomandmickey",
+      "https://www.linkedin.com/in/tompostiliorealtor/",
+      "https://www.dropbox.com/s/c2npprt2g04jze6/Newsday_North_Shore_OPT.mp4?dl=0",
+      "https://pagesix.com/2024/06/11/lifestyle/inside-judge-judys-nyc-penthouse-selling-for-9-5-million/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 37,
+    "name": "Jeannine Principe Puleo",
+    "email": "jprincipe@compass.com",
+    "phone": "5168405767",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jeannine-principe-puleo/",
+    "designation": "real estate professional",
+    "city": "Palm Beach, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 38,
+    "name": "Zachary Schmidt",
+    "email": "zschmidt@compass.com",
+    "phone": "5614590550",
+    "listings": 3,
+    "website": "http://www.coastallivingpb.com/nautilus-220-condos-for-sale.php",
+    "compass": "https://www.compass.com/agents/zachary-schmidt/",
+    "designation": "REALTOR\u00ae",
+    "city": "Palm Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.linkedin.com/in/zachary-schmidt-574211a0/?trk=nav_responsive_tab_profile_pic",
+      "https://twitter.com/SellingGardens"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 39,
+    "name": "Richard Steinberg",
+    "email": "rsteinberg@compass.com",
+    "phone": "9176760150",
+    "listings": 5,
+    "website": "https://www.therichardsteinbergteam.com/",
+    "compass": "https://www.compass.com/agents/richard-steinberg/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/therichardsteinbergteam/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 40,
+    "name": "Emily Stewart",
+    "email": "emily.stewart@compass.com",
+    "phone": "6155828081",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/emily-stewart/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 41,
+    "name": "The Bretzlaff Group",
+    "email": "thebretzlaffgroup@compass.com",
+    "phone": "561.601.7557",
+    "listings": 7,
+    "website": "",
+    "compass": "https://www.compass.com/agents/the-bretzlaff-group/",
+    "designation": "Realtor",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 42,
+    "name": "Julien Taylor",
+    "email": "julien.taylor@compass.com",
+    "phone": "5616139762",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/julien-taylor/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 43,
+    "name": "The Costello-Deitz Group",
+    "email": "coastalcollective@compass.com",
+    "phone": "617.640.0195",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/Costello-Deitz-Group/",
+    "designation": "realtor",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.instagram.com/coastalcollective_fl/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 44,
+    "name": "The Hall Group | Palm Beach",
+    "email": "hallpb@compass.com",
+    "phone": "561.310.7229",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/the-hall-group-1/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 45,
+    "name": "The Gold Team",
+    "email": "thegoldteam@compass.com",
+    "phone": "914.844.2760",
+    "listings": 7,
+    "website": "https://goldteamflorida.com/",
+    "compass": "https://www.compass.com/agents/the-gold-team/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.instagram.com/goldteamflorida/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 46,
+    "name": "The Keller Team",
+    "email": "kellerteam@compass.com",
+    "phone": "917.584.6451",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/the-keller-team/",
+    "designation": "Real Estate Professional",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 47,
+    "name": "The Megann Lucaj Group",
+    "email": "561agent@compass.com",
+    "phone": "",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/the-megann-lucaj-group/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 48,
+    "name": "The Schwartz Team",
+    "email": "theschwartzteam@compass.com",
+    "phone": "305.632.7386",
+    "listings": 4,
+    "website": "https://www.rismedia.com/newsmaker/ida-minette-schwartz-2025/",
+    "compass": "https://www.compass.com/agents/the-schwartz-team/",
+    "designation": "REALTOR",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 49,
+    "name": "The West Team",
+    "email": "thewestteam@compass.com",
+    "phone": "561.674.6555",
+    "listings": 11,
+    "website": "",
+    "compass": "https://www.compass.com/agents/the-west-team/",
+    "designation": "realtor",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.instagram.com/westteamcompass/",
+      "https://www.facebook.com/thewestteamcompass/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 50,
+    "name": "Magdalena Troczynska",
+    "email": "magdalena.troczynska@compass.com",
+    "phone": "5619015148",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/magdalena-troczynska/",
+    "designation": "realtor",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.linkedin.com/in/magdalena-troczynska-275887199/",
+      "https://www.facebook.com/magdalen.troczynska.1/",
+      "https://www.instagram.com/magdalenatroczynska_realtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 51,
+    "name": "Ryan Vandersnow",
+    "email": "ryan.vandersnow@compass.com",
+    "phone": "2014461737",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ryan-vandersnow/",
+    "designation": "real estate agent",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.linkedin.com/in/ryan-vandersnow-22a602126/",
+      "https://www.facebook.com/ryan.vandersnow/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 52,
+    "name": "Amanda Warnick",
+    "email": "amanda.warnick@compass.com",
+    "phone": "5613011191",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/amanda-warnick/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 53,
+    "name": "Kevin West",
+    "email": "kevin.west@compass.com",
+    "phone": "5616746555",
+    "listings": 11,
+    "website": "",
+    "compass": "https://www.compass.com/agents/kevin-west/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.linkedin.com/in/kevin-west-7a2a97b4",
+      "https://www.facebook.com/thewestteamremax/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 54,
+    "name": "Josh Doyle",
+    "email": "voyagenyc@compass.com",
+    "phone": "",
+    "listings": 9,
+    "website": "https://robbreport.com/shelter/homes-for-sale/danielle-richter-535-park-avenue-1237389703/",
+    "compass": "https://www.compass.com/agents/josh-doyle",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.dropbox.com/s/3gqi30iahm192v3/138%20E%2065%20TRD%20Article.pdf?dl=0"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 55,
+    "name": "Nicole West",
+    "email": "nicole.west@compass.com",
+    "phone": "5615022882",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/nicole-west/",
+    "designation": "realtor",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.linkedin.com/in/nicole-west-7740a48"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 56,
+    "name": "Cassandra Williams",
+    "email": "cassandrawilliams@compass.com",
+    "phone": "9548253676",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/cassandra-williams/",
+    "designation": "licensed real estate broker",
+    "city": "Palm Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.youtube.com/@Sellinglux",
+      "https://www.instagram.com/wanderer5000/",
+      "https://www.facebook.com/newconstrutionhomes/%20target=",
+      "https://www.instagram.com/cassandraflre/"
+    ],
+    "has_links": true
+  }
+];
+        
+        const gradients = [
+            'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)',
+            'linear-gradient(135deg, #F6D365 0%, #FDA085 100%)',
+            'linear-gradient(135deg, #A1C4FD 0%, #C2E9FB 100%)',
+            'linear-gradient(135deg, #76B2FE 0%, #B2D8FF 100%)',
+            'linear-gradient(135deg, #E0C3FC 0%, #8EC5FC 100%)',
+            'linear-gradient(135deg, #F093FB 0%, #F5576C 100%)',
+            'linear-gradient(135deg, #5EEAD4 0%, #14B8A6 100%)',
+            'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)',
+            'linear-gradient(135deg, #C084FC 0%, #A855F7 100%)',
+            'linear-gradient(135deg, #93C5FD 0%, #3B82F6 100%)'
+        ];
+
+        function getGradient(name) {
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const idx = Math.abs(hash) % gradients.length;
+            return gradients[idx];
+        }
+
+        function getInitials(name) {
+            if (!name) return 'A';
+            const parts = name.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+            return name[0].toUpperCase();
+        }
+
+        function getPlatformName(url) {
+            const urlLower = url.toLowerCase();
+            if (urlLower.includes('instagram.com')) return 'instagram';
+            if (urlLower.includes('linkedin.com')) return 'linkedin';
+            if (urlLower.includes('facebook.com')) return 'facebook';
+            if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) return 'twitter';
+            if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
+            if (urlLower.includes('tiktok.com')) return 'tiktok';
+            return 'default';
+        }
+
+
+
+        function getSocialIconSvg(platform) {
+            const svgs = {
+                instagram: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>',
+                linkedin: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>',
+                facebook: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>',
+                twitter: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z M4 20l6.768 -6.768 M20 4l-6.768 6.768"></path></svg>',
+                youtube: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>',
+                tiktok: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>',
+                default: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>'
+            };
+            return svgs[platform] || svgs.default;
+        }
+
+        let activeTab = 'all';
+        let searchQuery = '';
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        function renderLeads() {
+            const grid = document.getElementById('agentGrid');
+            grid.innerHTML = '';
+            
+            let filtered = leadsData.filter(lead => {
+                if (activeTab === 'with-links' && !lead.has_links) return false;
+                if (activeTab === 'no-links' && lead.has_links) return false;
+                
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    const nameMatch = lead.name.toLowerCase().includes(q);
+                    const desigMatch = (lead.designation || '').toLowerCase().includes(q);
+                    const emailMatch = (lead.email || '').toLowerCase().includes(q);
+                    const cityMatch = (lead.city || '').toLowerCase().includes(q);
+                    const pageMatch = String(lead.page || '').includes(q);
+                    return nameMatch || desigMatch || emailMatch || cityMatch || pageMatch;
+                }
+                return true;
+            });
+            
+            const allCount = leadsData.length;
+            const withLinksCount = leadsData.filter(l => l.has_links).length;
+            const noLinksCount = allCount - withLinksCount;
+            
+            document.getElementById('count-all').innerText = allCount;
+            document.getElementById('count-with-links').innerText = withLinksCount;
+            document.getElementById('count-no-links').innerText = noLinksCount;
+            
+            document.getElementById('stat-total-val').innerText = allCount;
+            document.getElementById('stat-with-links-val').innerText = withLinksCount;
+            document.getElementById('stat-no-links-val').innerText = noLinksCount;
+            
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+            
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+            
+            if (totalItems === 0) {
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <span class="no-results-icon">🔍</span>
+                        <h3>No prospects found</h3>
+                        <p>Try adjusting your filters or search keywords.</p>
+                    </div>
+                `;
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+                document.getElementById('paginationInfo').innerText = `Showing ${startIdx + 1}-${endIdx} of ${totalItems} prospects`;
+            }
+            
+            const pageData = filtered.slice(startIdx, endIdx);
+            
+            pageData.forEach(lead => {
+                const initials = getInitials(lead.name);
+                const gradient = getGradient(lead.name);
+                
+                let webButtonHtml = '';
+                if (lead.website) {
+                    webButtonHtml = `<a href="${lead.website}" target="_blank" class="btn btn-primary">Website</a>`;
+                } else {
+                    webButtonHtml = `<button class="btn btn-primary disabled" disabled>No Website</button>`;
+                }
+                
+                let socialsHtml = '';
+                if (lead.socials && lead.socials.length > 0) {
+                    socialsHtml += `<span class="social-label">Socials:</span>`;
+                    lead.socials.forEach(url => {
+                        const platform = getPlatformName(url);
+                        const iconSvg = getSocialIconSvg(platform);
+                        socialsHtml += `
+                            <a href="${url}" target="_blank" class="social-link ${platform}" title="${platform.charAt(0).toUpperCase() + platform.slice(1)}: ${url}">
+                                ${iconSvg}
+                            </a>
+                        `;
+                    });
+                } else {
+                    socialsHtml = `<span class="social-label" style="color: #94a3b8;">No socials on Compass</span>`;
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                card.style.cursor = 'pointer';
+                card.onclick = (e) => {
+                    if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.copy-btn')) {
+                        return;
+                    }
+                    window.open(lead.compass, '_blank');
+                };
+                
+                card.innerHTML = `
+                    <button class="copy-btn" onclick="copyAgentInfo(${lead.id}, event)" title="Copy agent info">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    </button>
+                    <div class="card-header">
+                        <div class="avatar" style="background: ${gradient}">${initials}</div>
+                        <div class="agent-meta">
+                            <div class="agent-name" title="${lead.name}">${lead.name}</div>
+                            <div class="agent-designation" title="${lead.designation || 'Real Estate Agent'}">${lead.designation || 'Real Estate Agent'}</div>
+                            <div class="badges-container">
+                                <span class="badge badge-listings">🏡 ${lead.listings} Listings</span>
+                                ${lead.city ? `<span class="badge badge-city">📍 ${lead.city}</span>` : ''}
+                                ${lead.page ? `<span class="badge badge-page">📄 Page ${lead.page}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        ${lead.email ? `
+                        <a href="mailto:${lead.email}" class="contact-row">
+                            <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            <span>${lead.email}</span>
+                        </a>` : ''}
+                        ${lead.phone ? `
+                        <a href="tel:${lead.phone}" class="contact-row">
+                            <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                            <span>${lead.phone}</span>
+                        </a>` : ''}
+                    </div>
+                    <div class="card-footer">
+                        <div class="actions-row">
+                            <a href="${lead.compass}" target="_blank" class="btn btn-secondary">Compass Profile</a>
+                            ${webButtonHtml}
+                        </div>
+                        <div class="socials-row">
+                            ${socialsHtml}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            renderPaginationControls(totalPages);
+        }
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            const activeBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabName));
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            currentPage = 1;
+            renderLeads();
+        }
+
+        function handleSearch(val) {
+            searchQuery = val;
+            currentPage = 1;
+            renderLeads();
+        }
+
+        function renderPaginationControls(totalPages) {
+            const controls = document.getElementById('paginationControls');
+            controls.innerHTML = '';
+            
+            if (totalPages <= 1) {
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+            }
+            
+            // Prev Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.innerHTML = '&larr; Prev';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(prevBtn);
+            
+            // Smart visible buttons logic
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            
+            if (endPage - startPage + 1 < maxVisible) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+            
+            if (startPage > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.className = 'page-btn';
+                firstBtn.innerText = '1';
+                firstBtn.onclick = () => { currentPage = 1; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(firstBtn);
+                
+                if (startPage > 2) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                btn.innerText = i;
+                btn.onclick = () => {
+                    currentPage = i;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+                controls.appendChild(btn);
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+                
+                const lastBtn = document.createElement('button');
+                lastBtn.className = 'page-btn';
+                lastBtn.innerText = totalPages;
+                lastBtn.onclick = () => { currentPage = totalPages; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(lastBtn);
+            }
+            
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.innerHTML = 'Next &rarr;';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(nextBtn);
+        }
+
+        function copyAgentInfo(id, event) {
+            const lead = leadsData.find(l => l.id === id);
+            if (!lead) return;
+            
+            const text = lead.name + '\n' + 
+                         (lead.designation || 'Real Estate Agent') + '\n' +
+                         'Email: ' + (lead.email || 'None') + '\n' +
+                         'Phone: ' + (lead.phone || 'None') + '\n' +
+                         'Website: ' + (lead.website || 'None') + '\n' +
+                         'Compass: ' + lead.compass;
+                         
+            const btn = event.currentTarget;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Agent details copied to clipboard!');
+                const originalSvg = btn.innerHTML;
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                setTimeout(() => { btn.innerHTML = originalSvg; }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderLeads();
+        });
+    </script>
+</body>
+</html>

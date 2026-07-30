@@ -1,0 +1,2097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinova Outreach - Compass Leads Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #e0e7ff;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-full: 9999px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .logo-text p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.total { background-color: #eff6ff; color: #3b82f6; }
+        .stat-icon.with-links { background-color: #f0fdf4; color: #22c55e; }
+        .stat-icon.no-links { background-color: #fffbeb; color: #f59e0b; }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .controls-bar {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+            max-width: 480px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #fcfcfd;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            background-color: #fff;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background-color: #f1f5f9;
+            padding: 0.25rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .tab-btn {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 1rem;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background-color: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-count {
+            background-color: #e2e8f0;
+            color: var(--text-secondary);
+            padding: 0.125rem 0.375rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .tab-btn.active .tab-count {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .agent-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s, border-color 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-hover);
+        }
+
+        .card-header {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1.25rem;
+        }
+
+        .avatar {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .agent-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .agent-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.125rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .agent-designation {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.5rem;
+        }
+
+        .badges-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.625rem;
+            border-radius: var(--radius-full);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .badge-listings {
+            background-color: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #dcfce7;
+        }
+
+
+
+        .badge-city {
+            background-color: #f0f9ff;
+            color: #0369a1;
+            border: 1px solid #e0f2fe;
+        }
+
+        .badge-page {
+            background-color: #faf5ff;
+            color: #7e22ce;
+            border: 1px solid #f3e8ff;
+        }
+
+        .card-body {
+            padding: 0.75rem 0;
+            border-top: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .contact-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .contact-row:hover {
+            color: var(--primary);
+        }
+
+        .contact-icon {
+            width: 1rem;
+            height: 1rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .card-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .actions-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            padding: 0.625rem;
+            font-family: var(--font-family);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-primary.disabled {
+            background-color: #f1f5f9;
+            color: var(--text-muted);
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .btn-secondary {
+            background-color: white;
+            border-color: var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background-color: #f8fafc;
+        }
+
+        .socials-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            min-height: 2rem;
+        }
+
+        .social-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-right: 0.25rem;
+        }
+
+        .social-link {
+            width: 2rem;
+            height: 2rem;
+            border-radius: var(--radius-full);
+            background-color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            text-decoration: none;
+            border: 1px solid #e2e8f0;
+        }
+
+        .social-link:hover {
+            transform: scale(1.1);
+            color: white;
+        }
+
+        .social-link.instagram:hover { background-color: #e1306c; border-color: #e1306c; }
+        .social-link.linkedin:hover { background-color: #0077b5; border-color: #0077b5; }
+        .social-link.facebook:hover { background-color: #1877f2; border-color: #1877f2; }
+        .social-link.twitter:hover { background-color: #000000; border-color: #000000; }
+        .social-link.youtube:hover { background-color: #ff0000; border-color: #ff0000; }
+        .social-link.tiktok:hover { background-color: #010101; border-color: #010101; }
+        .social-link.default:hover { background-color: var(--primary); border-color: var(--primary); }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 1.75rem;
+            height: 1.75rem;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.15s;
+            opacity: 0;
+            z-index: 10;
+        }
+
+        .agent-card:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary-light);
+            background-color: var(--primary-light);
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            background-color: var(--bg-card);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .no-results-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--text-primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pagination-info {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .page-btn {
+            border: 1px solid var(--border-color);
+            background-color: white;
+            color: var(--text-secondary);
+            padding: 0.5rem 0.875rem;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background-color: #f8fafc;
+        }
+
+        .page-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .page-btn:disabled {
+            color: var(--text-muted);
+            background-color: #f1f5f9;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+        }
+
+        .page-dots {
+            padding: 0 0.5rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-icon">P</div>
+                <div class="logo-text">
+                    <h1>Pinova Outreach</h1>
+                    <p>Compass Agent Directory Explorer</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon total">🏡</div>
+                <div class="stat-info">
+                    <span id="stat-total-val" class="stat-value">0</span>
+                    <span class="stat-label">Total Prospects</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon with-links">🔗</div>
+                <div class="stat-info">
+                    <span id="stat-with-links-val" class="stat-value">0</span>
+                    <span class="stat-label">Has Website/Socials (Cat A)</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon no-links">❓</div>
+                <div class="stat-info">
+                    <span id="stat-no-links-val" class="stat-value">0</span>
+                    <span class="stat-label">No Links (Cat B)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls-bar">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('all')">
+                    All Leads <span id="count-all" class="tab-count">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('with-links')">
+                    Category A: Has Links <span id="count-with-links" class="tab-count">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('no-links')">
+                    Category B: No Links <span id="count-no-links" class="tab-count">0</span>
+                </button>
+            </div>
+            
+            <div class="search-box">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by name, designation, email..." oninput="handleSearch(this.value)">
+            </div>
+        </div>
+        
+        <div id="agentGrid" class="agent-grid"></div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationContainer" class="pagination-container" style="display: none;">
+            <div id="paginationInfo" class="pagination-info">Showing 0-0 of 0 prospects</div>
+            <div id="paginationControls" class="pagination-controls"></div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast">Agent details copied to clipboard!</div>
+
+    <script>
+        const leadsData = [
+  {
+    "id": 0,
+    "name": "Blanca Swayzer",
+    "email": "blanca.swayzer@compass.com",
+    "phone": "2543922799",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/blanca-swayzer/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 27,
+    "socials": [
+      "https://www.facebook.com/BlancaSwayzer"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 1,
+    "name": "Linda Takenaka",
+    "email": "lindatakenaka@compass.com",
+    "phone": "5126958000",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/linda-takenaka/",
+    "designation": "Realtor\u00ae",
+    "city": "Austin, TX",
+    "page": 27,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 2,
+    "name": "Alex Tapp",
+    "email": "alex.tapp@compass.com",
+    "phone": "5125636240",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/alex-tapp/",
+    "designation": "Realtor\u00ae",
+    "city": "Austin, TX",
+    "page": 27,
+    "socials": [
+      "https://tappgroupatx.com/",
+      "https://www.linkedin.com/in/alex-tapp-8b6b982a",
+      "https://www.facebook.com/AlexTappAustin/",
+      "https://www.instagram.com/alextapp_/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 3,
+    "name": "Nancy Taute",
+    "email": "nancy.taute@compass.com",
+    "phone": "5124975940",
+    "listings": 12,
+    "website": "https://nancytaute.com/",
+    "compass": "https://www.compass.com/agents/nancy-taute/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 27,
+    "socials": [
+      "https://www.facebook.com/nancytauterealtor",
+      "https://www.instagram.com/nancytaute/",
+      "http://www.linkedin.com/in/nancy-taute-64791b9/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 4,
+    "name": "The Ace Team - TX",
+    "email": "ace@compass.com",
+    "phone": "512.360.8788",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/the-ace-team/",
+    "designation": "Realtor",
+    "city": "Austin, TX",
+    "page": 27,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 5,
+    "name": "The Aspen Collection",
+    "email": "theaspencollection@compass.com",
+    "phone": "303.249.4118",
+    "listings": 16,
+    "website": "",
+    "compass": "https://www.compass.com/agents/the-aspen-collection/",
+    "designation": "licensed real estate broker",
+    "city": "Austin, TX",
+    "page": 27,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 6,
+    "name": "Amy Harasz",
+    "email": "theazhgroup@compass.com",
+    "phone": "(571) 331-1747",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/amy-harasz",
+    "designation": "licensed real estate broker",
+    "city": "Austin, TX",
+    "page": 27,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 7,
+    "name": "Beth Douglas",
+    "email": "thebdgroup@compass.com",
+    "phone": "(469) 853-6072",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/beth-douglas",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 27,
+    "socials": [
+      "https://www.instagram.com/bethdouglas_realtor/",
+      "https://www.facebook.com/BethDouglaswithCompassRealEstate/",
+      "https://www.linkedin.com/in/beth-douglas-40260136/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 8,
+    "name": "Denise Bodman",
+    "email": "thebodmangroup@compass.com",
+    "phone": "(512) 903-5129",
+    "listings": 3,
+    "website": "https://thebodmangroup.net/",
+    "compass": "https://www.compass.com/agents/denise-bodman",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 27,
+    "socials": [
+      "https://www.instagram.com/denisebodmanrealtor",
+      "https://www.youtube.com/channel/UCguYorbzJbz4g7BdoxeEtEw",
+      "https://www.facebook.com/Denise-Bodman---Your-Austin-Real-Estate-Confidant-105915949449782",
+      "https://www.linkedin.com/in/denise-bodman-a4700815"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 9,
+    "name": "The Oberg Group",
+    "email": "theoberggroup@compass.com",
+    "phone": "(512) 633-0369",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/oberg-group/",
+    "designation": "real estate agent",
+    "city": "Austin, TX",
+    "page": 27,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 10,
+    "name": "Scott Mccord",
+    "email": "mccordgroup@compass.com",
+    "phone": "(512) 745-2285",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/scott-mccord",
+    "designation": "Realtor",
+    "city": "Austin, TX",
+    "page": 27,
+    "socials": [
+      "https://www.linkedin.com/in/scottjmccord/",
+      "https://www.facebook.com/scottmccordrealtor/",
+      "https://www.instagram.com/scottjmccord/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 11,
+    "name": "The Pettitt Group",
+    "email": "pettittgroup@compass.com",
+    "phone": "(512) 826-3150",
+    "listings": 9,
+    "website": "https://www.realm-global.com/",
+    "compass": "https://www.compass.com/agents/pettitt-group/",
+    "designation": "realtor",
+    "city": "Austin, TX",
+    "page": 27,
+    "socials": [
+      "https://www.facebook.com/pettittgroup",
+      "https://www.instagram.com/thepettittgroup/",
+      "https://twitter.com/AmandaPettitt",
+      "https://www.linkedin.com/in/amandapettitt/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 12,
+    "name": "The Platinum Group - TX",
+    "email": "platinumgroupaustin@compass.com",
+    "phone": "512.477.0360",
+    "listings": 28,
+    "website": "https://communityimpact.com/austin/lake-travis-westlake/business/2023/10/31/the-platinum-group-relocates-to-westlake-after-being-downtown-for-14-years/",
+    "compass": "https://www.compass.com/agents/platinum-group-austin/",
+    "designation": "Real Estate professional",
+    "city": "Austin, TX",
+    "page": 27,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 13,
+    "name": "The Speed & Neuren Group",
+    "email": "speedneurengroup@compass.com",
+    "phone": "(512) 913-6987",
+    "listings": 72,
+    "website": "",
+    "compass": "https://www.compass.com/agents/speed-neuren-group/",
+    "designation": "realtor",
+    "city": "Austin, TX",
+    "page": 27,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 14,
+    "name": "Lauri Thomas",
+    "email": "l.thomas@compass.com",
+    "phone": "5126497015",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/lauri-thomas/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 27,
+    "socials": [
+      "https://www.linkedin.com/in/agentcustomhandle",
+      "https://www.facebook.com/agentcustomhandle",
+      "https://www.instagram.com/agentcustomhandle"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 15,
+    "name": "Juanita Thornton",
+    "email": "juanita.thornton@compass.com",
+    "phone": "5129474366",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/juanita-thornton/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 16,
+    "name": "Stephanie Tilkemeier",
+    "email": "stephanie.tilkemeier@compass.com",
+    "phone": "5129442964",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/stephanie-tilkemeier/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 17,
+    "name": "Chris Tinnell",
+    "email": "chris.tinnell@compass.com",
+    "phone": "5126268811",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/chris-tinnell/",
+    "designation": "REALTOR",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [
+      "https://www.linkedin.com/in/chris-tinnell-29a14b11",
+      "https://www.facebook.com/realtyaustinNW/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 18,
+    "name": "Mark Toups",
+    "email": "mark.toups@compass.com",
+    "phone": "2145522330",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/mark-toups/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 19,
+    "name": "Everett Torres",
+    "email": "everett.torres@compass.com",
+    "phone": "5127842136",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/everett-torres/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 20,
+    "name": "Jimmy Torres",
+    "email": "jimmy.torres@compass.com",
+    "phone": "2547807711",
+    "listings": 14,
+    "website": "https://www.housingwire.com/articles/texas-independent-brokerages-join-compass/",
+    "compass": "https://www.compass.com/agents/jimmy-torres/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [
+      "https://www.facebook.com/JimmyTorresRealtor/",
+      "https://www.instagram.com/jimmytorres_vistare/",
+      "https://www.tiktok.com/@jimmytorres7227",
+      "https://www.youtube.com/@jimmytorres-vistarealestate",
+      "https://www.linkedin.com/in/jimmy-torres-a71526273"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 21,
+    "name": "Joanna Traverzo",
+    "email": "joanna.traverzo@compass.com",
+    "phone": "2546543317",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/joanna-traverzo/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 22,
+    "name": "Amanda Trevino",
+    "email": "amanda.trevino@compass.com",
+    "phone": "5126982822",
+    "listings": 9,
+    "website": "",
+    "compass": "https://www.compass.com/agents/amanda-trevino/",
+    "designation": "Realtor",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 23,
+    "name": "Tracy Trevino Loughrey",
+    "email": "tracy.trevino@compass.com",
+    "phone": "5127846001",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tracy-trevino/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [
+      "https://www.linkedin.com/in/ttlsellsaustin/",
+      "https://www.instagram.com/tracysellsaustin/",
+      "https://www.facebook.com/tracysellsaustin/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 24,
+    "name": "Jeff Tucker",
+    "email": "jefftucker@compass.com",
+    "phone": "5127516508",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jeff-tucker/",
+    "designation": "REALTOR",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 25,
+    "name": "John Turlington",
+    "email": "john.turlington@compass.com",
+    "phone": "7038626855",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/john-turlington/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 26,
+    "name": "Christina Underwood",
+    "email": "christina.underwood@compass.com",
+    "phone": "5124153986",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/christina-underwood/",
+    "designation": "Realtor\u00ae",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [
+      "https://www.facebook.com/underwoodteam/",
+      "https://www.instagram.com/theunderwoodteam/",
+      "https://www.linkedin.com/in/christina-underwood-0619a41/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 27,
+    "name": "Michael Underwood",
+    "email": "michael.underwood@compass.com",
+    "phone": "5124235682",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michael-underwood/",
+    "designation": "real estate agent",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [
+      "https://www.facebook.com/underwoodteam/",
+      "https://www.instagram.com/theunderwoodteam/",
+      "https://www.linkedin.com/in/michael-underwood-2a4381/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 28,
+    "name": "Tara Usrey",
+    "email": "tara.usrey@compass.com",
+    "phone": "5126352731",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tara-usrey/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 29,
+    "name": "Mary Ann Valentino",
+    "email": "maryann.valentino@compass.com",
+    "phone": "5126587632",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/maryann-valentino/",
+    "designation": "Realtor\u00ae",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [
+      "https://www.linkedin.com/in/mary-ann-valentino-24347a21/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 30,
+    "name": "Maureen Vance",
+    "email": "maureen.vance@compass.com",
+    "phone": "5127189986",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/maureen-vance/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 31,
+    "name": "Silvia Vandenberg",
+    "email": "silvia.vandenberg@compass.com",
+    "phone": "5125546071",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/silvia-vandenberg/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 32,
+    "name": "Matt van Winkle",
+    "email": "matt.vanwinkle@compass.com",
+    "phone": "5128317398",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/matt-van-winkle/",
+    "designation": "Real Estate Agent",
+    "city": "Austin, TX",
+    "page": 28,
+    "socials": [
+      "https://www.instagram.com/mattvanwinkle.tx/",
+      "https://www.facebook.com/matt.vanwinkle.personal",
+      "https://www.youtube.com/channel/UCrAYTwdZtUqJbVmnE8Ivl7w",
+      "https://www.linkedin.com/in/mattvanwinkle/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 33,
+    "name": "Natasha Vejvechaneyom",
+    "email": "natasha.vejvechaneyom@compass.com",
+    "phone": "5128087380",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/natasha-vejvechaneyom/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 29,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 34,
+    "name": "Joseph Villalpando",
+    "email": "joseph.villalpando@compass.com",
+    "phone": "4247447627",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/joseph-villalpando/",
+    "designation": "Realtor\u00ae",
+    "city": "Austin, TX",
+    "page": 29,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 35,
+    "name": "Matt Morper",
+    "email": "viberealestategroup@compass.com",
+    "phone": "",
+    "listings": 9,
+    "website": "",
+    "compass": "https://www.compass.com/agents/matt-morper",
+    "designation": "Realtor\u00ae",
+    "city": "Austin, TX",
+    "page": 29,
+    "socials": [
+      "https://www.facebook.com/VIBEregroup/",
+      "https://www.instagram.com/austinrelopro",
+      "https://www.linkedin.com/in/mattmorper"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 36,
+    "name": "Codi Vives",
+    "email": "codi.vives@compass.com",
+    "phone": "5122841033",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/codi-vives/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 29,
+    "socials": [
+      "https://www.linkedin.com/in/codi-vives-0788266/",
+      "https://www.facebook.com/Freeman.codi",
+      "https://www.instagram.com/codivives/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 37,
+    "name": "Phil Walker",
+    "email": "phil.walker@compass.com",
+    "phone": "5123547632",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/phil-walker/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 29,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 38,
+    "name": "Jenny Walker",
+    "email": "jenny.walker@compass.com",
+    "phone": "5126533398",
+    "listings": 4,
+    "website": "https://luxaustinrealestate.com/",
+    "compass": "https://www.compass.com/agents/jenny-walker/",
+    "designation": "realtor",
+    "city": "Austin, TX",
+    "page": 29,
+    "socials": [
+      "https://www.google.com/urlq=https://www.facebook.com/JennyWalkerWestlake/about_contact_and_basic_info&sa=D&source=docs&ust=1725387487600834&usg=AOvVaw3YF753YiHOrEqiS2jH3Y6J"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 39,
+    "name": "Sara Warner",
+    "email": "sara.warner@compass.com",
+    "phone": "5122301776",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sara-warner/",
+    "designation": "Realtor",
+    "city": "Austin, TX",
+    "page": 29,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 40,
+    "name": "Teel Warren",
+    "email": "teel.warren@compass.com",
+    "phone": "7379003545",
+    "listings": 15,
+    "website": "",
+    "compass": "https://www.compass.com/agents/teel-warren/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 29,
+    "socials": [
+      "https://www.instagram.com/thequeerrealtor/",
+      "https://www.linkedin.com/in/teel-warren-515a99296"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 41,
+    "name": "Stacie Watts",
+    "email": "stacie.watts@compass.com",
+    "phone": "5129875339",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/stacie-watts/",
+    "designation": "realtor",
+    "city": "Austin, TX",
+    "page": 29,
+    "socials": [
+      "https://www.linkedin.com/in/staciewatts/",
+      "https://www.facebook.com/localaustinliving/",
+      "https://www.instagram.com/localaustinliving/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 42,
+    "name": "James Watson",
+    "email": "james.watson@compass.com",
+    "phone": "5129645151",
+    "listings": 10,
+    "website": "",
+    "compass": "https://www.compass.com/agents/james-watson/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 29,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 43,
+    "name": "Clare Webb",
+    "email": "clare.webb@compass.com",
+    "phone": "5125931389",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/clare-webb/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 29,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 44,
+    "name": "Meleah Wehman",
+    "email": "meleah.wehman@compass.com",
+    "phone": "5126569463",
+    "listings": 8,
+    "website": "https://www.google.com/search?q=Meleah+Wehman+Real+Estate%2C+Realtor%C2%AE%2C+CDRE%C2%AE%2C+Realty+Austin+%7C+Compass&sca_esv=544f108bef3f1955&source=hp&ei=_vGgZ4XEOs3HkPIPg9bxYA&iflsig=ACkRmUkAAAAAZ6EADgxktIi5FS2KSuvtt-gsyRhvfnxL&ved=0ahUKEwiFu8Kk-aeLAxXNI0QIHQNrHAwQ4dUDCBk&uact=5&oq=Meleah+Wehman+Real+Estate%2C+Realtor%C2%AE%2C+CDRE%C2%AE%2C+Realty+Austin+%7C+Compass&gs_lp=Egdnd3Mtd2l6IkVNZWxlYWggV2VobWFuIFJlYWwgRXN0YXRlLCBSZWFsdG9ywq4sIENEUkXCriwgUmVhbHR5IEF1c3RpbiB8IENvbXBhc3NIAFAAWABwAHgAkAEAmAEAoAEAqgEAuAEDyAEA-AEC-AEBmAIAoAIAmAMAkgcAoAcA&sclient=gws-wiz",
+    "compass": "https://www.compass.com/agents/meleah-wehman/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 29,
+    "socials": [
+      "https://www.linkedin.com/in/meleah-wehman-5016b12a/",
+      "https://www.facebook.com/profile.php?id=100067914703237",
+      "https://www.instagram.com/meleahwehmanrealestate"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 45,
+    "name": "Skye Weeden",
+    "email": "skye.weeden@compass.com",
+    "phone": "5128252290",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/skye-weeden/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 29,
+    "socials": [
+      "https://www.facebook.com/thelarkamgroup",
+      "https://www.instagram.com/skyeweedenrealty/",
+      "https://www.linkedin.com/in/skye-weeden-64189a2a1/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 46,
+    "name": "Alisa Wells",
+    "email": "alisa.wells@compass.com",
+    "phone": "5128201351",
+    "listings": 4,
+    "website": "https://luxaustinrealestate.com/",
+    "compass": "https://www.compass.com/agents/alisa-wells/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 29,
+    "socials": [
+      "https://www.facebook.com/alisawellsaustin/",
+      "https://www.tiktok.com/@alisawellsatx",
+      "https://www.youtube.com/@austinluxuryrealestate"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 47,
+    "name": "Gisella Wenson",
+    "email": "gisella.wenson@compass.com",
+    "phone": "6789785640",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/gisella-wenson/",
+    "designation": "Realtor\u00ae",
+    "city": "Austin, TX",
+    "page": 29,
+    "socials": [
+      "https://www.facebook.com/BuyTexasWithGigi/?modal=admin_todo_tour"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 48,
+    "name": "Sheila E. White",
+    "email": "sheilawhite@compass.com",
+    "phone": "5126331200",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sheila-white/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 30,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 49,
+    "name": "Dani Whitacre",
+    "email": "dani.whitacre@compass.com",
+    "phone": "5126897495",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/dani-whitacre/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 30,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 50,
+    "name": "Amy Whitston",
+    "email": "amy.whitston@compass.com",
+    "phone": "5126636759",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/amy-whitston/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 30,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 51,
+    "name": "Billy Wiegner",
+    "email": "billy.wiegner@compass.com",
+    "phone": "7202818125",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/billy-wiegner/",
+    "designation": "realtor",
+    "city": "Austin, TX",
+    "page": 30,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 52,
+    "name": "Karen Willard",
+    "email": "k.willard@compass.com",
+    "phone": "5128882118",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/karen-willard/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 30,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 53,
+    "name": "Mary Williams",
+    "email": "mary.williams@compass.com",
+    "phone": "5122975391",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/mary-williams/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 30,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 54,
+    "name": "Katie Wilsey",
+    "email": "katie.wilsey@compass.com",
+    "phone": "8587618799",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/katie-wilsey/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 30,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 55,
+    "name": "Sierrah Wilson",
+    "email": "sierrah.wilson@compass.com",
+    "phone": "8324958086",
+    "listings": 7,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sierrah-wilson/",
+    "designation": "licensed real estate broker",
+    "city": "Austin, TX",
+    "page": 30,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 56,
+    "name": "Julie Woche, J.D.",
+    "email": "juliewoche@compass.com",
+    "phone": "5124704663",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/julie-woche/",
+    "designation": "Realtor\u00ae",
+    "city": "Austin, TX",
+    "page": 30,
+    "socials": [
+      "https://www.linkedin.com/in/julie-woche-b91a8a81"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 57,
+    "name": "Heather Witbeck",
+    "email": "heather.witbeck@compass.com",
+    "phone": "5129202521",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/heather-witbeck/",
+    "designation": "Realtor\u00ae",
+    "city": "Austin, TX",
+    "page": 30,
+    "socials": [
+      "https://www.facebook.com/heatherwitbeckrealtor/",
+      "https://www.instagram.com/redhead_realestateguru/",
+      "https://twitter.com/redhead_realtor"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 58,
+    "name": "Kim Wolle",
+    "email": "kim.wolle@compass.com",
+    "phone": "5124616741",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/kim-wolle/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 30,
+    "socials": [
+      "https://www.linkedin.com/in/kim-wolle-living/",
+      "https://www.facebook.com/KimWolleLiving/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 59,
+    "name": "Grace Young",
+    "email": "grace.young@compass.com",
+    "phone": "9032453771",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/grace-young/",
+    "designation": "Realtor\u00ae",
+    "city": "Austin, TX",
+    "page": 30,
+    "socials": [
+      "https://www.linkedin.com/in/grace-young-2016203b/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 60,
+    "name": "Gwen Young",
+    "email": "gwen.young@compass.com",
+    "phone": "5129000845",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/gwen-young/",
+    "designation": "Realtor\u00ae",
+    "city": "Austin, TX",
+    "page": 30,
+    "socials": [
+      "https://www.gwenyoungatx.com/",
+      "https://www.linkedin.com/in/gwen-young-74bb011ab/",
+      "https://www.facebook.com/Gwenyoungcompass",
+      "https://www.instagram.com/gwencompassagent/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 61,
+    "name": "Tammy Young, SEED Property Group",
+    "email": "tammy.young@compass.com",
+    "phone": "5127770205",
+    "listings": 5,
+    "website": "https://seedpropertygroup.com/",
+    "compass": "https://www.compass.com/agents/tammy-young/",
+    "designation": "Realtor",
+    "city": "Austin, TX",
+    "page": 30,
+    "socials": [
+      "https://www.linkedin.com/in/tammy-young-a999264/",
+      "https://www.facebook.com/SEEDAustin/",
+      "https://www.instagram.com/tammy.austinrealtor/",
+      "https://www.instagram.com/seedaustin/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 62,
+    "name": "Edwin Zamora",
+    "email": "edwin.zamora@compass.com",
+    "phone": "5127434404",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/edwin-zamora/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 31,
+    "socials": [
+      "https://facebook.com/p/Edwin-Zamora-Real-Estate-100063564641281/?locale=hi_IN"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 63,
+    "name": "Adam Zell",
+    "email": "adam.zell@compass.com",
+    "phone": "5128204918",
+    "listings": 35,
+    "website": "",
+    "compass": "https://www.compass.com/agents/adam-zell/",
+    "designation": "Realtor\u00ae",
+    "city": "Austin, TX",
+    "page": 31,
+    "socials": [
+      "https://www.linkedin.com/in/adam-zell-49527216",
+      "https://www.facebook.com/a.zelly/",
+      "https://www.instagram.com/realdaddyaz/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 64,
+    "name": "Stefani Zellmer",
+    "email": "stefani.zellmer@compass.com",
+    "phone": "5125659094",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/stefani-zellmer/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 31,
+    "socials": [
+      "https://www.facebook.com/stefanizellmer/",
+      "https://www.instagram.com/stefanizellmer/?hl=en",
+      "https://www.linkedin.com/in/stefanizellmer"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 65,
+    "name": "Tyler Zimmerman",
+    "email": "tyler.zimmerman@compass.com",
+    "phone": "3203333909",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/tyler-zimmerman/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 31,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 66,
+    "name": "Matt Zukauckas",
+    "email": "matt.zukauckas@compass.com",
+    "phone": "5126633993",
+    "listings": 2,
+    "website": "https://supportdellchildrens.org/",
+    "compass": "https://www.compass.com/agents/matt-zukauckas/",
+    "designation": "REALTOR\u00ae",
+    "city": "Austin, TX",
+    "page": 31,
+    "socials": [
+      "https://www.instagram.com/mattsellsatx",
+      "https://www.linkedin.com/in/mattzukauckas/"
+    ],
+    "has_links": true
+  }
+];
+        
+        const gradients = [
+            'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)',
+            'linear-gradient(135deg, #F6D365 0%, #FDA085 100%)',
+            'linear-gradient(135deg, #A1C4FD 0%, #C2E9FB 100%)',
+            'linear-gradient(135deg, #76B2FE 0%, #B2D8FF 100%)',
+            'linear-gradient(135deg, #E0C3FC 0%, #8EC5FC 100%)',
+            'linear-gradient(135deg, #F093FB 0%, #F5576C 100%)',
+            'linear-gradient(135deg, #5EEAD4 0%, #14B8A6 100%)',
+            'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)',
+            'linear-gradient(135deg, #C084FC 0%, #A855F7 100%)',
+            'linear-gradient(135deg, #93C5FD 0%, #3B82F6 100%)'
+        ];
+
+        function getGradient(name) {
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const idx = Math.abs(hash) % gradients.length;
+            return gradients[idx];
+        }
+
+        function getInitials(name) {
+            if (!name) return 'A';
+            const parts = name.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+            return name[0].toUpperCase();
+        }
+
+        function getPlatformName(url) {
+            const urlLower = url.toLowerCase();
+            if (urlLower.includes('instagram.com')) return 'instagram';
+            if (urlLower.includes('linkedin.com')) return 'linkedin';
+            if (urlLower.includes('facebook.com')) return 'facebook';
+            if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) return 'twitter';
+            if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
+            if (urlLower.includes('tiktok.com')) return 'tiktok';
+            return 'default';
+        }
+
+
+
+        function getSocialIconSvg(platform) {
+            const svgs = {
+                instagram: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>',
+                linkedin: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>',
+                facebook: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>',
+                twitter: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z M4 20l6.768 -6.768 M20 4l-6.768 6.768"></path></svg>',
+                youtube: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>',
+                tiktok: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>',
+                default: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>'
+            };
+            return svgs[platform] || svgs.default;
+        }
+
+        let activeTab = 'all';
+        let searchQuery = '';
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        function renderLeads() {
+            const grid = document.getElementById('agentGrid');
+            grid.innerHTML = '';
+            
+            let filtered = leadsData.filter(lead => {
+                if (activeTab === 'with-links' && !lead.has_links) return false;
+                if (activeTab === 'no-links' && lead.has_links) return false;
+                
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    const nameMatch = lead.name.toLowerCase().includes(q);
+                    const desigMatch = (lead.designation || '').toLowerCase().includes(q);
+                    const emailMatch = (lead.email || '').toLowerCase().includes(q);
+                    const cityMatch = (lead.city || '').toLowerCase().includes(q);
+                    const pageMatch = String(lead.page || '').includes(q);
+                    return nameMatch || desigMatch || emailMatch || cityMatch || pageMatch;
+                }
+                return true;
+            });
+            
+            const allCount = leadsData.length;
+            const withLinksCount = leadsData.filter(l => l.has_links).length;
+            const noLinksCount = allCount - withLinksCount;
+            
+            document.getElementById('count-all').innerText = allCount;
+            document.getElementById('count-with-links').innerText = withLinksCount;
+            document.getElementById('count-no-links').innerText = noLinksCount;
+            
+            document.getElementById('stat-total-val').innerText = allCount;
+            document.getElementById('stat-with-links-val').innerText = withLinksCount;
+            document.getElementById('stat-no-links-val').innerText = noLinksCount;
+            
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+            
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+            
+            if (totalItems === 0) {
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <span class="no-results-icon">🔍</span>
+                        <h3>No prospects found</h3>
+                        <p>Try adjusting your filters or search keywords.</p>
+                    </div>
+                `;
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+                document.getElementById('paginationInfo').innerText = `Showing ${startIdx + 1}-${endIdx} of ${totalItems} prospects`;
+            }
+            
+            const pageData = filtered.slice(startIdx, endIdx);
+            
+            pageData.forEach(lead => {
+                const initials = getInitials(lead.name);
+                const gradient = getGradient(lead.name);
+                
+                let webButtonHtml = '';
+                if (lead.website) {
+                    webButtonHtml = `<a href="${lead.website}" target="_blank" class="btn btn-primary">Website</a>`;
+                } else {
+                    webButtonHtml = `<button class="btn btn-primary disabled" disabled>No Website</button>`;
+                }
+                
+                let socialsHtml = '';
+                if (lead.socials && lead.socials.length > 0) {
+                    socialsHtml += `<span class="social-label">Socials:</span>`;
+                    lead.socials.forEach(url => {
+                        const platform = getPlatformName(url);
+                        const iconSvg = getSocialIconSvg(platform);
+                        socialsHtml += `
+                            <a href="${url}" target="_blank" class="social-link ${platform}" title="${platform.charAt(0).toUpperCase() + platform.slice(1)}: ${url}">
+                                ${iconSvg}
+                            </a>
+                        `;
+                    });
+                } else {
+                    socialsHtml = `<span class="social-label" style="color: #94a3b8;">No socials on Compass</span>`;
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                card.style.cursor = 'pointer';
+                card.onclick = (e) => {
+                    if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.copy-btn')) {
+                        return;
+                    }
+                    window.open(lead.compass, '_blank');
+                };
+                
+                card.innerHTML = `
+                    <button class="copy-btn" onclick="copyAgentInfo(${lead.id}, event)" title="Copy agent info">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    </button>
+                    <div class="card-header">
+                        <div class="avatar" style="background: ${gradient}">${initials}</div>
+                        <div class="agent-meta">
+                            <div class="agent-name" title="${lead.name}">${lead.name}</div>
+                            <div class="agent-designation" title="${lead.designation || 'Real Estate Agent'}">${lead.designation || 'Real Estate Agent'}</div>
+                            <div class="badges-container">
+                                <span class="badge badge-listings">🏡 ${lead.listings} Listings</span>
+                                ${lead.city ? `<span class="badge badge-city">📍 ${lead.city}</span>` : ''}
+                                ${lead.page ? `<span class="badge badge-page">📄 Page ${lead.page}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        ${lead.email ? `
+                        <a href="mailto:${lead.email}" class="contact-row">
+                            <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            <span>${lead.email}</span>
+                        </a>` : ''}
+                        ${lead.phone ? `
+                        <a href="tel:${lead.phone}" class="contact-row">
+                            <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                            <span>${lead.phone}</span>
+                        </a>` : ''}
+                    </div>
+                    <div class="card-footer">
+                        <div class="actions-row">
+                            <a href="${lead.compass}" target="_blank" class="btn btn-secondary">Compass Profile</a>
+                            ${webButtonHtml}
+                        </div>
+                        <div class="socials-row">
+                            ${socialsHtml}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            renderPaginationControls(totalPages);
+        }
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            const activeBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabName));
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            currentPage = 1;
+            renderLeads();
+        }
+
+        function handleSearch(val) {
+            searchQuery = val;
+            currentPage = 1;
+            renderLeads();
+        }
+
+        function renderPaginationControls(totalPages) {
+            const controls = document.getElementById('paginationControls');
+            controls.innerHTML = '';
+            
+            if (totalPages <= 1) {
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+            }
+            
+            // Prev Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.innerHTML = '&larr; Prev';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(prevBtn);
+            
+            // Smart visible buttons logic
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            
+            if (endPage - startPage + 1 < maxVisible) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+            
+            if (startPage > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.className = 'page-btn';
+                firstBtn.innerText = '1';
+                firstBtn.onclick = () => { currentPage = 1; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(firstBtn);
+                
+                if (startPage > 2) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                btn.innerText = i;
+                btn.onclick = () => {
+                    currentPage = i;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+                controls.appendChild(btn);
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+                
+                const lastBtn = document.createElement('button');
+                lastBtn.className = 'page-btn';
+                lastBtn.innerText = totalPages;
+                lastBtn.onclick = () => { currentPage = totalPages; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(lastBtn);
+            }
+            
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.innerHTML = 'Next &rarr;';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(nextBtn);
+        }
+
+        function copyAgentInfo(id, event) {
+            const lead = leadsData.find(l => l.id === id);
+            if (!lead) return;
+            
+            const text = lead.name + '\n' + 
+                         (lead.designation || 'Real Estate Agent') + '\n' +
+                         'Email: ' + (lead.email || 'None') + '\n' +
+                         'Phone: ' + (lead.phone || 'None') + '\n' +
+                         'Website: ' + (lead.website || 'None') + '\n' +
+                         'Compass: ' + lead.compass;
+                         
+            const btn = event.currentTarget;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Agent details copied to clipboard!');
+                const originalSvg = btn.innerHTML;
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                setTimeout(() => { btn.innerHTML = originalSvg; }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderLeads();
+        });
+    </script>
+</body>
+</html>

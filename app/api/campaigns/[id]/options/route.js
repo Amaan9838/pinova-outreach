@@ -4,6 +4,8 @@ import Campaign from '../../../../../models/Campaign.js';
 import Mailbox from '../../../../../models/MailboxFixed.js';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function PUT(request, { params }) {
   try {
     await dbConnect();

@@ -1,0 +1,3448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinova Outreach - Compass Leads Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #e0e7ff;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-full: 9999px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .logo-text p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.total { background-color: #eff6ff; color: #3b82f6; }
+        .stat-icon.with-links { background-color: #f0fdf4; color: #22c55e; }
+        .stat-icon.no-links { background-color: #fffbeb; color: #f59e0b; }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .controls-bar {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+            max-width: 480px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #fcfcfd;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            background-color: #fff;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background-color: #f1f5f9;
+            padding: 0.25rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .tab-btn {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 1rem;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background-color: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-count {
+            background-color: #e2e8f0;
+            color: var(--text-secondary);
+            padding: 0.125rem 0.375rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .tab-btn.active .tab-count {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .agent-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s, border-color 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-hover);
+        }
+
+        .card-header {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1.25rem;
+        }
+
+        .avatar {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .agent-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .agent-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.125rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .agent-designation {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.5rem;
+        }
+
+        .badges-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.625rem;
+            border-radius: var(--radius-full);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .badge-listings {
+            background-color: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #dcfce7;
+        }
+
+
+
+        .badge-city {
+            background-color: #f0f9ff;
+            color: #0369a1;
+            border: 1px solid #e0f2fe;
+        }
+
+        .badge-page {
+            background-color: #faf5ff;
+            color: #7e22ce;
+            border: 1px solid #f3e8ff;
+        }
+
+        .card-body {
+            padding: 0.75rem 0;
+            border-top: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .contact-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .contact-row:hover {
+            color: var(--primary);
+        }
+
+        .contact-icon {
+            width: 1rem;
+            height: 1rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .card-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .actions-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            padding: 0.625rem;
+            font-family: var(--font-family);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-primary.disabled {
+            background-color: #f1f5f9;
+            color: var(--text-muted);
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .btn-secondary {
+            background-color: white;
+            border-color: var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background-color: #f8fafc;
+        }
+
+        .socials-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            min-height: 2rem;
+        }
+
+        .social-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-right: 0.25rem;
+        }
+
+        .social-link {
+            width: 2rem;
+            height: 2rem;
+            border-radius: var(--radius-full);
+            background-color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            text-decoration: none;
+            border: 1px solid #e2e8f0;
+        }
+
+        .social-link:hover {
+            transform: scale(1.1);
+            color: white;
+        }
+
+        .social-link.instagram:hover { background-color: #e1306c; border-color: #e1306c; }
+        .social-link.linkedin:hover { background-color: #0077b5; border-color: #0077b5; }
+        .social-link.facebook:hover { background-color: #1877f2; border-color: #1877f2; }
+        .social-link.twitter:hover { background-color: #000000; border-color: #000000; }
+        .social-link.youtube:hover { background-color: #ff0000; border-color: #ff0000; }
+        .social-link.tiktok:hover { background-color: #010101; border-color: #010101; }
+        .social-link.default:hover { background-color: var(--primary); border-color: var(--primary); }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 1.75rem;
+            height: 1.75rem;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.15s;
+            opacity: 0;
+            z-index: 10;
+        }
+
+        .agent-card:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary-light);
+            background-color: var(--primary-light);
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            background-color: var(--bg-card);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .no-results-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--text-primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pagination-info {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .page-btn {
+            border: 1px solid var(--border-color);
+            background-color: white;
+            color: var(--text-secondary);
+            padding: 0.5rem 0.875rem;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background-color: #f8fafc;
+        }
+
+        .page-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .page-btn:disabled {
+            color: var(--text-muted);
+            background-color: #f1f5f9;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+        }
+
+        .page-dots {
+            padding: 0 0.5rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-icon">P</div>
+                <div class="logo-text">
+                    <h1>Pinova Outreach</h1>
+                    <p>Compass Agent Directory Explorer</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon total">🏡</div>
+                <div class="stat-info">
+                    <span id="stat-total-val" class="stat-value">0</span>
+                    <span class="stat-label">Total Prospects</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon with-links">🔗</div>
+                <div class="stat-info">
+                    <span id="stat-with-links-val" class="stat-value">0</span>
+                    <span class="stat-label">Has Website/Socials (Cat A)</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon no-links">❓</div>
+                <div class="stat-info">
+                    <span id="stat-no-links-val" class="stat-value">0</span>
+                    <span class="stat-label">No Links (Cat B)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls-bar">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('all')">
+                    All Leads <span id="count-all" class="tab-count">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('with-links')">
+                    Category A: Has Links <span id="count-with-links" class="tab-count">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('no-links')">
+                    Category B: No Links <span id="count-no-links" class="tab-count">0</span>
+                </button>
+            </div>
+            
+            <div class="search-box">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by name, designation, email..." oninput="handleSearch(this.value)">
+            </div>
+        </div>
+        
+        <div id="agentGrid" class="agent-grid"></div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationContainer" class="pagination-container" style="display: none;">
+            <div id="paginationInfo" class="pagination-info">Showing 0-0 of 0 prospects</div>
+            <div id="paginationControls" class="pagination-controls"></div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast">Agent details copied to clipboard!</div>
+
+    <script>
+        const leadsData = [
+  {
+    "id": 0,
+    "name": "Alan Abramson",
+    "email": "alan.abramson@compass.com",
+    "phone": "5614009077",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/alan-abramson/",
+    "designation": "Real Estate Professional",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.facebook.com/alan.abramson.5",
+      "https://www.facebook.com/alanabramson4/",
+      "https://www.instagram.com/alanabramson4/",
+      "https://www.linkedin.com/in/alanabramson/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 1,
+    "name": "Michael Adams",
+    "email": "mike.adams@compass.com",
+    "phone": "5616990856",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michael-adams-miami/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 2,
+    "name": "Alessandra Abis",
+    "email": "alessandra.abis@compass.com",
+    "phone": "5618092967",
+    "listings": 1,
+    "website": "https://www.bocaluxurycondos.com/one-thousand-ocean/",
+    "compass": "https://www.compass.com/agents/alessandra-abis/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 3,
+    "name": "Karen Baker",
+    "email": "aboveandbeyond@compass.com",
+    "phone": "561-223-9233",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/karen-baker",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/karen-baker-1719353",
+      "https://www.facebook.com/SoFloridaRealtor/",
+      "https://www.instagram.com/karenbakersoflorealtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 4,
+    "name": "Vini Antonacci",
+    "email": "vini.antonacci@compass.com",
+    "phone": "5617148464",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/vini-antonacci/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/vini-antonacci-235ab77/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 5,
+    "name": "Jessica Arzt",
+    "email": "jessica.arzt@compass.com",
+    "phone": "5612136716",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jessica-arzt/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 6,
+    "name": "Terry Max",
+    "email": "ran@compass.com",
+    "phone": "847-480-5500",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/terry-max",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 7,
+    "name": "Howard Babushkin",
+    "email": "howard.babushkin@compass.com",
+    "phone": "9173460822",
+    "listings": 7,
+    "website": "",
+    "compass": "https://www.compass.com/agents/howard-babushkin/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.facebook.com/pages/category/Real-Estate-Agent/Howard-Babushkin-Real-Estate-Agent-103968984306863/",
+      "https://www.instagram.com/howiesellsflorida/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 8,
+    "name": "Sean Balzer",
+    "email": "sean.balzer@compass.com",
+    "phone": "8502181579",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sean-balzer/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/sean-balzer-8b777721/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 9,
+    "name": "Scott Bennett",
+    "email": "scottbennett@compass.com",
+    "phone": "6462960026",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/scott-bennett/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.facebook.com/share/1FweEeLVhe/?mibextid=wwXIfr",
+      "https://www.instagram.com/propertysiblingssouthflorida?igsh=MThtYTFqMGF2MmVpbQ%3D%3D&utm_source=qr"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 10,
+    "name": "Dustin Berk",
+    "email": "dustin.berk@compass.com",
+    "phone": "5617022444",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/dustin-berk/",
+    "designation": "Realtor\u00ae",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.facebook.com/DJBERK1",
+      "https://www.instagram.com/bananaberk/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 11,
+    "name": "Melissa Blohm",
+    "email": "melissa.blohm@compass.com",
+    "phone": "4109915967",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/melissa-blohm/",
+    "designation": "Realtor\u00ae",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 12,
+    "name": "Michael Bloom",
+    "email": "michael.bloom@compass.com",
+    "phone": "5612122388",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michael-bloom/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 13,
+    "name": "Ina Bloom",
+    "email": "ina.bloom@compass.com",
+    "phone": "5612124043",
+    "listings": 8,
+    "website": "https://theinabloomteam.com/",
+    "compass": "https://www.compass.com/agents/ina-bloom/",
+    "designation": "Real Estate Professional",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/ina-bloom-311100ba/",
+      "https://www.facebook.com/ina.zuckerbrotbloom",
+      "https://www.instagram.com/inabloom/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 14,
+    "name": "Geoff Braboy",
+    "email": "geoff.braboy@compass.com",
+    "phone": "5616993455",
+    "listings": 18,
+    "website": "https://traded.co/deals/florida/single-family-residence/sale/2817-north-ocean-boulevard-2/",
+    "compass": "https://www.compass.com/agents/geoff-braboy/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 15,
+    "name": "Kyle Bruening",
+    "email": "kyle.bruening@compass.com",
+    "phone": "9542241413",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/kyle-bruening/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/kyle-bruening-371ba797",
+      "https://www.facebook.com/kbruening1",
+      "https://www.instagram.com/kylebruening_realtor/",
+      "https://twitter.com/Kbreezy1985"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 16,
+    "name": "Richard Buch",
+    "email": "richard.buch@compass.com",
+    "phone": "5618868113",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/richard-buch/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.linkedin.com/in/richard-buch-8807b410/",
+      "https://www.facebook.com/BocaRatonDelrayBeachLuxuryRealEstate",
+      "https://www.instagram.com/richardbuchrealestate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 17,
+    "name": "Catherine Brewer",
+    "email": "cathy.brewer@compass.com",
+    "phone": "5617672008",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/catherin-brewer/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 18,
+    "name": "Bonnie Heatzig",
+    "email": "bonnieheatzigluxurygroup@compass.com",
+    "phone": "5612510321",
+    "listings": 11,
+    "website": "https://www.bonnieheatzig.com/",
+    "compass": "https://www.compass.com/agents/Bonnie-Heatzig",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.instagram.com/bonnieheatzig/",
+      "https://www.facebook.com/BonnieHeatzigLuxuryREAuthority/",
+      "https://www.linkedin.com/in/bonnie-heatzig-366348b",
+      "https://www.youtube.com/@BonnieHeatzig/videos"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 19,
+    "name": "Deborah Carr",
+    "email": "deborah.carr@compass.com",
+    "phone": "9546477210",
+    "listings": 1,
+    "website": "https://www.thedeborahcarr.com/",
+    "compass": "https://www.compass.com/agents/deborah-carr/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [
+      "https://www.instagram.com/thedeborahcarr",
+      "https://www.facebook.com/DeborahKCarr",
+      "https://www.linkedin.com/in/thedeborahcarr",
+      "https://www.tiktok.com/@thedeborahcarr"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 20,
+    "name": "Claude Champagne",
+    "email": "claude.champagne@compass.com",
+    "phone": "5617034727",
+    "listings": 2,
+    "website": "https://www.bocaratonrealestate.com/",
+    "compass": "https://www.compass.com/agents/claude-champagne/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 1,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 21,
+    "name": "MAXINE COOPER",
+    "email": "maxine.cooper@compass.com",
+    "phone": "5615463333",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/maxine-cooper/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 22,
+    "name": "Alison Corwin",
+    "email": "alison.corwin@compass.com",
+    "phone": "6468236313",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/alison-corwin/",
+    "designation": "Realtor\u00ae",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 23,
+    "name": "Cat Chester",
+    "email": "cat.chester@compass.com",
+    "phone": "5614455600",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/cat-chester/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 24,
+    "name": "Sommar Clark",
+    "email": "sommar.clark@compass.com",
+    "phone": "5613151834",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sommar-clark/",
+    "designation": "Real Estate Agent",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.instagram.com/sommarclark/",
+      "https://www.facebook.com/clarkteamsouthflorida/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 25,
+    "name": "Champagne & Parisi",
+    "email": "champagneandparisi@compass.com",
+    "phone": "561.235.7800",
+    "listings": 49,
+    "website": "https://www.bocaratonrealestate.com/",
+    "compass": "https://www.compass.com/agents/champagne-&-parisi/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 26,
+    "name": "Blair Dimitro",
+    "email": "blair.dimitro@compass.com",
+    "phone": "5617061875",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/blair-dimitro/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 27,
+    "name": "Paul Dono",
+    "email": "paul.dono@compass.com",
+    "phone": "5617774242",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/paul-dono/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/paul-dono-ab78b66/",
+      "https://www.facebook.com//DelrayLuxuryRealtor/",
+      "https://www.instagram.com/paul.dono/",
+      "https://twitter.com/PaulDono1"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 28,
+    "name": "Susan Demerer",
+    "email": "susan.demerer@compass.com",
+    "phone": "5612136347",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/susan-demerer/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/susan-demerer-134895130/",
+      "https://www.facebook.com/QueenOfBrokenSound/?ref=page_internal",
+      "https://www.instagram.com/queenofbrokensound/",
+      "https://twitter.com/sdemerer"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 29,
+    "name": "Jeffrey Creegan",
+    "email": "jeffrey.creegan@compass.com",
+    "phone": "5619399819",
+    "listings": 12,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jeffrey-creegan/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.instagram.com/creeganteam/",
+      "https://www.youtube.com/@jeffreycreegansouthflorida48",
+      "https://www.tiktok.com/@creeganszn"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 30,
+    "name": "Matt Dovner",
+    "email": "matt.dovner@compass.com",
+    "phone": "5613229189",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/matt-dovner/",
+    "designation": "real estate agent",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 31,
+    "name": "Andres Dubov",
+    "email": "a.dubov@compass.com",
+    "phone": "5613027538",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/andres-dubov/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 32,
+    "name": "Michael Downey",
+    "email": "mike.downey@compass.com",
+    "phone": "5613370229",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michael-downey/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 33,
+    "name": "Dory Faxon",
+    "email": "dory.faxon@compass.com",
+    "phone": "4019657530",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/dory-faxon/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/dory-faxon-1a359496/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 34,
+    "name": "Tinka Ellington",
+    "email": "tinka.ellington@compass.com",
+    "phone": "9544485226",
+    "listings": 21,
+    "website": "https://therealdeal.com/miami/2026/06/12/pompano-beach-boom-14-major-real-estate-projects-underway/?utm_campaign=sl-report-news&utm_source=trd-newsletter&tpcc=sl-report-news&utm_medium=email&utm_term=Valid%20Florida%20Subscribers",
+    "compass": "https://www.compass.com/agents/tinka-ellington/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.instagram.com/tinka_ellington?igsh=MTRmbGRmcWl4NjZuaQ%3D%3D&utm_source=qr",
+      "https://www.facebook.com/tinka.ellington?mibextid=wwXIfr&mibextid=wwXIfr",
+      "https://www.linkedin.com/in/tinkaellington?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 35,
+    "name": "Michelle Fetes",
+    "email": "michellefetes@compass.com",
+    "phone": "5612511823",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michelle-fetes/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 36,
+    "name": "Gregory C. Frank",
+    "email": "greg.frank@compass.com",
+    "phone": "5167760808",
+    "listings": 5,
+    "website": "https://gregorycfrank.com/",
+    "compass": "https://www.compass.com/agents/greg-frank/",
+    "designation": "Real Estate Agent",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.instagram.com/gregorycfrank/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 37,
+    "name": "Eileen Fleming",
+    "email": "eileen.fleming@compass.com",
+    "phone": "5614144018",
+    "listings": 1,
+    "website": "https://www.bocaluxurycondos.com/admirals-walk/",
+    "compass": "https://www.compass.com/agents/eileen-fleming/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 38,
+    "name": "Erin Friedman",
+    "email": "erin.friedman@compass.com",
+    "phone": "9544480573",
+    "listings": 7,
+    "website": "https://pubmanager.n2pub.com/share/fl/1zLddwlD",
+    "compass": "https://www.compass.com/agents/erin-friedman/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/erin-friedman-03519712",
+      "https://www.instagram.com/sellingsuburbia/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 39,
+    "name": "Nancy Frey",
+    "email": "nancy.frey@compass.com",
+    "phone": "5617034170",
+    "listings": 2,
+    "website": "https://www.bocaratonrealestate.com/",
+    "compass": "https://www.compass.com/agents/nancy-frey/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 40,
+    "name": "Jake Friedman",
+    "email": "jake.friedman@compass.com",
+    "phone": "5614459981",
+    "listings": 7,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jake-friedman/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/jake-friedman-a7bab37a",
+      "https://www.facebook.com/jakefriedmanrealty/",
+      "https://www.instagram.com/jakemfriedman/",
+      "https://www.instagram.com/jakemfriedman/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 41,
+    "name": "Frank Gentile",
+    "email": "frank.gentile@compass.com",
+    "phone": "5614416722",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/frank-gentile/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 42,
+    "name": "Sarah Galperin",
+    "email": "sarah.galperin@compass.com",
+    "phone": "8186061860",
+    "listings": 1,
+    "website": "https://www.citybiz.co/article/570154/robert-anderson-interviews-sarah-galperin-realtor/",
+    "compass": "https://www.compass.com/agents/sarah-galperin/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.facebook.com/SarahSellsSoFla/",
+      "https://www.instagram.com/sarahsellssofla/?utm_medium=copy_link",
+      "https://www.youtube.com/channel/UCnQ0Gn9wqxO0gqHz8yLOWrg",
+      "https://www.linkedin.com/company/sarahsellssofla"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 43,
+    "name": "Scott Gerow",
+    "email": "scott.gerow@compass.com",
+    "phone": "9542326155",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/scott-gerow/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.instagram.com/scottgerowre/",
+      "https://twitter.com/scottgerowre"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 44,
+    "name": "Erik Ginsberg",
+    "email": "erik.ginsberg@compass.com",
+    "phone": "5617154663",
+    "listings": 4,
+    "website": "http://www.erikginsberg.com/",
+    "compass": "https://www.compass.com/agents/erik-ginsberg/",
+    "designation": "Real Estate Agent",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/erikginsberg/",
+      "https://www.instagram.com/erik.ginsberg.realtor/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 45,
+    "name": "Susan Gizzi Winch",
+    "email": "susanwinch@compass.com",
+    "phone": "5615161293",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/susan-winch/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.facebook.com/homesbygizzi",
+      "https://www.linkedin.com/in/susan-gizzi-winch-6435b846/",
+      "https://www.instagram.com/susangwinch/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 46,
+    "name": "Susan Glover",
+    "email": "susan.glover@compass.com",
+    "phone": "5619909793",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/susan-glover/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 47,
+    "name": "Camilla Goodwin",
+    "email": "camilla.goodwin@compass.com",
+    "phone": "7025441445",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/camilla-goodwin/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 48,
+    "name": "Alicia Gold",
+    "email": "alicia.gold@compass.com",
+    "phone": "9148442760",
+    "listings": 8,
+    "website": "http://www.goldteamflorida.com/",
+    "compass": "https://www.compass.com/agents/a-gold/",
+    "designation": "real estate agent",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.instagram.com/aliciadgold/",
+      "https://www.facebook.com/aliciadgold/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 49,
+    "name": "Jon Goldman",
+    "email": "jon.goldman@compass.com",
+    "phone": "9542142393",
+    "listings": 14,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jonathan-goldman/",
+    "designation": "Licensed Real Estate Broker",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://instagram.com/jongoldmanfl",
+      "https://www.linkedin.com/in/jongoldmanFL",
+      "https://www.facebook.com/jongoldmanfl/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 50,
+    "name": "James Graham",
+    "email": "james.graham@compass.com",
+    "phone": "5612137655",
+    "listings": 3,
+    "website": "https://www.jamesgrahamrealestate.com/",
+    "compass": "https://www.compass.com/agents/james-graham/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.instagram.com/jamesgraham.realtor/?igsh=MTR6cTh2ajI4ODU4dQ%3D%3D&utm_source=qr#",
+      "https://www.facebook.com/JamesAGraham.RealEstate"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 51,
+    "name": "Ornit Granit",
+    "email": "ornit.granit@compass.com",
+    "phone": "9542969559",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/ornit-granit/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/ornitgranit/",
+      "https://www.facebook.com/ornit.granit"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 52,
+    "name": "Jessica Gulick",
+    "email": "jessica.gulick@compass.com",
+    "phone": "7724800054",
+    "listings": 2,
+    "website": "https://share.google/dA58zwu3Gh5MKkaDd",
+    "compass": "https://www.compass.com/agents/jessica-gulick/",
+    "designation": "Real Estate Agent",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/jessgulick/",
+      "https://www.facebook.com/TheJessicaGulickGroup/",
+      "https://www.instagram.com/thejessicagulickgroup/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 53,
+    "name": "Helena Hall",
+    "email": "helena.hall@compass.com",
+    "phone": "5615732728",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/helena-hall/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 2,
+    "socials": [
+      "https://www.linkedin.com/in/helena-hall-957a7b69/",
+      "https://www.facebook.com/HelenaOcean"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 54,
+    "name": "Christa Hatton",
+    "email": "christa.hatton@compass.com",
+    "phone": "5619974928",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/christa-hatton/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/christa-hatton-22860a158/",
+      "https://www.facebook.com/christa.hatton"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 55,
+    "name": "Warren Heeg",
+    "email": "warren.heeg@compass.com",
+    "phone": "5614411599",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/warren-heeg/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/warren-heeg-64354589",
+      "https://www.facebook.com/WarrenHeegRealEstate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 56,
+    "name": "Lexie Herrick",
+    "email": "lexie.herrick@compass.com",
+    "phone": "8434223289",
+    "listings": 2,
+    "website": "https://youtu.be/j5InK1L3-I8",
+    "compass": "https://www.compass.com/agents/alexandra-herrick/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/lexieherrick/",
+      "https://www.facebook.com/lexiesellshomes/",
+      "https://www.instagram.com/listwithlex/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 57,
+    "name": "Arnold Jacobs",
+    "email": "arnold.jacobs@compass.com",
+    "phone": "5618099497",
+    "listings": 2,
+    "website": "https://www.bocaratonrealestate.com/boca-isles-north/",
+    "compass": "https://www.compass.com/agents/arnold-jacobs/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 58,
+    "name": "Tiffany Horwitz",
+    "email": "tiffany.horwitz@compass.com",
+    "phone": "8133936079",
+    "listings": 4,
+    "website": "https://pubmanager.n2pub.com/share/fl/1zLddwlD",
+    "compass": "https://www.compass.com/agents/tiffany-horwitz/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/tiffany-horwitz-18045351/",
+      "https://www.facebook.com/SouthFloridaLuxuryRealtor/",
+      "https://www.instagram.com/tiffcamille/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 59,
+    "name": "Andre Huyghues-Despointes",
+    "email": "andre.despointes@compass.com",
+    "phone": "5612518742",
+    "listings": 14,
+    "website": "https://www.google.com/search?kgmid=/g/11ts320dtp&hl=en-US&q=Frenchysells&shndl=30&shem=labmtrc,lsde,vslcca&source=sh/x/loc/osrp/m5/3&kgs=83e7f3008ea99a14#lrd=0x88d91f19e7d775eb:0x3dae3c2dc5794d00,1,,,,",
+    "compass": "https://www.compass.com/agents/andre-huyghues-despointes/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.instagram.com/frenchysells/#",
+      "https://www.facebook.com/Frenchysells"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 60,
+    "name": "Teri Jacobsen",
+    "email": "teri.jacobsen@compass.com",
+    "phone": "5614454991",
+    "listings": 1,
+    "website": "https://www.pamandtoni.com/",
+    "compass": "https://www.compass.com/agents/teri-jacobsen/",
+    "designation": "real estate agent",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.instagram.com/pamandtoniteam/",
+      "https://www.facebook.com/ThePamAndToniTeam/?ref=br_rs"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 61,
+    "name": "Hal Klein",
+    "email": "hal.klein@compass.com",
+    "phone": "5612715154",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/hal-klein/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 62,
+    "name": "Adi Kol",
+    "email": "adi.kol@compass.com",
+    "phone": "5617579339",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/adi-kol/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/adi-kol-46078522/",
+      "https://www.facebook.com/AdiKolRealEstate/",
+      "https://www.instagram.com/kol_realestate/",
+      "https://twitter.com/koladi1"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 63,
+    "name": "Michael Korman",
+    "email": "michael.korman@compass.com",
+    "phone": "9545983277",
+    "listings": 10,
+    "website": "https://therealdeal.com/miami/2025/07/14/movers-shakers-moss-names-chief-legal-officer/",
+    "compass": "https://www.compass.com/agents/michael-korman/",
+    "designation": "Real Estate Agent",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/michael-korman-51a53846",
+      "https://www.instagram.com/michaelkorman1/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 64,
+    "name": "Thomas Kornitzer",
+    "email": "thomas.kornitzer@compass.com",
+    "phone": "5616459000",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/thomas-kornitzer/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 65,
+    "name": "Layne Kramer",
+    "email": "layne.kramer@compass.com",
+    "phone": "9548998864",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/layne-kramer/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 66,
+    "name": "Rachel Kovalsky",
+    "email": "rachel.kovalsky@compass.com",
+    "phone": "7326141862",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/rachel-kovalsky/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 67,
+    "name": "Bridget Bass",
+    "email": "joshdotoligroup@compass.com",
+    "phone": "954-290-4793",
+    "listings": 1,
+    "website": "https://www.prweb.com/releases/marina-landings-homes-selling-faster-than-ever-outpacing-fort-lauderdale-market-302306734.html",
+    "compass": "https://www.compass.com/agents/bridget-bass",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.facebook.com/p/Bridget-Bass-Real-Estate-100063938414985/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 68,
+    "name": "Samantha Laird",
+    "email": "samantha.laird@compass.com",
+    "phone": "8148732648",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/samantha-laird/",
+    "designation": "Real Estate agent",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.instagram.com/samanthalaird_/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 69,
+    "name": "Brad Kuskin",
+    "email": "brad.kuskin@compass.com",
+    "phone": "5612327899",
+    "listings": 6,
+    "website": "https://925maxima.com/2026/01/22/twitch-star-tfue-buys-famous-st-pete-beach-hangout/",
+    "compass": "https://www.compass.com/agents/brad-kuskin/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/bradkuskin/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 70,
+    "name": "Natalia Lamb",
+    "email": "natalia.rodriguez@compass.com",
+    "phone": "5616995130",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/natalia-rodriguez/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.instagram.com/sincerely.natis/",
+      "https://www.facebook.com/Lamb.Residential.Group/",
+      "https://www.linkedin.com/in/natalia-rodriguez-lamb-a6818598/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 71,
+    "name": "Megan Lake",
+    "email": "megan.lake@compass.com",
+    "phone": "5617024003",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/megan-lake/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 72,
+    "name": "Jared Leshner",
+    "email": "jared.leshner@compass.com",
+    "phone": "5612914342",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jared-leshner/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 73,
+    "name": "Joanna Levin",
+    "email": "joanna.levin@compass.com",
+    "phone": "9542570657",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/joanna-levin/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.facebook.com/JoannaLevinRealtorAssociate/?ref=page_internal"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 74,
+    "name": "Matt Levine",
+    "email": "matt.levine@compass.com",
+    "phone": "5617663204",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/matt-levine/",
+    "designation": "Realtor\u00ae",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 75,
+    "name": "Jill Levine",
+    "email": "jill.levine@compass.com",
+    "phone": "5616098319",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jill-levine/",
+    "designation": "real estate agent",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.linkedin.com/in/jillalevine",
+      "https://www.facebook.com/profile.php?id=100092004652843&mibextid=LQQJ4d",
+      "https://instagram.com/jillalevine28?igshid=OGQ5ZDc2ODk2ZA=="
+    ],
+    "has_links": true
+  },
+  {
+    "id": 76,
+    "name": "Jeff Lewis",
+    "email": "jeff.lewis@compass.com",
+    "phone": "8437542864",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jeffrey-lewis/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 77,
+    "name": "Jeff Levine",
+    "email": "jeff.levine@compass.com",
+    "phone": "5618095858",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jeff-levine/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 78,
+    "name": "Dylan Lamb",
+    "email": "lambresidentialgroup@compass.com",
+    "phone": "561-900-8508",
+    "listings": 6,
+    "website": "",
+    "compass": "https://www.compass.com/agents/dylan-lamb",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.instagram.com/broker_dylan/?hl=en",
+      "https://www.facebook.com/Lamb.Residential.Group/",
+      "https://www.linkedin.com/in/lambresidentialgroup/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 79,
+    "name": "James Lopez",
+    "email": "james.lopez@compass.com",
+    "phone": "5615585778",
+    "listings": 8,
+    "website": "https://www.google.com/maps/place/James+Lopez+%7C+Compass+%7C+JamesJustSold/@26.3515868,-80.0869547,1409m/data=!3m1!1e3!4m8!3m7!1s0x88d91eb84b2cf1f9:0xed77d41d20f186f5!8m2!3d26.3515868!4d-80.0869547!9m1!1b1!16s%2Fg%2F11rghpn5lb?entry=ttu&g_ep=EgoyMDI2MDcxMi4wIKXMDSoASAFQAw%3D%3D",
+    "compass": "https://www.compass.com/agents/james-lopez/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [
+      "https://www.facebook.com/jamesandseangroup/",
+      "https://www.instagram.com/jamesandsean/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 80,
+    "name": "JD Lorenzo",
+    "email": "jd.lorenzo@compass.com",
+    "phone": "3056074580",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jd-lorenzo/",
+    "designation": "real estate agent",
+    "city": "Delray Beach, FL",
+    "page": 3,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 81,
+    "name": "James Madalone",
+    "email": "james.madalone@compass.com",
+    "phone": "5613735114",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/james-madalone/",
+    "designation": "licensed Broker",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 82,
+    "name": "Mimi Mangines",
+    "email": "mimi.mangines@compass.com",
+    "phone": "5614452836",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/mimi-mangines/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.facebook.com/mimimanginesrealestate",
+      "https://www.instagram.com/mimimanginesrealtor/",
+      "https://www.linkedin.com/in/mimi-mangines-52b9a8134/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 83,
+    "name": "Stephen Lyon",
+    "email": "stephen.lyon@compass.com",
+    "phone": "9549130637",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/stephen-lyon/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 84,
+    "name": "Anthony Martinez",
+    "email": "anthony.martinez@compass.com",
+    "phone": "7868634011",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/anthony-martinez/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 85,
+    "name": "Marcela Mastrangelo",
+    "email": "marcela.mastrangelo@compass.com",
+    "phone": "5618599135",
+    "listings": 7,
+    "website": "",
+    "compass": "https://www.compass.com/agents/marcela-mastrangelo/",
+    "designation": "real estate agent",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.linkedin.com/in/marcela-mastrangelo/",
+      "https://www.facebook.com/marcelamaiarealtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 86,
+    "name": "Perry Melzer",
+    "email": "perry.melzer@compass.com",
+    "phone": "7185017122",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/perry-melzer/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 87,
+    "name": "Sean Mooney",
+    "email": "sean.mooney@compass.com",
+    "phone": "5617897208",
+    "listings": 7,
+    "website": "https://www.google.com/maps/place/Sean+Mooney+%7C+Compass+%7C+Boca+Raton+Realtor/@26.4693473,-80.0730118,17z/data=!4m8!3m7!1s0x88d8df6cc83389dd:0xfdbbe520cef2d684!8m2!3d26.4693473!4d-80.0730118!9m1!1b1!16s%2Fg%2F11n54wc5pf!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDMxMS4wIKXMDSoASAFQAw%3D%3D",
+    "compass": "https://www.compass.com/agents/sean-mooney/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.facebook.com/seanmooneyfl",
+      "https://www.instagram.com/seanmooneyfl/",
+      "https://www.linkedin.com/in/seanmooney3"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 88,
+    "name": "Heather Musiello",
+    "email": "heather.musiello@compass.com",
+    "phone": "5163821866",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/heather-musiello/",
+    "designation": "Realtor\u00ae",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 89,
+    "name": "Jeremy Olsher",
+    "email": "miznerresidentialgroup@compass.com",
+    "phone": "561.400.3737",
+    "listings": 2,
+    "website": "https://www.miznerresidentialrealty.com/",
+    "compass": "https://www.compass.com/agents/jeremy-olsher",
+    "designation": "Real Estate Professional",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.linkedin.com/in/jeremy-olsher-0621613/",
+      "https://www.facebook.com/jeremyolsher",
+      "https://www.facebook.com/delraybeachrealestateforsale/",
+      "https://twitter.com/JeremyOlsher",
+      "https://www.instagram.com/jeremyolsher/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 90,
+    "name": "Holly Meyer",
+    "email": "meyer.lucas@compass.com",
+    "phone": "561.631.0920",
+    "listings": 17,
+    "website": "https://therealdeal.com/miami/2023/03/21/double-header-mets-max-scherzer-buying-waterfront-jupiter-home-asking-18m/",
+    "compass": "https://www.compass.com/agents/holly-meyer",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://twitter.com/meyerlucasre?lang=en",
+      "https://www.facebook.com/MeyerLucasGroup/",
+      "https://www.instagram.com/meyer.lucas.team/",
+      "https://www.youtube.com/channel/UCcrJK2Nc94aDNG_23skPvGQ",
+      "https://www.linkedin.com/company/the-meyer-lucas-group"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 91,
+    "name": "Lisa Nanfra",
+    "email": "lisa.nanfra@compass.com",
+    "phone": "3023796309",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/lisa-nanfra/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 92,
+    "name": "Modern Living Group - FL",
+    "email": "livemodern@compass.com",
+    "phone": "561.228.8420",
+    "listings": 4,
+    "website": "http://modernlivingre.com/contact/",
+    "compass": "https://www.compass.com/agents/modern-living-group/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/modernlivingre/",
+      "https://www.facebook.com/ModernLivingRE/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 93,
+    "name": "Keith Neff",
+    "email": "keith.neff@compass.com",
+    "phone": "5619974995",
+    "listings": 4,
+    "website": "https://www.pinterest.com/yow44/",
+    "compass": "https://www.compass.com/agents/keith-neff/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.facebook.com/KeithNeffLuxuryRealtor",
+      "https://www.instagram.com/neff.keith/",
+      "https://www.linkedin.com/in/keithneff/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 94,
+    "name": "Linda Nilsen",
+    "email": "linda.nilsen@compass.com",
+    "phone": "9736347514",
+    "listings": 1,
+    "website": "https://theinabloomteam.com/",
+    "compass": "https://www.compass.com/agents/linda-nilsen/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.linkedin.com/in/linda-nilsen-29b226188/",
+      "https://www.instagram.com/lincin/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 95,
+    "name": "Aimee O'Neill",
+    "email": "aimee.oneill@compass.com",
+    "phone": "9548175711",
+    "listings": 2,
+    "website": "https://aimeeoneill.com/strategy-session",
+    "compass": "https://www.compass.com/agents/aimee-oneill/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.linkedin.com/in/aimeegilligan//",
+      "https://www.instagram.com/aimeeoneillre/",
+      "https://www.facebook.com/profile.php?id=100092318471361"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 96,
+    "name": "Eileen Parisi",
+    "email": "eileen.parisi@compass.com",
+    "phone": "5612711311",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/eileen-parisi/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 97,
+    "name": "Gida Paranhos",
+    "email": "gida.paranhos@compass.com",
+    "phone": "5613054472",
+    "listings": 1,
+    "website": "https://www.boyntonbeachrealestate.com/coral-lakes/",
+    "compass": "https://www.compass.com/agents/girassol-paranhos/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.facebook.com/share/1Dhc1eTJUJ/?mibextid=wwXIfr",
+      "https://www.instagram.com/gidarealtor?igsh=N3h5N3Uydm9ncThz&utm_source=qr"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 98,
+    "name": "Andrea Patnik",
+    "email": "andrea.patnik@compass.com",
+    "phone": "9546472394",
+    "listings": 1,
+    "website": "https://www.fortlauderdalehousesearch.com/",
+    "compass": "https://www.compass.com/agents/andrea-patnik/",
+    "designation": "Realtor\u00ae",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.facebook.com/Andrea-Patnik-Your-South-Florida-Real-Estate-Expert-141220342573972",
+      "https://www.instagram.com/andreapatnikrealtor/",
+      "https://www.linkedin.com/in/andrea-patnik-55319b5"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 99,
+    "name": "Christine Patterson",
+    "email": "tina.patterson@compass.com",
+    "phone": "5612513214",
+    "listings": 2,
+    "website": "https://www.bocaratonrealestate.com/luxury-homes/",
+    "compass": "https://www.compass.com/agents/christine-patterson/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 100,
+    "name": "Brian Pearl",
+    "email": "brian.pearl@compass.com",
+    "phone": "5612451541",
+    "listings": 10,
+    "website": "https://www.inman.com/2022/07/20/stand-out-7-pr-strategies-every-agent-needs/",
+    "compass": "https://www.compass.com/agents/brian-pearl/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.linkedin.com/in/brianpearlrealestate/",
+      "https://www.facebook.com/brianpearlrealestate",
+      "https://www.instagram.com/brianpearlrealestate/",
+      "https://twitter.com/brianpearl"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 101,
+    "name": "Diego Pereira",
+    "email": "diego.pereira@compass.com",
+    "phone": "5618094481",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/diego-pereira/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.linkedin.com/in/diegosellsmiami/",
+      "https://www.facebook.com/diegosellsmiami",
+      "https://www.instagram.com/diegosellsmiami/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 102,
+    "name": "Thomas Pidgeon",
+    "email": "thomas.pidgeon@compass.com",
+    "phone": "9542459346",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/thomas-pidgeon/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/florida360group/",
+      "https://www.facebook.com/Florida360",
+      "https://www.linkedin.com/in/thomaspidgeon/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 103,
+    "name": "Margot Platt",
+    "email": "margot.platt@compass.com",
+    "phone": "5612891917",
+    "listings": 21,
+    "website": "https://www.inman.com/2023/03/30/broker-spotlight-alex-and-margot-platt-the-platt-group-at-compass/",
+    "compass": "https://www.compass.com/agents/margot-platt/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.instagram.com/margotplatt_/",
+      "https://www.facebook.com/margot.ilana",
+      "https://www.linkedin.com/in/margot-shooster-platt/",
+      "https://www.linkedin.com/company/19518/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 104,
+    "name": "Dominic Posocco",
+    "email": "dominic.posocco@compass.com",
+    "phone": "6102959127",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/dominic-posocco/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 105,
+    "name": "Zach Possanza",
+    "email": "zach.possanza@compass.com",
+    "phone": "5615743246",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/zach-possanza/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 106,
+    "name": "Property Siblings",
+    "email": "propertysiblings@compass.com",
+    "phone": "646.296.0026",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/property-siblings/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.facebook.com/share/1FweEeLVhe/?mibextid=wwXIfr",
+      "https://www.instagram.com/propertysiblingssouthflorida?igsh=MThtYTFqMGF2MmVpbQ%3D%3D&utm_source=qr"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 107,
+    "name": "Diane Rattray",
+    "email": "diane.rattray@compass.com",
+    "phone": "5613258831",
+    "listings": 1,
+    "website": "https://www.delraybeachrealestate.com/dakota-delray/",
+    "compass": "https://www.compass.com/agents/diane-rattray/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.linkedin.com/in/dianerattrayrealtor/",
+      "https://www.facebook.com/dianerattrayrealtor",
+      "https://www.instagram.com/dianerattrayrealtor"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 108,
+    "name": "Blake Rayner",
+    "email": "blake.rayner@compass.com",
+    "phone": "5612522208",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/blake-rayner/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 4,
+    "socials": [
+      "https://www.facebook.com/share/1BACbFtUpd/?mibextid=wwXIfr",
+      "https://www.instagram.com/blakebrayner/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 109,
+    "name": "Sherley Rosario",
+    "email": "sherley.rosario@compass.com",
+    "phone": "2397380977",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/sherley-rosario/",
+    "designation": "Real Estate Professional",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.linkedin.com/in/sherley-rosario-9659b0138/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 110,
+    "name": "Samona Rosenberg",
+    "email": "samona.rosenberg@compass.com",
+    "phone": "9179697768",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/samona-rosenberg/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 111,
+    "name": "Robyn Rosen",
+    "email": "robyn.rosen@compass.com",
+    "phone": "9172091370",
+    "listings": 10,
+    "website": "",
+    "compass": "https://www.compass.com/agents/robyn-rosen/",
+    "designation": "Realtor\u00ae",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 112,
+    "name": "Jesse Rosselot",
+    "email": "jesserosselot@compass.com",
+    "phone": "5613767765",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jesse-rosselot/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.instagram.com/jesserosselot/",
+      "https://www.linkedin.com/in/jesse-rosselot-206159151/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 113,
+    "name": "Karen Rothstein",
+    "email": "karen.rothstein@compass.com",
+    "phone": "5617067115",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/karen-rothstein/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 114,
+    "name": "Juan Alfredo Ruiz",
+    "email": "alfredo.ruiz@compass.com",
+    "phone": "5613506923",
+    "listings": 8,
+    "website": "https://www.boyntonbeachrealestate.com/aberdeen-country-club/",
+    "compass": "https://www.compass.com/agents/juan-alfredo-ruiz/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 115,
+    "name": "Valerie Santory",
+    "email": "valerie.santory@compass.com",
+    "phone": "5617023770",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/valerie-santory/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.instagram.com/valbocarealtor/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 116,
+    "name": "Michele Scardina",
+    "email": "michele.scardina@compass.com",
+    "phone": "5618498023",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michele-scardina/",
+    "designation": "Real Estate Agent",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.linkedin.com/in/michelescardina/",
+      "https://www.facebook.com/MicheleScardinaRealtor/",
+      "https://www.instagram.com/michelescardina/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 117,
+    "name": "Jamie Sauer",
+    "email": "jamie.sauer@compass.com",
+    "phone": "5612126662",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jamie-sauer/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 118,
+    "name": "Sara Schapiro",
+    "email": "sara.schapiro@compass.com",
+    "phone": "5162976926",
+    "listings": 3,
+    "website": "https://proistatic.com/Mortgage/MilestoneMortgageCorp/Content/UploadedFiles/Sara%202.pdf",
+    "compass": "https://www.compass.com/agents/sara-schapiro/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.instagram.com/saraschapiro/?igsh=M2NoOWRueWtpMnR0&utm_source=qr#",
+      "https://www.facebook.com/sara.schapiro.3?mibextid=wwXIfr&rdid=O5xEhhHh70bf5WCF&share_url=https%253A%252F%252Fwww.facebook.com%252Fshare%252F1BntoqaXBn%252F%253Fmibextid%253DwwXIfr#"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 119,
+    "name": "Cat Serra-Garcia",
+    "email": "cat.serragarcia@compass.com",
+    "phone": "9144901247",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/cat-serra-garcia/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.instagram.com/catbocarealestate?igsh=eXdnMXdxNmRhYjd1",
+      "https://www.facebook.com/share/1AJ8ZjuKQY/?mibextid=wwXIfr"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 120,
+    "name": "Jamie Schissler",
+    "email": "jamie.schissler@compass.com",
+    "phone": "5619894956",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jamie-schissler/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 121,
+    "name": "Rayna Shandler",
+    "email": "rayna.shandler@compass.com",
+    "phone": "9547323955",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/rayna-shandler/",
+    "designation": "REALTOR\u00ae",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.facebook.com/rayna.shandler"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 122,
+    "name": "Karen Sklawer",
+    "email": "karen.sklawer@compass.com",
+    "phone": "7863031352",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/2295548/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.linkedin.com/in/karensklawer/",
+      "https://www.facebook.com/karensellswhatsnext/",
+      "https://www.instagram.com/karensklawer/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 123,
+    "name": "Dylan Snyder",
+    "email": "dylan.snyder@compass.com",
+    "phone": "5619519301",
+    "listings": 9,
+    "website": "https://theprivateclientnetwork.com/",
+    "compass": "https://www.compass.com/agents/dylan-snyder/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.linkedin.com/in/dylansnyder/",
+      "https://www.facebook.com/snydergroup",
+      "https://www.instagram.com/dylanpsnyder/",
+      "https://www.youtube.com/user/SnyderGroup",
+      "https://twitter.com/thesnydergroup"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 124,
+    "name": "Boca Expert Realty",
+    "email": "gloria.singer@compass.com",
+    "phone": "5618667584",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/boca-expert-realty/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 125,
+    "name": "Geraldine Stanko",
+    "email": "geraldine.stanko@compass.com",
+    "phone": "5616036730",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/geraldine-stanko/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.linkedin.com/in/geraldinestanko/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 126,
+    "name": "Trudi Sponder",
+    "email": "trudi.sponder@compass.com",
+    "phone": "5612120101",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/trudi-sponder/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 127,
+    "name": "Allison Stewart",
+    "email": "allison.stewart@compass.com",
+    "phone": "5614458813",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/allison-stewart/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 128,
+    "name": "Ted Struhl",
+    "email": "ted.struhl@compass.com",
+    "phone": "5612445577",
+    "listings": 7,
+    "website": "https://teamstruhl.com/",
+    "compass": "https://www.compass.com/agents/ted-struhl/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.linkedin.com/in/tstruhl/",
+      "https://www.facebook.com/struhl"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 129,
+    "name": "Chuck Luciano",
+    "email": "sfla@compass.com",
+    "phone": "(561) 706-7144",
+    "listings": 8,
+    "website": "",
+    "compass": "https://www.compass.com/agents/chuck-luciano",
+    "designation": "Real Estate Agent",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.facebook.com/sflalux",
+      "https://www.instagram.com/sflalux/",
+      "https://www.linkedin.com/in/chuck-luciano-1bbaa010/",
+      "https://www.youtube.com/channel/UCofHCD8lZ4QTqfLPTEkwHIA/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 130,
+    "name": "Erica Sturtze",
+    "email": "erica.sturtze@compass.com",
+    "phone": "5619098408",
+    "listings": 7,
+    "website": "https://www.luxuryhomemagazine.com/thepalmbeaches/thepalmbeachesonline.html",
+    "compass": "https://www.compass.com/agents/erica-sturtze/",
+    "designation": "Real Estate Professional",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.facebook.com/EricaSturtze/",
+      "https://www.instagram.com/ericasturtzerealestate/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 131,
+    "name": "Grettie Sutton",
+    "email": "grettie.sutton@compass.com",
+    "phone": "6619931166",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/grettie-sutton/",
+    "designation": "real estate professional",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 132,
+    "name": "Thalia Arellano",
+    "email": "stk.exclusive@compass.com",
+    "phone": "561.876.3393",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/thalia-arellano",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 133,
+    "name": "Christopher Tapia",
+    "email": "chris.tapia@compass.com",
+    "phone": "5613056794",
+    "listings": 29,
+    "website": "https://tapiagroupfl.com/",
+    "compass": "https://www.compass.com/agents/christopher-tapia/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 5,
+    "socials": [
+      "https://www.instagram.com/tapia.group/",
+      "https://www.facebook.com/ChristophetTapiaPA/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 134,
+    "name": "The R&J Group",
+    "email": "therandjgroup@compass.com",
+    "phone": "561.703.7969",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/the-r&j-group/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 6,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 135,
+    "name": "Pam Levine",
+    "email": "thelevinegroup@compass.com",
+    "phone": "561.537.0383",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/pam-levine",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 6,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 136,
+    "name": "Susan Weinberg",
+    "email": "tresandsusan@compass.com",
+    "phone": "917.821.1475",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/susan-weinberg",
+    "designation": "real estate agent",
+    "city": "Delray Beach, FL",
+    "page": 6,
+    "socials": [
+      "https://www.linkedin.com/in/susan-weinberg-7969a249/",
+      "https://www.facebook.com/sweinberg2/",
+      "https://www.instagram.com/tresandsusan/",
+      "https://www.youtube.com/channel/UCvWMWyGTjRcu-2G3DefsvTA"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 137,
+    "name": "Mark Rucco",
+    "email": "theruccogroup@compass.com",
+    "phone": "561.737.0366",
+    "listings": 23,
+    "website": "https://www.theruccogroup.com/",
+    "compass": "https://www.compass.com/agents/mark-rucco",
+    "designation": "Real Estate Professional",
+    "city": "Delray Beach, FL",
+    "page": 6,
+    "socials": [
+      "https://www.linkedin.com/company/the-rucco-group-mark-rucco?trk=public_profile_topcard-current-company",
+      "https://www.instagram.com/mark.rucco/?hl=en",
+      "http://facebook.com/theruccogroup/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 138,
+    "name": "Laura Trebatch",
+    "email": "laura.trebatch@compass.com",
+    "phone": "5618868072",
+    "listings": 4,
+    "website": "https://www.delraybeachrealestate.com/downtown/",
+    "compass": "https://www.compass.com/agents/laura-trebatch/",
+    "designation": "Realtor",
+    "city": "Delray Beach, FL",
+    "page": 6,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 139,
+    "name": "Jeff Tuchklaper",
+    "email": "jeff.tuchklaper@compass.com",
+    "phone": "9545998991",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jeffrey-tuchklaper/",
+    "designation": "realtor",
+    "city": "Delray Beach, FL",
+    "page": 6,
+    "socials": [
+      "https://www.linkedin.com/in/jeff-tuchklaper/",
+      "https://www.instagram.com/jeff_tuchklaper_realtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 140,
+    "name": "Jeffrey Viselman",
+    "email": "jeffrey.viselman@compass.com",
+    "phone": "5612896348",
+    "listings": 4,
+    "website": "",
+    "compass": "https://www.compass.com/agents/jeffrey-viselman/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 6,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 141,
+    "name": "Michael Weppner",
+    "email": "michael.weppner@compass.com",
+    "phone": "5612511128",
+    "listings": 3,
+    "website": "",
+    "compass": "https://www.compass.com/agents/michael-weppner/",
+    "designation": "Real Estate Professional",
+    "city": "Delray Beach, FL",
+    "page": 6,
+    "socials": [
+      "https://www.facebook.com/people/Michael-Weppner-Sr/541932796"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 142,
+    "name": "Liliane Weinstein",
+    "email": "liliane.weinstein@compass.com",
+    "phone": "5617153181",
+    "listings": 5,
+    "website": "https://www.bocaratonrealestate.com/waterfront/",
+    "compass": "https://www.compass.com/agents/liliane-weinstein/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 6,
+    "socials": [],
+    "has_links": true
+  },
+  {
+    "id": 143,
+    "name": "Brandon Weppner",
+    "email": "brandon.weppner@compass.com",
+    "phone": "5617156773",
+    "listings": 5,
+    "website": "",
+    "compass": "https://www.compass.com/agents/brandon-weppner/",
+    "designation": "Real Estate Professional",
+    "city": "Delray Beach, FL",
+    "page": 6,
+    "socials": [],
+    "has_links": false
+  },
+  {
+    "id": 144,
+    "name": "David Whitelaw",
+    "email": "david.whitelaw@compass.com",
+    "phone": "9543034726",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/david-whitelaw/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 6,
+    "socials": [
+      "https://www.linkedin.com/in/davidwhitelawrealtor",
+      "https://www.facebook.com/DavidWhitelawRealtor/",
+      "https://www.instagram.com/davidwhitelawrealtor/?hl=en"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 145,
+    "name": "Rachel Williams",
+    "email": "rachel.williams@compass.com",
+    "phone": "5619005477",
+    "listings": 4,
+    "website": "https://canvasrebel.com/meet-rachel-williams-3/",
+    "compass": "https://www.compass.com/agents/rachel-williams/",
+    "designation": "Real Estate Agent",
+    "city": "Delray Beach, FL",
+    "page": 6,
+    "socials": [
+      "https://www.facebook.com/Racheleliserealtor/",
+      "https://www.instagram.com/racheleliserealtor/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 146,
+    "name": "Tr\u00e9s Wilson",
+    "email": "tres.wilson@compass.com",
+    "phone": "9178211475",
+    "listings": 2,
+    "website": "https://tresandsusan.com/",
+    "compass": "https://www.compass.com/agents/tres-wilson/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 6,
+    "socials": [
+      "https://www.facebook.com/tres.wilson",
+      "https://www.instagram.com/tresandsusan/",
+      "https://twitter.com/treswilsonre",
+      "https://www.linkedin.com/in/treswilson/%22",
+      "https://www.youtube.com/channel/UCvWMWyGTjRcu-2G3DefsvTA"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 147,
+    "name": "Cynthia Wohl",
+    "email": "cynthia.wohl@compass.com",
+    "phone": "5619453972",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/cynthia-wohl/",
+    "designation": "Real Estate Professional",
+    "city": "Delray Beach, FL",
+    "page": 6,
+    "socials": [
+      "https://www.linkedin.com/in/cynthiawohl/",
+      "https://www.facebook.com/bocabeachandbeyond",
+      "https://www.instagram.com/bocabeachandbeyond/"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 148,
+    "name": "Michelle Yales",
+    "email": "michelle.yales@compass.com",
+    "phone": "9542634644",
+    "listings": 2,
+    "website": "",
+    "compass": "https://www.compass.com/agents/15028988/",
+    "designation": "licensed real estate broker",
+    "city": "Delray Beach, FL",
+    "page": 6,
+    "socials": [
+      "https://www.facebook.com/MichelleYalesPA",
+      "https://www.linkedin.com/in/michelle-yales-pa/%22"
+    ],
+    "has_links": true
+  },
+  {
+    "id": 149,
+    "name": "Karen Zummo-Hurley",
+    "email": "karen.hurley@compass.com",
+    "phone": "5613290435",
+    "listings": 1,
+    "website": "",
+    "compass": "https://www.compass.com/agents/karen-zummo-hurley/",
+    "designation": "real estate agent",
+    "city": "Delray Beach, FL",
+    "page": 7,
+    "socials": [],
+    "has_links": false
+  }
+];
+        
+        const gradients = [
+            'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)',
+            'linear-gradient(135deg, #F6D365 0%, #FDA085 100%)',
+            'linear-gradient(135deg, #A1C4FD 0%, #C2E9FB 100%)',
+            'linear-gradient(135deg, #76B2FE 0%, #B2D8FF 100%)',
+            'linear-gradient(135deg, #E0C3FC 0%, #8EC5FC 100%)',
+            'linear-gradient(135deg, #F093FB 0%, #F5576C 100%)',
+            'linear-gradient(135deg, #5EEAD4 0%, #14B8A6 100%)',
+            'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)',
+            'linear-gradient(135deg, #C084FC 0%, #A855F7 100%)',
+            'linear-gradient(135deg, #93C5FD 0%, #3B82F6 100%)'
+        ];
+
+        function getGradient(name) {
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const idx = Math.abs(hash) % gradients.length;
+            return gradients[idx];
+        }
+
+        function getInitials(name) {
+            if (!name) return 'A';
+            const parts = name.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+            return name[0].toUpperCase();
+        }
+
+        function getPlatformName(url) {
+            const urlLower = url.toLowerCase();
+            if (urlLower.includes('instagram.com')) return 'instagram';
+            if (urlLower.includes('linkedin.com')) return 'linkedin';
+            if (urlLower.includes('facebook.com')) return 'facebook';
+            if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) return 'twitter';
+            if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
+            if (urlLower.includes('tiktok.com')) return 'tiktok';
+            return 'default';
+        }
+
+
+
+        function getSocialIconSvg(platform) {
+            const svgs = {
+                instagram: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>',
+                linkedin: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>',
+                facebook: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>',
+                twitter: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z M4 20l6.768 -6.768 M20 4l-6.768 6.768"></path></svg>',
+                youtube: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>',
+                tiktok: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>',
+                default: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>'
+            };
+            return svgs[platform] || svgs.default;
+        }
+
+        let activeTab = 'all';
+        let searchQuery = '';
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        function renderLeads() {
+            const grid = document.getElementById('agentGrid');
+            grid.innerHTML = '';
+            
+            let filtered = leadsData.filter(lead => {
+                if (activeTab === 'with-links' && !lead.has_links) return false;
+                if (activeTab === 'no-links' && lead.has_links) return false;
+                
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    const nameMatch = lead.name.toLowerCase().includes(q);
+                    const desigMatch = (lead.designation || '').toLowerCase().includes(q);
+                    const emailMatch = (lead.email || '').toLowerCase().includes(q);
+                    const cityMatch = (lead.city || '').toLowerCase().includes(q);
+                    const pageMatch = String(lead.page || '').includes(q);
+                    return nameMatch || desigMatch || emailMatch || cityMatch || pageMatch;
+                }
+                return true;
+            });
+            
+            const allCount = leadsData.length;
+            const withLinksCount = leadsData.filter(l => l.has_links).length;
+            const noLinksCount = allCount - withLinksCount;
+            
+            document.getElementById('count-all').innerText = allCount;
+            document.getElementById('count-with-links').innerText = withLinksCount;
+            document.getElementById('count-no-links').innerText = noLinksCount;
+            
+            document.getElementById('stat-total-val').innerText = allCount;
+            document.getElementById('stat-with-links-val').innerText = withLinksCount;
+            document.getElementById('stat-no-links-val').innerText = noLinksCount;
+            
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+            
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+            
+            if (totalItems === 0) {
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <span class="no-results-icon">🔍</span>
+                        <h3>No prospects found</h3>
+                        <p>Try adjusting your filters or search keywords.</p>
+                    </div>
+                `;
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+                document.getElementById('paginationInfo').innerText = `Showing ${startIdx + 1}-${endIdx} of ${totalItems} prospects`;
+            }
+            
+            const pageData = filtered.slice(startIdx, endIdx);
+            
+            pageData.forEach(lead => {
+                const initials = getInitials(lead.name);
+                const gradient = getGradient(lead.name);
+                
+                let webButtonHtml = '';
+                if (lead.website) {
+                    webButtonHtml = `<a href="${lead.website}" target="_blank" class="btn btn-primary">Website</a>`;
+                } else {
+                    webButtonHtml = `<button class="btn btn-primary disabled" disabled>No Website</button>`;
+                }
+                
+                let socialsHtml = '';
+                if (lead.socials && lead.socials.length > 0) {
+                    socialsHtml += `<span class="social-label">Socials:</span>`;
+                    lead.socials.forEach(url => {
+                        const platform = getPlatformName(url);
+                        const iconSvg = getSocialIconSvg(platform);
+                        socialsHtml += `
+                            <a href="${url}" target="_blank" class="social-link ${platform}" title="${platform.charAt(0).toUpperCase() + platform.slice(1)}: ${url}">
+                                ${iconSvg}
+                            </a>
+                        `;
+                    });
+                } else {
+                    socialsHtml = `<span class="social-label" style="color: #94a3b8;">No socials on Compass</span>`;
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                card.style.cursor = 'pointer';
+                card.onclick = (e) => {
+                    if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.copy-btn')) {
+                        return;
+                    }
+                    window.open(lead.compass, '_blank');
+                };
+                
+                card.innerHTML = `
+                    <button class="copy-btn" onclick="copyAgentInfo(${lead.id}, event)" title="Copy agent info">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    </button>
+                    <div class="card-header">
+                        <div class="avatar" style="background: ${gradient}">${initials}</div>
+                        <div class="agent-meta">
+                            <div class="agent-name" title="${lead.name}">${lead.name}</div>
+                            <div class="agent-designation" title="${lead.designation || 'Real Estate Agent'}">${lead.designation || 'Real Estate Agent'}</div>
+                            <div class="badges-container">
+                                <span class="badge badge-listings">🏡 ${lead.listings} Listings</span>
+                                ${lead.city ? `<span class="badge badge-city">📍 ${lead.city}</span>` : ''}
+                                ${lead.page ? `<span class="badge badge-page">📄 Page ${lead.page}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        ${lead.email ? `
+                        <a href="mailto:${lead.email}" class="contact-row">
+                            <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            <span>${lead.email}</span>
+                        </a>` : ''}
+                        ${lead.phone ? `
+                        <a href="tel:${lead.phone}" class="contact-row">
+                            <svg class="contact-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                            <span>${lead.phone}</span>
+                        </a>` : ''}
+                    </div>
+                    <div class="card-footer">
+                        <div class="actions-row">
+                            <a href="${lead.compass}" target="_blank" class="btn btn-secondary">Compass Profile</a>
+                            ${webButtonHtml}
+                        </div>
+                        <div class="socials-row">
+                            ${socialsHtml}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            renderPaginationControls(totalPages);
+        }
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            const activeBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabName));
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            currentPage = 1;
+            renderLeads();
+        }
+
+        function handleSearch(val) {
+            searchQuery = val;
+            currentPage = 1;
+            renderLeads();
+        }
+
+        function renderPaginationControls(totalPages) {
+            const controls = document.getElementById('paginationControls');
+            controls.innerHTML = '';
+            
+            if (totalPages <= 1) {
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('paginationContainer').style.display = 'flex';
+            }
+            
+            // Prev Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.innerHTML = '&larr; Prev';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(prevBtn);
+            
+            // Smart visible buttons logic
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            
+            if (endPage - startPage + 1 < maxVisible) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+            
+            if (startPage > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.className = 'page-btn';
+                firstBtn.innerText = '1';
+                firstBtn.onclick = () => { currentPage = 1; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(firstBtn);
+                
+                if (startPage > 2) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                btn.innerText = i;
+                btn.onclick = () => {
+                    currentPage = i;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+                controls.appendChild(btn);
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-dots';
+                    dots.innerText = '...';
+                    controls.appendChild(dots);
+                }
+                
+                const lastBtn = document.createElement('button');
+                lastBtn.className = 'page-btn';
+                lastBtn.innerText = totalPages;
+                lastBtn.onclick = () => { currentPage = totalPages; renderLeads(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+                controls.appendChild(lastBtn);
+            }
+            
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.innerHTML = 'Next &rarr;';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderLeads();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            controls.appendChild(nextBtn);
+        }
+
+        function copyAgentInfo(id, event) {
+            const lead = leadsData.find(l => l.id === id);
+            if (!lead) return;
+            
+            const text = lead.name + '\n' + 
+                         (lead.designation || 'Real Estate Agent') + '\n' +
+                         'Email: ' + (lead.email || 'None') + '\n' +
+                         'Phone: ' + (lead.phone || 'None') + '\n' +
+                         'Website: ' + (lead.website || 'None') + '\n' +
+                         'Compass: ' + lead.compass;
+                         
+            const btn = event.currentTarget;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Agent details copied to clipboard!');
+                const originalSvg = btn.innerHTML;
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                setTimeout(() => { btn.innerHTML = originalSvg; }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderLeads();
+        });
+    </script>
+</body>
+</html>
